@@ -1,0 +1,49 @@
+# [タイトル(空白含んでOK)] [タブ文字(複数可能] [実行するコマンド]
+# dein
+dein plugin list			Capture Dein list
+dein plugin update			DeinUpdate
+dein plugin check nonused	Capture Dein check-clean
+dein plugin setting			Capture PrettyPrint g:dein#_plugins
+dein plugin operater list	Capture Dein -h
+
+# Memo
+memo create					MemoNew
+memo list					MemoList
+memo grep					MemoGrep
+
+# Twitter
+twitter Friends Timeline	FriendsTwitter
+twitter Mention Timeline	MentionsTwitter
+twitter Owned List			OwnedListsTwitter
+twitter Post				PosttoTwitter
+
+# capture
+option						Capture set
+abbreviate					Capture abbreviate
+augroup						Capture augroup
+autocmd						Capture autocmd
+command						Capture command
+compiler					Capture compiler
+function					Capture function
+highlight					Capture highlight
+keymap						Capture map
+keymap noremap				Capture noremap
+let							Capture let
+menu						Capture menu
+message						Capture messages
+noreabbrev					Capture noreabbrev
+noremenu					Capture noremenu
+scriptnames					Capture scriptnames
+syntax						Capture syntax
+version						Capture version
+
+# other
+Startify					Startify
+Color						ColorSwatchGenerate
+Pixela						VimPixela
+VimConsole					VimConsoleOpen
+Qiita						Qiita -l
+select colorscheme			SCROLLCOLOR
+Calendar					Calendar -split=vertical -position=right
+
+# vim:set ts=4 noexpandtab :

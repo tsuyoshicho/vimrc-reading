@@ -1,0 +1,913 @@
+# Core & Util
+# http://qiita.com/delphinus/items/00ff2c0ba972c6e41542
+# if windows download-auto/need first time manual depend clear `echo vimproc#version()`
+# https://qiita.com/from_kyushu/items/4e93ff2d228a359bea0e
+# MSYS,Cygwin split problem... disable
+# [[plugins]]
+# repo = 'Shougo/vimproc.vim'
+# merged = 0
+# # in non-windows need
+# # build = 'make'
+# on_if = '!has("nvim") && !has("win32unix")'
+# hook_add = '''
+#   let g:vimproc#download_windows_dll = 1
+# '''
+
+[[plugins]]
+repo = 'mattn/vimtweak'
+on_if= '(has("win32") || has("win64")) && has("gui_running")'
+# later as historical ==|| has('win16') || has('win95')==
+
+[[plugins]]
+repo = 'edkolev/promptline.vim'
+on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
+
+[[plugins]]
+repo = 'kassio/neoterm'
+on_if = '(has("nvim") || has("terminal"))'
+hook_add = '''
+  " based on https://qiita.com/hanajori/items/1bcd0c567a9fa193b9cd
+  let g:neoterm_autoscroll=1
+  " let g:neoterm_position='vertical'
+'''
+hook_post_source = '''
+  tnoremap <silent> <ESC> <C-\><C-n><C-w>
+  " nnoremap <silent> <C-e> :TREPLSendLine<CR>j0
+  " vnoremap <silent> <C-e> V:TREPLSendSelection<CR>'>j0
+'''
+
+[[plugins]] # WebAPIのライブラリ curlが必要
+repo = 'mattn/webapi-vim'
+on_if= 'executable("curl")'
+
+# need MeCab
+# [[plugins]]
+# repo = 'deton/jasegment.vim'
+
+[[plugins]] # fzf
+repo = 'junegunn/fzf'
+on_if= 'executable("fzf")'
+
+[[plugins]]
+repo = 'junegunn/fzf.vim'
+on_if= 'executable("fzf")'
+depends = ['fzf']
+hook_add = '''
+  let g:fzf_command_prefix = 'Fzf'
+
+  " see https://qiita.com/hisawa/items/fc5300a526cb926aef08
+  " ,<C-]>でタグ検索
+  nnoremap <silent> <leader><C-]> :call fzf#vim#tags(expand('<cword>'))<CR>
+
+  " fzfからファイルにジャンプできるようにする
+  let g:fzf_buffers_jump = 1
+'''
+
+# dirvish
+[[plugins]]
+repo = 'bounceme/remote-viewer'
+on_if= 'executable("ssh") || executable("curl")'
+depends = ['vim-dirvish']
+
+# [[plugins]]
+# repo = 'kristijanhusak/vim-dirvish-git'
+# on_if= 'executable("git")'
+# depends = ['vim-dirvish']
+# hook_add = '''
+#  let g:dirvish_git_show_ignored = 1
+# '''
+
+[[plugins]]
+repo = 'JazzCore/ctrlp-cmatcher'
+on_if= 'has("python")'
+merged = 0
+depends = ['ctrlp.vim']
+hook_post_update = '''
+  if (has("win32") || has("win64"))
+    let cmd = 'install_windows.bat'
+  else
+    let cmd = 'install.sh'
+  endif
+  let g:dein#plugin.build = cmd
+'''
+hook_add = '''
+  " need build
+  " echomsg "cmatcher:" . string(g:dein#plugin)
+
+  let rtp = dein#get('ctrlp-cmatcher').rtp
+
+  if (((has("win32") || has("win64"))
+        \    && filereadable(expand(rtp . '/autoload/fuzzycomt.pyd', ':p')))
+        \ || (!(has("win32") || has("win64"))
+        \    && filereadable(expand(rtp . '/autoload/fuzzycomt.so', ':p')))
+        \)
+    let g:ctrlp_match_func = {'match' : 'matcher#cmatch'}
+  endif
+'''
+
+[[plugins]]
+repo = 'deton/eblook.vim'
+on_if= 'executable("eblook")'
+hook_add = '''
+  " 'book'		辞書ディレクトリ。(eblookのbookコマンドの引数)
+  " 'name'		辞書名。(eblookのselectコマンドの引数)
+  " 'title' 	辞書識別子
+  " 'appendix' 	Appendix
+  " 'skip'		この辞書を検索対象にするかどうか
+  " 'autoformat'	content表示時に長い行を|gq|で整形するかどうか
+  " let g:eblook_dictlist1 = [
+  "   \    {
+  "   \       'book'       : '',
+  "   \       'name'       : '',
+  "   \       'title'      : '',
+  "   \       'appendix'   : '',
+  "   \       'skip'       : '',
+  "   \       'autoformat' : '',
+  "   \    },
+  "   \ ]
+
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows
+    " Windows環境用のコード
+    let g:eblookenc='cp932'
+    let g:eblook_dictlist1 = [
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/ASCDATES',
+      \       'name'       : 'ascdates',
+      \       'title'      : 'パソコン用語辞典 (1998年版アスキー DATES手帳巻末)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/BIBLENAM',
+      \       'name'       : 'biblenam',
+      \       'title'      : 'HITCHCOCK,S BIBLE NAMES DICTIONARY',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/CG',
+      \       'name'       : 'cg',
+      \       'title'      : 'CG 用語辞典 Ver.1.50h (日本大学吉川研究室)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/DEVIL',
+      \       'name'       : 'devil',
+      \       'title'      : '惡魔の辭典 (Devil,s Dictionary)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/EBD',
+      \       'name'       : 'ebd',
+      \       'title'      : 'Easton,s 1897 Bible Dictionary',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/EDICT',
+      \       'name'       : 'edict',
+      \       'title'      : 'EDICT',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/EIJIRO',
+      \       'name'       : 'eijiro',
+      \       'title'      : '英辞郎 Ver.144.5',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/FLOWER',
+      \       'name'       : 'flower',
+      \       'title'      : '花の咲く草木名小事典 (K,s Bookshelf)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/FOLDOC',
+      \       'name'       : 'foldoc',
+      \       'title'      : 'Free On-line Dictionary of Computing (FOLDOC)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/FUMEIKAI',
+      \       'name'       : 'fumeikai',
+      \       'title'      : '不明解略語辞典',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/JARGON',
+      \       'name'       : 'jargon',
+      \       'title'      : 'The Jargon File',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/LSD',
+      \       'name'       : 'lsd',
+      \       'title'      : 'ライフサイエンス辞書4',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/PEJV',
+      \       'name'       : 'pejv',
+      \       'title'      : '実用エスペラント小辞典 (第1版)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/ROGET',
+      \       'name'       : 'roget',
+      \       'title'      : 'ロジェーのシソーラス (Roget,s Thesaurus)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/RYAKU',
+      \       'name'       : 'ryaku',
+      \       'title'      : '略語辞典辞典 (K,s Bookshelf)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/VERA',
+      \       'name'       : 'vera',
+      \       'title'      : 'V.E.R.A. -- Virtual Entity of Relevant Acronyms',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/WDIC',
+      \       'name'       : 'wdic',
+      \       'title'      : '通信用語の基礎知識 (2004年後期版)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/WEB',
+      \       'name'       : 'web',
+      \       'title'      : 'Webster,s Revised Unabridged Dictionary (1913)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/WORDNET',
+      \       'name'       : 'wordnet',
+      \       'title'      : 'WordNet(r) 1.6',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/WWASW',
+      \       'name'       : 'wwasw',
+      \       'title'      : '物故者名士録',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/YASOU',
+      \       'name'       : 'yasou',
+      \       'title'      : '身近な野草を調べよう',
+      \       'skip'       : 0,
+      \    },
+      \ ]
+  else
+    " non Windows
+  endif
+'''
+
+# currenly not work
+# [[plugins]]
+# repo = 'yuratomo/w3m.vim'
+# on_if= 'executable("w3m")'
+
+[[plugins]]
+repo = 'tyru/open-browser-github.vim'
+depends = ['open-browser.vim']
+on_if= 'executable("hub")'
+
+[[plugins]]
+repo = 'iberianpig/tig-explorer.vim'
+on_if= 'executable("tig")'
+
+# Doc & File & Web
+
+# UI
+# [[plugins]]
+# repo = 'mattn/vim-nyancat'
+# on_if= '!(has("win32") || has("win64") || has("win32unix")) && !has("gui_running")'
+
+# 'vimtweak' depends windows only
+[[plugins]]
+repo = 'tsuyoshicho/transparency.vim'
+depends = ['vimtweak']
+on_if= 'has("gui_running")'
+hook_add = '''
+  let g:transparency_config = {
+      \  'active'   : 90,
+      \  'inactive' : 60
+      \ }
+'''
+hook_post_source = '''
+  " nmap --- <Plug>(TransparencyOn)
+  " nmap --- <Plug>(TransparencyOff)
+  nmap <F4> <Plug>(TransparencyToggle)
+'''
+
+[[plugins]]
+repo = 'edkolev/tmuxline.vim'
+# statusline,airline,lightline
+depends = ['lightline.vim']
+on_if = 'exists("$TMUX")'
+hook_post_source = '''
+  Tmuxline lightline
+'''
+
+[[plugins]]
+repo = 'miyakogi/seiya.vim'
+on_if= '!has("gui_running")'
+hook_add = '''
+  " let g:seiya_auto_enable=1
+'''
+
+# Edit operation
+# autocomplete
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete.vim'
+on_if= 'has("lua")'
+hook_add = '''
+  " let g:asyncomplete_auto_popup = 1
+
+  " let g:asyncomplete_completion_delay=10
+
+  " default
+  let g:asyncomplete_triggers = extend(get(g:,'asyncomplete_triggers',{}),
+        \ {
+        \   '*'  : ['.', '>', ':'],
+        \ })
+'''
+hook_post_source = '''
+  inoremap <expr> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
+  inoremap <expr> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
+  " Ctrl-y cr is fix completion
+  " inoremap <expr> <CR>         pumvisible() ? "\<C-y>" : "\<CR>"
+  inoremap <expr> <C-Y><CR>    pumvisible() ? "\<C-y>" : "\<CR>"
+
+  imap     <c-space>      <Plug>(asyncomplete_force_refresh)
+
+  " augroup asyncomplete
+  "   autocmd!
+  "   autocmd CompleteDone * if pumvisible() != 0 | pclose | endif
+  " augroup END
+'''
+
+
+[[plugins]]
+# repo = 'soramugi/auto-ctags.vim'
+repo = 'tsuyoshicho/auto-ctags.vim'
+rev  = 'feature/asyncprocess'
+on_if= 'executable("ctags")'
+hook_add = '''
+  " in .ctags
+  let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes', '--extra=+f']
+  " universal ctags need
+  let g:auto_ctags_tags_args = get(g:,'auto_ctags_tags_args',[]) + ['--output-format=e-ctags']
+
+  let g:auto_ctags = 1
+  " let g:auto_ctags_filetype_mode = 1
+  let g:auto_ctags_directory_list = ['.git', '.svn', '.hg', '.bzr', 'CVS', '.']
+  let g:auto_ctags_search_recursively = 1
+  let g:auto_ctags_absolute_path = 1
+  if has('path_extra')
+    let $HOME_TMP = expand($HOME)
+    set tags+=./.svn/tags;$HOME_TMP
+    set tags+=./.git/tags;$HOME_TMP
+    " set tags+=./.svn/*.tags;$HOME_TMP
+    " set tags+=./.git/*.tags;$HOME_TMP
+  else
+    set tags+=./.svn/tags;
+    set tags+=./.git/tags;
+    " set tags+=./.svn/*.tags;
+    " set tags+=./.git/*.tags;
+  endif
+
+  " git リポジトリ内などでも直にtagsを生成する関数
+  function! DirectAutoCtags()
+    let s:ctags_list_backup = copy(g:auto_ctags_directory_list)
+    let s:ctags_search_backup = g:auto_ctags_search_recursively
+
+    " set current only
+    let g:auto_ctags_directory_list = ['.']
+    let g:auto_ctags_search_recursively = 1
+
+    " call ctags create process
+    call auto_ctags#ctags(1)
+
+    " recover backups
+    let g:auto_ctags_directory_list = copy(s:ctags_list_backup)
+    let g:auto_ctags_search_recursively = s:ctags_search_backup
+
+    unlet s:ctags_list_backup
+    unlet s:ctags_search_backup
+  endfunction
+
+  " コマンド定義
+  command! CtagsDirect call DirectAutoCtags()
+'''
+
+[[plugins]] # Twitter
+repo = 'twitvim/twitvim'
+on_if= '(executable("curl") && executable("openssl"))'
+hook_add = '''
+  let g:twitvim_force_ssl = 1
+  let g:twitvim_count = 40
+  let g:twitvim_token_file = expand('~/.vim/twitvim.token')
+  if exists('$HTTP_PROXY')
+    let s:proxy_url_pattern =
+                \ '^\%(\([^:]*\):\/\/\)\='
+                \ . '\%(\([^:@]*\)\(:[^@]*\)\=@\)\='
+                \ . '\([^:]*\)\%(:\(\d*\)\)\=/\=$'
+    let g:twitvim_proxy = substitute($HTTP_PROXY,
+                \ s:proxy_url_pattern, '\4:\5', '')
+    let s:proxy_login = substitute($HTTP_PROXY,
+                \ s:proxy_url_pattern, '\2', '')
+    let s:proxy_pass = substitute($HTTP_PROXY,
+                \ s:proxy_url_pattern, '\3', '')
+    let g:twitvim_proxy_login = substitute(s:proxy_login . s:proxy_pass,
+                \ '%40', '@', 'g')
+  endif
+'''
+
+# Syntax
+# syntastic or ale
+# based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
+# [[plugins]]
+# repo = 'vim-syntastic/syntastic'
+# on_if = '!(has("job") && has("channel") && has("timers"))'
+# hook_add = '''
+# '''
+
+[[plugins]]
+repo = 'w0rp/ale'
+depends = ['lightline.vim','vim-devicons']
+on_if = 'has("job") && has("channel") && has("timers")'
+hook_add = '''
+  " based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
+  " based on https://wonderwall.hatenablog.com/entry/2017/03/01/223934
+  " based on https://qiita.com/kaityo256/items/cb76c3f73753fe921e7b
+  " based on https://qiita.com/hisawa/items/a53bbebb235c1efd09ca
+
+  function! s:ale_list()
+    let g:ale_open_list = 1
+    call ale#Queue(0, 'lint_file')
+  endfunction
+  command! ALEList call s:ale_list()
+  nnoremap <silent> <Subleader>m :ALEList<CR>
+  autocmd MyAutoGroup FileType qf nnoremap <silent> <buffer> q :let g:ale_open_list = 0<CR>:q!<CR>
+  autocmd MyAutoGroup FileType help,qf,man,ref let b:ale_enabled = 0
+
+  " if lightline
+  autocmd MyAutoGroup User ALELint call lightline#update()
+
+  " based on https://github.com/delphinus/lightline-delphinus#glightline_delphinus_colorscheme
+  let g:ale_echo_msg_error_str   = nr2char(0xf421) . ' '
+  let g:ale_echo_msg_warning_str = nr2char(0xf420) . ' '
+  let g:ale_echo_msg_info_str    = nr2char(0xf05a) . ' '
+  let g:ale_echo_msg_format      = '%severity%  %linter% - %s'
+  let g:ale_sign_column_always   = 1
+  let g:ale_sign_error           = nr2char(0xf421)
+  let g:ale_sign_warning         = nr2char(0xf420)
+  let g:ale_statusline_format = [
+        \ g:ale_echo_msg_error_str . ' %d',
+        \ g:ale_echo_msg_warning_str . ' %d',
+        \ nr2char(0xf4a1) . '  ']
+
+  " only lint at save file
+  let g:ale_lint_on_save = 1
+  let g:ale_lint_on_text_changed = 0
+
+  " ファイルオープン時にチェックしたくない場合
+  let g:ale_lint_on_enter = 0
+
+  " PSR-1,2のチェックをおこなう
+  let g:ale_php_phpcs_standard = 'PSR1,PSR2'
+
+  " shellcheck rule
+  let g:ale_sh_shellcheck_options = '-e SC1090,SC2059,SC2155,SC2164'
+
+  " linter setting
+  let g:ale_linters = {
+        \ 'c'          : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
+        \ 'cpp'        : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
+        \ 'php'        : ['phpcs',       'php'],
+        \ 'java'       : ['checkstyle',  'javac',      'PMD'],
+        \ 'css'        : ['prettier',    'stylelint'],
+        \ 'sass'       : [               'stylelint',  'sass-lint'],
+        \ 'scss'       : ['prettier',    'stylelint',  'sass-lint'],
+        \ 'javascript' : ['prettier',                                'eslint'],
+        \ 'typescript' : ['prettier',                                'eslint'],
+        \ 'jsx'        : [               'stylelint',                'eslint'],
+        \ 'toml'       : ['prettier'],
+        \ 'yaml'       : ['prettier'],
+        \ 'json'       : ['prettier',    'jq'],
+        \ 'sh'         : ['shellcheck'],
+        \ 'csh'        : ['shellcheck'],
+        \ 'zsh'        : ['shellcheck'],
+        \ 'tcsh'       : ['shellcheck'],
+        \ 'markdown'   : ['textlint',    'vale'],
+        \ 'asciidoc'   : ['textlint',    'vale'],
+        \}
+
+  let g:ale_linter_aliases = {
+        \ 'jsx': 'css',
+        \}
+
+  " Only run linters named in ale_linters settings.
+  let g:ale_linters_explicit = 1
+
+  " Fixer
+  let g:ale_fixers = {
+        \ '*':    ['remove_trailing_lines', 'trim_whitespace'],
+        \ 'json': ['prettier', 'jq', 'fixjson'],
+        \}
+
+  " compeetion
+  " let g:ale_completion_enabled = 1
+
+  " ロケーションリストの代わりにQuickFixを使用する場合は下記設定を追加。
+
+  let g:ale_set_loclist = 0
+  let g:ale_set_quickfix = 1
+
+  " エラーと警告の一覧を見るためにウィンドウを開いておきたい場合は下記設定を追加。
+  let g:ale_open_list = 1
+
+  " エラーと警告がなくなっても開いたままにする
+  " let g:ale_keep_list_window_open = 1
+'''
+hook_post_source = '''
+  " based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
+  " based on https://wonderwall.hatenablog.com/entry/2017/03/01/223934
+  " based on https://qiita.com/kaityo256/items/cb76c3f73753fe921e7b
+  " based on https://qiita.com/hisawa/items/a53bbebb235c1efd09ca
+
+  " nmap <silent> <Subleader>p <Plug>(ale_previous)
+  " nmap <silent> <Subleader>n <Plug>(ale_next)
+  " nmap <silent> <Subleader>a <Plug>(ale_toggle)
+  nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+  nmap <silent> <C-j> <Plug>(ale_next_wrap)
+'''
+
+# [[plugins]] # ale x lightline support plugin & setting lightline for ale
+# repo = 'maximbaz/lightline-ale'
+# depends = ['lightline.vim','ale']
+# hook_add = '''
+#   " based on  https://sinshutu-kibotu.hatenablog.jp/entry/2018/06/24/025319
+#   " modify : append process
+#   let g:lightline.component_expand['linter_checking'] = 'lightline#ale#checking'
+#   let g:lightline.component_expand['linter_warnings'] = 'lightline#ale#warnings'
+#   let g:lightline.component_expand['linter_errors'  ] = 'lightline#ale#errors'
+#   let g:lightline.component_expand['linter_ok'      ] = 'lightline#ale#ok'
+#   let g:lightline.component_type['linter_checking'  ] = 'left'
+#   let g:lightline.component_type['linter_warnings'  ] = 'warning'
+#   let g:lightline.component_type['linter_errors'    ] = 'error'
+#   let g:lightline.component_type['linter_ok'        ] = 'left'
+# '''
+
+# per filetypes
+[[plugins]]
+repo = 'rhysd/vim-clang-format'
+on_ft = ['c', 'cpp', 'objc', 'javascript', 'java', 'typescript', 'proto', 'arduino']
+
+[[plugins]]
+repo = 'justmao945/vim-clang'
+on_ft = ['c', 'cpp']
+hook_add = '''
+  let g:clang_c_options = '-std=c11'
+  let g:clang_cpp_options = '-std=c++14 -stdlib=libc++'
+
+  " with vim-clang-format : command off
+  let g:clang_enable_format_command = 0
+  let g:clang_format_style = 'Google'
+'''
+
+[[plugins]]
+repo = 'justinmk/vim-syntax-extra'
+on_ft = ['c', 'cpp', 'yacc', 'lex']
+
+[[plugins]]
+repo = 'octol/vim-cpp-enhanced-highlight'
+on_ft = ['c', 'cpp']
+hook_add = '''
+  let g:cpp_class_scope_highlight = 1
+  let g:cpp_member_variable_highlight = 1
+  let g:cpp_class_decl_highlight = 1
+'''
+
+# [[plugins]] # RFC
+# repo = 'mhinz/vim-rfc'
+# depends = ['rfc-syntax']
+# on_if= 'has("ruby")'
+
+[[plugins]] # toml syntax
+repo = 'cespare/vim-toml'
+on_ft = ['toml']
+
+[[plugins]] # yaml syntax
+repo = 'stephpy/vim-yaml'
+on_ft = ['yaml']
+
+[[plugins]] # GFM syntax
+repo = 'rhysd/vim-gfm-syntax'
+on_ft = ['markdown']
+hook_add = '''
+  if has('gui_running')
+    let g:gfm_syntax_emoji_conceal = 1
+  endif
+'''
+
+[[plugins]]
+repo = 'iwataka/vim-markdown-ex'
+# no depends : use default markdown styler or other
+on_ft = ['markdown']
+
+[[plugins]]
+repo = 'Scuilion/markdown-drawer'
+on_ft = ['markdown']
+
+# [[plugins]]
+# repo = 'jxnblk/vim-mdx-js'
+# on_ft = ['markdown', 'mdx']
+
+[[plugins]]
+repo = 'nelstrom/vim-markdown-folding'
+on_ft = ['markdown']
+hook_add = '''
+  let g:markdown_fold_style = 'nested'
+  let g:markdown_fold_override_foldtext = 0
+'''
+
+[[plugins]] # need pdftotext
+repo = 'makerj/vim-pdf'
+on_if= 'executable("pdftotext")'
+
+[[plugins]] # need pandoc,asciidoctor,java,xdg-open
+repo = 'iwataka/minidown.vim'
+on_ft = ['markdown','asciidoc','rst','textile']
+on_if= 'executable("pandoc")'
+hook_post_source = '''
+  let g:minidown_pandoc_from = extend({
+      \ 'markdown': 'markdown+pipe_tables+raw_html+fenced_code_blocks+gfm_auto_identifiers+ascii_identifiers+backtick_code_blocks+autolink_bare_uris+intraword_underscores+strikeout+hard_line_breaks+emoji+shortcut_reference_links+angle_brackets_escapable+smart+yaml_metadata_block',
+      \ 'rst'     : 'rst',
+      \ 'textile' : 'textile',
+      \}, get(g:,'minidown_pandoc_from',{}), "keep")
+'''
+
+[[plugins]] # need docutils's rst2html.py
+repo = 'previm/previm'
+# shoud depends
+depends = ['open-browser.vim']
+on_ft = ['markdown','asciidoc','rst','textile']
+
+[[plugins]]
+repo = 'aklt/plantuml-syntax'
+on_ft = ['plantuml']
+hook_add = '''
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows && executable('plantumlc.exe')
+    let g:plantuml_executable_script = 'plantumlc.exe'
+  endif
+'''
+
+[[plugins]]
+# repo = 'scrooloose/vim-slumlord'
+repo = 'tsuyoshicho/vim-slumlord'
+rev  = 'feature/aggressive'
+depends = ['plantuml-syntax']
+on_ft = ['plantuml']
+hook_add = '''
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows && executable('plantumlc.exe')
+    let s:bin_path = fnamemodify(system('where plantumlc.exe'), ":p")
+    let s:lib_path = fnamemodify(s:bin_path, ":p:h") . '/../lib/plantuml/tools/plantuml.jar'
+
+    let g:slumlord_plantuml_jar_path = fnamemodify(s:lib_path, ":p")
+  endif
+
+  " let g:slumlord_separate_win = 0 " In place
+  let g:slumlord_separate_win = 1 " separate window
+
+  let g:slumlord_asciiart_utf = 0 " ascii
+  " let g:slumlord_asciiart_utf = 1 " UTF
+'''
+# hook_post_source = '''
+#   augroup slumlord_custom
+#     autocmd!
+#     autocmd bufwritepre *.puml silent call slumlord#updatePreview({'write': 1})
+#   augroup END
+# '''
+
+[[plugins]]
+repo = 'weirongxu/plantuml-previewer.vim'
+depends = ['open-browser.vim']
+on_ft = ['plantuml']
+on_if= 'executable("dot") && executable("java")'
+hook_add = '''
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows && executable('plantumlc.exe')
+    let s:bin_path = fnamemodify(system('where plantumlc.exe'), ":p")
+    let s:lib_path = fnamemodify(s:bin_path, ":p:h") . '/../lib/plantuml/tools/plantuml.jar'
+
+    let g:plantuml_previewer#plantuml_jar_path = fnamemodify(s:lib_path, ":p")
+    let g:plantuml_previewer#save_format = 'svg'
+  endif
+'''
+
+# include stable
+# [[plugins]] # asciidoc syntax
+# repo = 'asciidoc/vim-asciidoc'
+# on_ft = ['asciidoc']
+
+[[plugins]]
+repo = 'matcatc/vim-asciidoc-folding'
+on_ft = ['asciidoc']
+hook_add = '''
+  let g:asciidoc_fold_style = 'nested'
+  let g:asciidoc_fold_override_foldtext = 0
+'''
+
+[[plugins]]
+repo = 'amiorin/vim-textile'
+on_ft = ['textile']
+
+
+[[plugins]]
+repo = 'neoclide/vim-jsx-improve'
+on_ft = ['javascript', 'jsx']
+hook_add = '''
+  " configurable if need
+
+  let g:javascript_plugin_jsdoc = 1
+  let g:javascript_plugin_ngdoc = 1
+  let g:javascript_plugin_flow = 1
+
+  " Syntax
+  " let g:javascript_conceal_null
+  " let g:javascript_conceal_return
+  " let g:javascript_conceal_undefined
+  " let g:javascript_conceal_NaN
+  " let g:javascript_conceal_prototype
+  " let g:javascript_conceal_this
+  " let g:javascript_conceal_super
+  " let g:javascript_conceal_function
+  " let g:javascript_conceal_arrow_function
+  " let g:javascript_conceal_noarg_arrow_function
+  " let g:javascript_conceal_underscore_arrow_function
+
+  " Indent
+  " let g:javascript_opfirst
+  " let g:javascript_continuation
+  "
+  " ftplugin
+  let g:jsx_improve_motion_disable = 1
+
+  augroup javascript_folding
+    autocmd!
+    autocmd FileType javascript setlocal foldmethod=syntax
+  augroup END
+
+  autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
+  autocmd MyAutoGroup BufNewFile,BufRead *.tsx setlocal filetype=typescript.jsx
+'''
+
+# [[plugins]]
+# repo = 'pangloss/vim-javascript'
+# on_ft = ['javascript']
+# hook_add = '''
+#   let g:javascript_plugin_jsdoc = 1
+#   let g:javascript_plugin_ngdoc = 1
+#   let g:javascript_plugin_flow = 1
+#
+#   augroup javascript_folding
+#       autocmd!
+#       autocmd FileType javascript setlocal foldmethod=syntax
+#   augroup END
+# '''
+#
+# [[plugins]]
+# repo = 'MaxMEllon/vim-jsx-pretty'
+# depends = ['vim-javascript', 'typescript-vim']
+# on_ft = ['jsx']
+# hook_add = '''
+#   " based on https://qiita.com/yamagen0915/items/bae0b64e7e18724521d1
+#
+#   " need vim-jsx mixed type setting
+#   " autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
+#   " autocmd MyAutoGroup FileType jsx setlocal filetype=javascript.jsx
+#   " inf loop?
+#
+#   " need vim-jsx-pretty mixed type setting
+#   " dummy type jsx,tsx
+#   autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
+#   autocmd MyAutoGroup BufNewFile,BufRead *.tsx setlocal filetype=typescript.jsx
+#
+#   " need vim-javascript
+#   let g:vim_jsx_pretty_colorful_config = 1 " default 0
+# '''
+
+# already pangloss/vim-javascript support flow
+# [[plugins]]
+# repo = 'flowtype/vim-flow'
+# on_ft = ['javascript', 'jsx']
+# hook_add = '''
+#   " based on https://qiita.com/kiida/items/ea758e4d80053663e12a
+#   " let g:flow#flowpath = l:bin_folder . 'flow'
+#   let g:flow#autoclose = 1 " エラーを表示するquickfixのウィンドウをエラーがなくなり次第閉じる
+# '''
+
+[[plugins]]
+repo = 'othree/javascript-libraries-syntax.vim'
+depends = ['vim-jsx-improve']
+# depends = ['vim-javascript']
+on_ft = ['javascript']
+hook_add = '''
+  " let g:used_javascript_libs =
+'''
+
+[[plugins]]
+repo = 'styled-components/vim-styled-components'
+on_ft = ['javascript','jsx','typescript']
+
+[[plugins]]
+repo = 'leafgarland/typescript-vim'
+on_ft = ['typescript']
+
+[[plugins]]
+repo = 'jason0x43/vim-js-indent'
+# on_ft = ['javascript', 'typescript']
+on_ft = ['typescript']
+
+[[plugins]]
+repo = 'elzr/vim-json'
+on_ft = ['json']
+
+[[plugins]]
+repo = 'gutenye/json5.vim'
+on_ft = ['json5']
+
+[[plugins]]
+repo = 'chrisbra/csv.vim'
+on_ft = ['csv']
+hook_add = '''
+  let g:csv_disable_fdt = 1
+'''
+
+[[plugins]]
+repo = 'pdurbin/vim-tsv'
+on_ft = ['tsv']
+
+[[plugins]]
+repo = 'mechatroner/rainbow_csv'
+on_ft = ['csv', 'tsv']
+
+[[plugins]]
+repo = 'ap/vim-css-color'
+on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'vim', 'xdefaults', 'xml', 'yaml']
+
+[[plugins]]
+repo = 'cakebaker/scss-syntax.vim'
+on_ft = ['scss']
+
+[[plugins]]
+repo = 'udalov/kotlin-vim'
+on_ft = ['kotlin']
+
+[[plugins]]
+repo = 'https://github.com/mattn/vim-xxdcursor'
+on_ft = ['xxd']
+
+[[plugins]]
+repo = 'vim-jp/syntax-vim-ex'
+on_ft = ['vim']
+
+[[plugins]]
+repo = 'thinca/vim-ft-help_fold'
+on_ft = ['help']
+
+[[plugins]]
+repo = 'lfilho/cosco.vim'
+depends = ['vim-repeat']
+on_ft = ['javascript', 'typescript', 'jsx', 'json', 'css']
+hook_add = '''
+  let g:cosco_ignore_comment_lines = 1
+'''
+hook_post_source = '''
+  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css nmap <silent> <Leader>; <Plug>(cosco-commaOrSemiColon)
+  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css imap <silent> <Leader>; <c-o><Plug>(cosco-commaOrSemiColon)
+'''
+
+[[plugins]]
+repo = 'ekalinin/Dockerfile.vim'
+on_ft = ['Dockerfile', 'docker-compose']
+
+[[plugins]]
+repo = 'pboettch/vim-cmake-syntax'
+on_ft = ['cmake']
+
+# [[plugins]]
+# repo = 'vim-pandoc/vim-pandoc'
+# on_if= 'executable("pandoc")'
+#
+# [[plugins]]
+# repo = 'vim-pandoc/vim-pandoc-syntax'
+# depends = ['vim-pandoc']
+# on_if= 'executable("pandoc")'
+
+# EOF

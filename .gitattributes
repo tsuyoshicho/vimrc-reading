@@ -14,4 +14,7 @@
 *.vim          text eol=lf
 *.vital        text eol=lf
 
+/.vimrc  eol=lf
+/.gvimrc eol=lf
+
 # EOF

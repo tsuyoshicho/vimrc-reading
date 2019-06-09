@@ -1,0 +1,12 @@
+# -*- coding: utf-8 -*-
+# vim:fenc=utf-8 ff=unix ft=gitconfig
+## vim
+/dict/
+/info
+/memo/
+/undo/
+
+# need not ignore
+!.gitkeep
+
+# EOF
