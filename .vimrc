@@ -74,42 +74,36 @@ endif
 " http://qiita.com/delphinus35/items/00ff2c0ba972c6e41542
 " http://qiita.com/hanaclover/items/f45250b55e2298c4ac5a
 
-" update inherit config
-" let dein = {}
-" let dein.dir = {}
-" cache
-" let dein.dir.install = $XDG_CONFIG_HOME . '/dein/repos/github.com/Shougo/dein.vim'
-" let dein.dir.plugins = $XDG_CONFIG_HOME . '/dein'
+let s:dein = {}
+let s:dein.dir = {}
 
 " プラグインが実際にインストールされるディレクトリ
 let s:cache_home = empty($XDG_CACHE_HOME) ? expand($HOME . '/.cache') : expand($XDG_CACHE_HOME)
 
-let s:dein_dir = expand(s:cache_home . '/dein')
+let s:dein.dir.plugins = expand(s:cache_home . '/dein')
 " 問題がある時用固定パス
-" let s:dein_dir = expand('~/.cache/dein')
+" let s:dein.dir.plugins = expand('~/.cache/dein')
 
 " dein.vim 本体
-let s:dein_repo_dir = expand(s:dein_dir . '/repos/github.com/Shougo/dein.vim')
+let s:dein.dir.install = expand(s:dein.dir.plugins . '/repos/github.com/Shougo/dein.vim')
 
 " dein.vim がなければ github から落としてくる
 if &runtimepath !~# '/dein.vim'
-  if !isdirectory(s:dein_repo_dir)
-    " old
-    " execute '!git clone https://github.com/Shougo/dein.vim' s:dein_repo_dir
-    call system('git clone https://github.com/Shougo/dein.vim ' . s:dein_repo_dir)
+  if !isdirectory(s:dein.dir.install)
+    call system('git clone https://github.com/Shougo/dein.vim ' . s:dein.dir.install)
   endif
-  let &runtimepath = s:dein_repo_dir . "," . &runtimepath
+  let &runtimepath = s:dein.dir.install . "," . &runtimepath
 endif
 
 " 設定開始
-if dein#load_state(s:dein_dir)
-  call dein#begin(s:dein_dir)
-
+if dein#load_state(s:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
-  let g:rc_dir    = expand($HOME . '/.vim/rc')
-  let s:toml      = g:rc_dir . '/dein.toml'
-  let s:lazy_toml = g:rc_dir . '/dein_lazy.toml'
+  let s:rc_dir    = expand($HOME . '/.vim/rc')
+  let s:toml      = s:rc_dir . '/dein.toml'
+  let s:lazy_toml = s:rc_dir . '/dein_lazy.toml'
+
+  call dein#begin(s:dein.dir.plugins, [$MYVIMRC, s:toml, s:lazy_toml])
   " TOML を読み込み、キャッシュしておく
   call dein#load_toml(s:toml,      {'lazy': 0})
   call dein#load_toml(s:lazy_toml, {'lazy': 1})
@@ -125,7 +119,7 @@ call dein#call_hook('source')
 autocmd MyAutoGroup VimEnter * call dein#call_hook('post_source')
 
 " もし、未インストールものものがあったらインストール
-if has('vim_starting') && dein#check_install()
+if (0 == v:vim_did_enter) && dein#check_install()
   call dein#install()
 endif
 " }}}
@@ -180,13 +174,6 @@ set wrapmargin=8
 set linebreak      " wrap at 'breakat'
 "set breakat=\      " break point for linebreak (default " ^I!@*-+;:,./?")
 set showbreak=+\   " set showbreak
-if (v:version == 704 && has("patch338")) || v:version >= 705
-  set breakindent    " indent even for wrapped lines
-  " breakindent option
-  " autocmd is necessary when new file is opened in Vim
-  " necessary even for default(min:20,shift:0)
-  autocmd MyAutoGroup BufEnter * set breakindentopt=min:20,shift:0
-endif
 
 " Tab文字を半角スペースにする
 set expandtab
@@ -199,18 +186,19 @@ set shiftwidth=2
 " 行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけインデントする。
 set smarttab
 
-" http://qiita.com/enomotok_/items/9d38b716fe883675d35b
-" http://kaworu.jpn.org/kaworu/2008-03-07-1.php
-set iminsert=0
-
-" currently do not work
-" if s:is_windows
-"   " https://qiita.com/sgur/items/aa443bc2aed6fe0eb138
-"   " use nathancorvussolis/corvusskk
-"   set iminsert=2
-"   set imsearch=2
-"   set imcmdline
-" endif
+let s:skk = 0
+if s:skk
+  " https://qiita.com/sgur/items/aa443bc2aed6fe0eb138
+  " use SKK (nathancorvussolis/corvusskk)
+  set iminsert=2
+  set imsearch=2
+  set imcmdline
+else
+  " http://qiita.com/enomotok_/items/9d38b716fe883675d35b
+  " http://kaworu.jpn.org/kaworu/2008-03-07-1.php
+  set iminsert=0
+  set imsearch=-1
+endif
 
 "バックスペースキーで行頭を削除する
 set backspace=indent,eol,start
@@ -244,7 +232,7 @@ else
 endif
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if 0 == dein#check_install('ctrlp.vim')
+" if dein#tap('ctrlp.vim')
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
@@ -273,9 +261,11 @@ set viminfo='200,<50,s10,h,rA:,rB:,n$HOME/.vim/info
 set nobackup
 let &backupdir=expand($HOME . '/.vim/backup')
 
-" スワップファイルを作らない
-set noswapfile
+" スワップファイルを作らない -> 作るがROで対応
+" set noswapfile
 let &directory=expand($HOME . '/.vim/swap')
+" see https://itchyny.hatenablog.com/entry/2014/12/25/090000
+autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
 
 set writebackup
 
@@ -295,10 +285,7 @@ set hidden
 " ##############################################################検索系############################################################## {{{
 " Search. {{{
 
-" http://qiita.com/enomotok_/items/9d38b716fe883675d35b
-" http://kaworu.jpn.org/kaworu/2008-03-07-1.php
-set imsearch=-1
-" see iminsert setting...
+" see imsearch in Indent setting...
 
 " 検索したときのハイライトをつける
 set hlsearch
@@ -351,6 +338,8 @@ set showmode
 
 " 括弧入力時の対応する括弧を表示
 set showmatch
+" see https://itchyny.hatenablog.com/entry/2014/12/25/090000
+set matchtime=1
 
 set modeline
 
@@ -474,7 +463,8 @@ set statusline=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V
 
 " set conceallevel=2
 
-" set display=lastline " default
+" see https://itchyny.hatenablog.com/entry/2014/12/25/090000
+set display=lastline
 set synmaxcol=512
 
 " }}}
@@ -543,16 +533,10 @@ set belloff=all
 set noerrorbells
 set novisualbell
 
-"フォーマット揃えをコメント以外有効にする
-" set formatoptions-=c
-" set formatoptions+=tjrol " if need;check help
+" フォーマットを有効にする
+set formatoptions=tcqmBjro
 
-" set langnoremap
-" set matchpairs+=<:>
-" set regexpengine=2
-
-" display and update
-set lazyredraw
+set matchpairs+=<:>
 
 " updatetime need plugin setting
 " let &updatetime=??
@@ -577,6 +561,7 @@ set complete-=i   " disable scanning included files
 set complete-=t   " disable searching tags
 
 set completeopt=menu,menuone,preview,noselect,noinsert
+" see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set pumheight=10
 set pumwidth=20
 set wildmenu
@@ -746,7 +731,10 @@ set keywordprg=:help " Open Vim internal help by K command
 
 " Grep. {{{
 " 外部grepに使うプログラム設定
-if executable('pt')
+if executable('jvgrep')
+  set grepprg=jvgrep\ --no-color\ -inCRrI
+  set grepformat=%f:%l:%c:%m
+elseif executable('pt')
   set grepprg=pt\ --nocolor\ --nogroup\ --column\ -e\ -S
   set grepformat=%f:%l:%c:%m
 elseif executable('ag')
@@ -882,7 +870,7 @@ endfor
 map <silent> [Tab]c :tablast <bar> tabnew<CR>
 " tc 新しいタブを一番右に作る
 
-if 0 == dein#check_install('vim-startify')
+if dein#tap('vim-startify')
   map <silent> [Tab]h :tablast <bar> tabnew <bar> Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
@@ -902,6 +890,7 @@ vmap <DOWN> gj
 
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
+" see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 nnoremap Y y$
 
 " x,s でレジスタを汚染しない
@@ -947,9 +936,9 @@ autocmd MyAutoGroup FileType git-status,git-log nnoremap <buffer> q <C-w>c
 
 " based on https://postd.cc/vim-galore-4/
 " nを前方へ、Nを後方へと固定
-nnoremap <expr> n  'Nn'[v:searchforward]
-nnoremap <expr> N  'nN'[v:searchforward]
-" no work?
+" nnoremap <expr> n  'Nn'[v:searchforward]
+" nnoremap <expr> N  'nN'[v:searchforward]
+" use anzu plugin and setting aggregate
 
 " 先頭が現在のコマンドラインと一致するコマンドラインを呼び出し
 cnoremap <c-n>  <down>
@@ -998,24 +987,24 @@ let g:netrw_alto = 1
 " Kaoriya Plugin(とりあえずOff)設定 {{{
 " http://kaworu.jpn.org/vim/Windows%E3%81%ABvim%E3%81%AE%E7%92%B0%E5%A2%83%E3%82%92%E6%A7%8B%E7%AF%89%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95#KaoriYa.E7.89.88Vim.E3.81.AE.E3.83.80.E3.82.A6.E3.83.B3.E3.83.AD.E3.83.BC.E3.83.89
 if has('kaoriya')
-	let g:no_vimrc_example=0
-	let g:vimrc_local_finish=1
-	let g:gvimrc_local_finish=1
+  let g:no_vimrc_example         = 0
+  let g:vimrc_local_finish       = 1
+  let g:gvimrc_local_finish      = 1
 
-	"$VIM/plugins/kaoriya/autodate.vim
-	let plugin_autodate_disable  = 1
-	"$VIM/plugins/kaoriya/cmdex.vim
-	let plugin_cmdex_disable     = 1
-	"$VIM/plugins/kaoriya/dicwin.vim
-	let plugin_dicwin_disable    = 1
-	"$VIMRUNTIME/plugin/format.vim
-	let plugin_format_disable    = 1
-	"$VIM/plugins/kaoriya/hz_ja.vim
-	let plugin_hz_ja_disable     = 1
-	"$VIM/plugins/kaoriya/scrnmode.vim
-	let plugin_scrnmode_disable  = 1
-	"$VIM/plugins/kaoriya/verifyenc.vim
-	let plugin_verifyenc_disable = 1
+  "$VIM/plugins/kaoriya/autodate.vim
+  let g:plugin_autodate_disable  = 1
+  "$VIM/plugins/kaoriya/cmdex.vim
+  let g:plugin_cmdex_disable     = 1
+  "$VIM/plugins/kaoriya/dicwin.vim
+  let g:plugin_dicwin_disable    = 1
+  "$VIMRUNTIME/plugin/format.vim
+  let g:plugin_format_disable    = 1
+  "$VIM/plugins/kaoriya/hz_ja.vim
+  let g:plugin_hz_ja_disable     = 1
+  "$VIM/plugins/kaoriya/scrnmode.vim
+  let g:plugin_scrnmode_disable  = 1
+  "$VIM/plugins/kaoriya/verifyenc.vim
+  let g:plugin_verifyenc_disable = 1
 endif
 " }}}
 

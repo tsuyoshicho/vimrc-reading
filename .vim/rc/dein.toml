@@ -13,7 +13,8 @@ hook_post_source = '''
   let g:V = vital#of('vital')
 
   " vitalize need vital git repo
-  " let g:vitalizer#vital_dir = expand(g:dein#_base_path) . '/repos/github.com/vim-jp/vital.vim'
+  " need merged=0
+  " let g:vitalizer#vital_dir = ...
 '''
 
 [[plugins]]
@@ -143,6 +144,9 @@ repo = 'tyru/restart.vim'
 repo = 'mattn/vim-sl'
 
 [[plugins]]
+repo = 'skanehira/train.vim'
+
+[[plugins]]
 repo = 'blueyed/vim-diminactive'
 
 [[plugins]]
@@ -189,7 +193,7 @@ repo = 'mhinz/vim-sayonara'
 [[plugins]]
 repo = 'osyo-manga/vim-over'
 hook_add = '''
-  nnoremap <silent><Leader>S :OverCommandLine<cr>
+  nnoremap <silent> <Leader>S :OverCommandLine<cr>
 '''
 
 [[plugins]]
@@ -266,9 +270,17 @@ depends = ['vim-asterisk', 'vim-anzu']
 hook_post_source = '''
   " keymap : auto
 
+  " based on https://postd.cc/vim-galore-4/
+  " nを前方へ、Nを後方へと固定
+  " nnoremap <expr> n  'Nn'[v:searchforward]
+  " nnoremap <expr> N  'nN'[v:searchforward]
+  " use anzu plugin and setting aggregate
+
   " integraton anzu
-  map n <Plug>(is-nohl)<Plug>(anzu-n-with-echo)
-  map N <Plug>(is-nohl)<Plug>(anzu-N-with-echo)
+  " map n <Plug>(is-nohl)<Plug>(anzu-n-with-echo)
+  " map N <Plug>(is-nohl)<Plug>(anzu-N-with-echo)
+  map <expr> n v:searchforward ? '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)' : '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)'
+  map <expr> N v:searchforward ? '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)' : '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)'
 
   " integration astarisk
   " stay only
@@ -430,11 +442,29 @@ depends = ['webapi-vim']
 [[plugins]]
 repo = 'thinca/vim-prettyprint'
 
-# [[plugins]]
-# repo = 'Chiel92/vim-autoformat'
+[[plugins]]
+repo = 's417-lama/carbonpaper.vim'
+
+[[plugins]]
+repo = 'vim-jp/autofmt'
 
 [[plugins]]
 repo = 'tpope/vim-repeat'
+hook_add = '''
+  " based on https://github.com/vim-jp/vimdoc-ja-working/issues/54#issuecomment-395459077
+  " based on https://github.com/vim-jp/vimdoc-ja-working/wiki/Guide
+  let g:autofmt_allow_over_tw=1
+
+  set formatexpr=autofmt#japanese#formatexpr()
+
+  " formatoptions already configured in vimrc (after load vimrc work)
+  " set formatoptions+=mM
+
+  " smartindent already enable (after load vimrc work)
+  " set smartindent
+
+  set colorcolumn=+1
+'''
 
 [[plugins]]
 repo = 'tpope/vim-unimpaired'
@@ -952,8 +982,8 @@ hook_add = '''
 #
 #   " if you use vim-textobj-between
 #   if dein#is_sourced('vim-textobj-between')
-#     nmap <silent>Sdb <Plug>(operator-surround-delete)<Plug>(textobj-between-a)
-#     nmap <silent>Srb <Plug>(operator-surround-replace)<Plug>(textobj-between-a)
+#     nmap <silent> Sdb <Plug>(operator-surround-delete)<Plug>(textobj-between-a)
+#     nmap <silent> Srb <Plug>(operator-surround-replace)<Plug>(textobj-between-a)
 #   endif
 #
 #   let g:operator#surround#blocks = {}
@@ -1339,15 +1369,19 @@ hook_add = '''
 '''
 hook_post_source = '''
   " current support grep method call
-  if executable('pt')
-    nnoremap <silent><Leader>mg :Ptgrep<CR>
+  if executable('jvgrep')
+    " use 'grepprg'
+    nnoremap <expr> <Leader>mg ':grep ' . expand('<cword>') . ' *'
+  elseif executable('pt')
+    nnoremap <silent> <Leader>mg :Ptgrep<CR>
   elseif executable('ag')
-    nnoremap <silent><Leader>mg :Ag<CR>
+    nnoremap <silent> <Leader>mg :Ag<CR>
   endif
 
   " usable define
-  nnoremap <silent><Leader>mp :Ptgrep<CR>
-  nnoremap <silent><Leader>ma :Ag<CR>
+  nnoremap <silent> <Leader>mp :Ptgrep<CR>
+  nnoremap <silent> <Leader>ma :Ag<CR>
+  " silent はなくても平気そう?
 '''
 
 # [[plugins]]
@@ -1496,7 +1530,7 @@ hook_post_source = '''
     let &iskeyword=l:keywords
   endfunction
 
-  nnoremap <silent><Leader>e :call <SID>emoji_unicode_echo()<CR>
+  nnoremap <silent> <Leader>e :call <SID>emoji_unicode_echo()<CR>
 
   function! s:emoji_unicode_replace ()
     let l:keywords=&iskeyword
@@ -1569,7 +1603,7 @@ hook_post_source = '''
     let &iskeyword=l:keywords
   endfunction
 
-  nnoremap <silent><Leader>E :call <SID>emoji_unicode_replace()<CR>
+  nnoremap <silent> <Leader>E :call <SID>emoji_unicode_replace()<CR>
 '''
 
 # [[plugins]]
@@ -1591,17 +1625,6 @@ hook_add = '''
 	function! CtrlPLeave()
     call g:lightline#update()
   endfunction
-
-  " and see http://blog-sk.com/vim/vim_ctrlp/
-	" # ctrlpに入るとき,ステータスラインの表示をoffに
-	" function! CtrlPEnter()
-	" 	set laststatus=0
-	" endfunction
-
-	" # ctrlpから出るとき,ステータスラインの表示をonに
-	" function! CtrlPLeave()
-	" 	set laststatus=2
-	" endfunction
 
   " # 検索の際に200[ms]のウェイトを入れる(1文字入力の度に検索結果がコロコロ変わるのが気に入らないため)
 	let g:ctrlp_lazy_update = 200
@@ -2173,6 +2196,7 @@ hook_add = '''
   " let g:gitgutter_highlight_lines = 1
 '''
 hook_post_source = '''
+  " Need a quick update updatetime
   set updatetime=200
 
   " highlight GitGutterAdd    guifg=#009900 guibg=<X> ctermfg=2 ctermbg=<Y>
@@ -2190,7 +2214,6 @@ repo = 'christoomey/vim-conflicted'
 # self create plugin statusline updater
 [[plugins]]
 repo  = 'tsuyoshicho/StatuslineUpateTimer.vim'
-# rev   = 'hotfix/splittimer'
 hook_add = '''
   " update evenly 15sec
   let g:StatuslineUpdateTimer#updatetime = 15 * 1000
@@ -2207,7 +2230,7 @@ repo = 'itchyny/lightline.vim'
 depends = ['vim-fugitive','vim-gitgutter','sky-color-clock.vim','vim-devicons','StatuslineUpateTimer.vim']
 # 設定するフォントは powerline patched
 hook_add = '''
-  " lightline setting use lightline-delphinus
+  " lightline setting in lightline-delphinus
 '''
 
 # lightline setting use lightline-delphinus
@@ -2297,16 +2320,17 @@ hook_post_source = '''
   " fix
   " \   'lineinfo': nr2char(0xe0a1) . ':' . nr2char(0xe0a3) . ' ' . '%l[%L]:%-v',
 
-  if has('gui_running')
-    " guiならgruvbox,cliはicebergにする
-    let g:lightline = {
-          \ 'colorscheme': 'gruvbox',
-          \  }
-  else
-    let g:lightline = {
-          \ 'colorscheme': 'iceberg',
-          \  }
-  endif
+  " lightline colorscheme setting in night-and-day
+  " if has('gui_running')
+  "   " guiならgruvbox,cliはicebergにする
+  "   let g:lightline = {
+  "        \ 'colorscheme': 'gruvbox',
+  "        \  }
+  " else
+  "   let g:lightline = {
+  "        \ 'colorscheme': 'iceberg',
+  "        \  }
+  " endif
   let g:lightline = extend(g:lightline , {
      \ 'active': {
      \   'left': [
@@ -2372,30 +2396,70 @@ hook_post_source = '''
      \ }
      \)
 
-  " colorscheme 処理 - 必要な依存関係は処理すること
-  if has('gui_running')
-    " set background=light
-    set background=dark
-    if v:vim_did_enter
-      colorscheme gruvbox
-    else
-      autocmd MyAutoGroup VimEnter * nested colorscheme gruvbox
-    endif
-  else
-    " set background=dark
-    " icebergはdark固定
-    set background=dark
-    if v:vim_did_enter
-      colorscheme iceberg
-    else
-      autocmd MyAutoGroup VimEnter * nested colorscheme iceberg
-    endif
-  endif
+  " colorscheme setting in night-and-day
 
   " force re-init
   call lightline#init()
   call lightline#colorscheme()
   call lightline#update()
+'''
+
+[[plugins]]
+# repo = 'nightsense/night-and-day'
+repo = 'tsuyoshicho/night-and-day'
+rev  = 'develop'
+depends = ['lightline-delphinus', 'iceberg', 'gruvbox']
+hook_add = '''
+  " " colorscheme 処理 - 必要な依存関係は処理すること
+  " if has('gui_running')
+  "   " set background=light
+  "   set background=dark
+  "   if v:vim_did_enter
+  "     colorscheme gruvbox
+  "   else
+  "     augroup colorscheme-init
+  "       autocmd!
+  "       autocmd VimEnter * nested colorscheme gruvbox | autocmd! colorscheme-init
+  "     augroup END
+  "   endif
+  " else
+  "   " set background=dark
+  "   " icebergはdark固定
+  "   set background=dark
+  "   if v:vim_did_enter
+  "     colorscheme iceberg
+  "   else
+  "     augroup colorscheme-init
+  "       autocmd!
+  "       autocmd VimEnter * nested colorscheme iceberg | autocmd! colorscheme-init
+  "     augroup END
+  "   endif
+  " endif
+
+  if has('gui_running')
+    " guiならgruvbox,cliはicebergにする(base)
+    let g:nd_themes = [
+      \ ['sunrise+0',  'solarized8', 'light', 'solarized_improved'],
+      \ ['sunset+0',   'gruvbox',    'dark',  'gruvbox'],
+      \ ['sunset+1/4', 'iceberg',    'dark',  'iceberg'],
+      \]
+  else
+    let g:nd_themes = [
+      \ ['sunrise+0', 'gruvbox', 'dark', 'gruvbox'],
+      \ ['sunset+0',  'iceberg', 'dark', 'iceberg'],
+      \]
+  endif
+
+  let g:nd_latitude = 30 " Asia/Tokyo 35
+  let g:nd_timeshift = 0
+
+  " " debug
+  " let g:nd_themes = [
+  "     \ ['09:00', 'gruvbox', 'dark', 'gruvbox'],
+  "     \ ['18:12', 'iceberg', 'dark', 'iceberg'],
+  "     \]
+
+  let g:nd_lightline = 1
 '''
 
 # Edit operation

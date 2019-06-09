@@ -630,7 +630,8 @@ on_ft = ['markdown']
 repo = 'nelstrom/vim-markdown-folding'
 on_ft = ['markdown']
 hook_add = '''
-  let g:markdown_fold_style = 'nested'
+  " let g:markdown_fold_style = 'nested'
+  let g:markdown_fold_style = 'stacked'
   let g:markdown_fold_override_foldtext = 0
 '''
 
@@ -767,51 +768,6 @@ hook_add = '''
   autocmd MyAutoGroup BufNewFile,BufRead *.tsx setlocal filetype=typescript.jsx
 '''
 
-# [[plugins]]
-# repo = 'pangloss/vim-javascript'
-# on_ft = ['javascript']
-# hook_add = '''
-#   let g:javascript_plugin_jsdoc = 1
-#   let g:javascript_plugin_ngdoc = 1
-#   let g:javascript_plugin_flow = 1
-#
-#   augroup javascript_folding
-#       autocmd!
-#       autocmd FileType javascript setlocal foldmethod=syntax
-#   augroup END
-# '''
-#
-# [[plugins]]
-# repo = 'MaxMEllon/vim-jsx-pretty'
-# depends = ['vim-javascript', 'typescript-vim']
-# on_ft = ['jsx']
-# hook_add = '''
-#   " based on https://qiita.com/yamagen0915/items/bae0b64e7e18724521d1
-#
-#   " need vim-jsx mixed type setting
-#   " autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
-#   " autocmd MyAutoGroup FileType jsx setlocal filetype=javascript.jsx
-#   " inf loop?
-#
-#   " need vim-jsx-pretty mixed type setting
-#   " dummy type jsx,tsx
-#   autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
-#   autocmd MyAutoGroup BufNewFile,BufRead *.tsx setlocal filetype=typescript.jsx
-#
-#   " need vim-javascript
-#   let g:vim_jsx_pretty_colorful_config = 1 " default 0
-# '''
-
-# already pangloss/vim-javascript support flow
-# [[plugins]]
-# repo = 'flowtype/vim-flow'
-# on_ft = ['javascript', 'jsx']
-# hook_add = '''
-#   " based on https://qiita.com/kiida/items/ea758e4d80053663e12a
-#   " let g:flow#flowpath = l:bin_folder . 'flow'
-#   let g:flow#autoclose = 1 " エラーを表示するquickfixのウィンドウをエラーがなくなり次第閉じる
-# '''
-
 [[plugins]]
 repo = 'othree/javascript-libraries-syntax.vim'
 depends = ['vim-jsx-improve']
@@ -824,10 +780,6 @@ hook_add = '''
 [[plugins]]
 repo = 'styled-components/vim-styled-components'
 on_ft = ['javascript','jsx','typescript']
-
-[[plugins]]
-repo = 'leafgarland/typescript-vim'
-on_ft = ['typescript']
 
 [[plugins]]
 repo = 'jason0x43/vim-js-indent'
