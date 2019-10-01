@@ -29,8 +29,11 @@ let s:is_cygwin  = has('win32unix')
 " plugin manager before setup {{{
 " プラグイン処理前に実施
 " http://qiita.com/andouf/items/bdec492185e3a4f78ae2
-if s:is_windows
-  set shellslash
+" if s:is_windows
+"   set shellslash
+" endif
+if s:is_windows && exists('&completeslash')
+  set completeslash=slash
 endif
 
 " 初期値削除
@@ -74,36 +77,36 @@ endif
 " http://qiita.com/delphinus35/items/00ff2c0ba972c6e41542
 " http://qiita.com/hanaclover/items/f45250b55e2298c4ac5a
 
-let s:dein = {}
-let s:dein.dir = {}
+let g:dein = {}
+let g:dein.dir = {}
 
 " プラグインが実際にインストールされるディレクトリ
 let s:cache_home = empty($XDG_CACHE_HOME) ? expand($HOME . '/.cache') : expand($XDG_CACHE_HOME)
 
-let s:dein.dir.plugins = expand(s:cache_home . '/dein')
+let g:dein.dir.plugins = expand(s:cache_home . '/dein')
 " 問題がある時用固定パス
-" let s:dein.dir.plugins = expand('~/.cache/dein')
+" let g:dein.dir.plugins = expand('~/.cache/dein')
 
 " dein.vim 本体
-let s:dein.dir.install = expand(s:dein.dir.plugins . '/repos/github.com/Shougo/dein.vim')
+let g:dein.dir.install = expand(g:dein.dir.plugins . '/repos/github.com/Shougo/dein.vim')
 
 " dein.vim がなければ github から落としてくる
 if &runtimepath !~# '/dein.vim'
-  if !isdirectory(s:dein.dir.install)
-    call system('git clone https://github.com/Shougo/dein.vim ' . s:dein.dir.install)
+  if !isdirectory(g:dein.dir.install)
+    call system('git clone https://github.com/Shougo/dein.vim ' . g:dein.dir.install)
   endif
-  let &runtimepath = s:dein.dir.install . "," . &runtimepath
+  let &runtimepath = g:dein.dir.install . "," . &runtimepath
 endif
 
 " 設定開始
-if dein#load_state(s:dein.dir.plugins)
+if dein#load_state(g:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
   let s:rc_dir    = expand($HOME . '/.vim/rc')
   let s:toml      = s:rc_dir . '/dein.toml'
   let s:lazy_toml = s:rc_dir . '/dein_lazy.toml'
 
-  call dein#begin(s:dein.dir.plugins, [$MYVIMRC, s:toml, s:lazy_toml])
+  call dein#begin(g:dein.dir.plugins, [$MYVIMRC, s:toml, s:lazy_toml])
   " TOML を読み込み、キャッシュしておく
   call dein#load_toml(s:toml,      {'lazy': 0})
   call dein#load_toml(s:lazy_toml, {'lazy': 1})
@@ -158,6 +161,20 @@ set tagcase=followscs
 " inc/dec operation
 " 0123を10進扱いする、bin/hexは生かす
 set nrformats-=octal
+" }}}
+
+" Conceal. {{{
+" 表示量の初期値
+" indentLine default setting 2
+set conceallevel=2
+
+" 状態表示
+" n ノーマルモード
+" v ビジュアルモード
+" i 挿入モード
+" c コマンドライン編集 ('incsearch' 用)
+" indentLine default setting inc
+set concealcursor=nc
 " }}}
 
 " Indent. {{{
@@ -244,7 +261,7 @@ nnoremap <C-[> :pop<CR>
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  let &undodir=expand($HOME . '/.vim/undo')
+  let &undodir = expand($HOME . '/.vim/undo', ':p') . '//' " // use fullpath
   set undofile
   " set undolevels=1000 " default
 endif
@@ -259,11 +276,11 @@ set viminfo='200,<50,s10,h,rA:,rB:,n$HOME/.vim/info
 " Safety. {{{
 " バックアップファイルを作らない
 set nobackup
-let &backupdir=expand($HOME . '/.vim/backup')
+let &backupdir = expand($HOME . '/.vim/backup') . '//' " // use fullpath
 
 " スワップファイルを作らない -> 作るがROで対応
 " set noswapfile
-let &directory=expand($HOME . '/.vim/swap')
+let &directory = expand($HOME . '/.vim/swap') . '//' " // use fullpath
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
 
@@ -361,13 +378,6 @@ set showcmd
 " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 set scrolloff=3
 
-" based on http://qiita.com/svjunic/items/f987d51ed3fc078fa27e
-" based on http://d.hatena.ne.jp/ryochack/20111029/1319913548
-" based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
-
-" highlight Comment ctermfg=103
-" highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
-
 " 現在のカーソルの色をつける
 " 現在の行を強調表示
 " set cursorline
@@ -375,16 +385,8 @@ set scrolloff=3
 " 現在の列を強調表示（縦）
 " set cursorcolumn
 " -> 個別に
-
-" アンダーラインを引く(color terminal)
-" highlight CursorLine cterm=underline ctermfg=NONE ctermbg=NONE
-" アンダーラインを引く(gui)
-" highlight CursorLine gui=underline guifg=NONE guibg=NONE
-" cursorlineと合わせることで行番号のみハイライト
-" highlight clear CursorLine
-
-" highlight CursorLine   cterm=underline ctermfg=NONE ctermbg=NONE gui=underline guifg=NONE guibg=NONE
-" highlight CursorColumn cterm=reverse   ctermfg=NONE ctermbg=NONE gui=reverse   guifg=NONE guibg=NONE
+"
+" Old Color setting in Colorscheme.
 
 " カレントウィンドウにのみ罫線を引く(ここで制御)
 " based on http://vimblog.hatenablog.com/entry/vimrc_autocmd_examples
@@ -395,14 +397,28 @@ augroup MyAutoGroup
   autocmd WinLeave * setlocal nocursorcolumn
   " based on https://postd.cc/vim-galore-4/
   " edit off
-  autocmd InsertEnter * setlocal nocursorline
+  " if cursorlineopt support: Enter only show number/Leave show both
+  if exists('&cursorlineopt')
+    autocmd InsertEnter * setlocal cursorlineopt=number
+  else
+    autocmd InsertEnter * setlocal nocursorline
+  endif
   autocmd InsertEnter * setlocal nocursorcolumn
-  autocmd InsertLeave * setlocal cursorline
+  if exists('&cursorlineopt')
+    autocmd InsertLeave * setlocal cursorlineopt=both
+  else
+    autocmd InsertLeave * setlocal cursorline
+  endif
   autocmd InsertLeave * setlocal cursorcolumn
 augroup END
 
 " gitgutter sign support
 set signcolumn=yes
+if has('patch-8.1.1712')
+  " if support sign in number, set number
+  set signcolumn=number
+  let &numberwidth += 2
+endif
 
 " カレントディレクトリをファイルの位置に自動移動
 " use plugin
@@ -501,6 +517,9 @@ set synmaxcol=512
 "     set shellxescape=
 "   endif
 " endif
+
+" based on https://qiita.com/k2nakamura/items/fa19806a041d0429fc9f
+set ttimeoutlen=10
 " }}}
 
 " Others. {{{
@@ -530,8 +549,6 @@ set tabpagemax=99
 " set visualbell
 " based on https://postd.cc/vim-galore-4/
 set belloff=all
-set noerrorbells
-set novisualbell
 
 " フォーマットを有効にする
 set formatoptions=tcqmBjro
@@ -548,10 +565,6 @@ set matchpairs+=<:>
 " 注意: この内容は:filetype onよりも後に記述すること。
 autocmd MyAutoGroup FileType * if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
 
-" 辞書
-" set dictionary=/usr/share/dict/words
-" フォーマットがよくわからないので放置...
-
 " 補完設定
 " set complete as default
 set complete&
@@ -560,13 +573,47 @@ set complete&
 set complete-=i   " disable scanning included files
 set complete-=t   " disable searching tags
 
-set completeopt=menu,menuone,preview,noselect,noinsert
+set completeopt=menuone,noselect,noinsert
+if has('patch-8.1.1882')
+ set completeopt+=popup
+endif
+
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set pumheight=10
 set pumwidth=20
 set wildmenu
 set wildmode=longest:full,full
 set wildignorecase
+
+" 辞書
+" see http://nanasi.jp/articles/howto/config/dictionary.html
+
+let s:dictfile = expand($HOME . '/.vim/dict/look/words', ':p')
+if s:is_windows
+  let s:dictfile = expand('c:/tools/dictionary/look/words', ':p')
+endif
+if filereadable(s:dictfile)
+  let &dictionary = s:dictfile
+endif
+
+" spell check
+set spell
+set complete+=kspell
+set spelllang=en_us,cjk
+let &spellfile = expand($HOME . '/.vim/dict/spell.' . &encoding . '.add')
+let &spellsuggest = 'best,' . string(min([(&lines/2), 10]))
+autocmd MyAutoGroup VimResized * let &spellsuggest = 'best,' . string(min([(&lines/2), 10]))
+let g:spell_clean_limit = 120 * 60 " unit sec
+
+" see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
+let s:thesaurus  = expand($HOME . '/.vim/dict/mthesaur.txt', ':p')
+if s:is_windows
+  let s:thesaurus = expand('c:/tools/dictionary/mthesaur.txt', ':p')
+endif
+if filereadable(s:thesaurus)
+  let &thesaurus = s:thesaurus
+endif
+set complete+=s
 
 " based on http://koturn.hatenablog.com/entry/2018/02/10/170000
 " 補完の補助表示
@@ -611,6 +658,29 @@ function! s:hint_i_ctrl_x() abort " {{{
 endfunction " }}}
 
 inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
+
+function! s:popup_select(default) abort
+  if dein#tap('asyncomplete.vim')
+    return asyncomplete#close_popup()
+  else
+    return a:default
+  endif
+endfunction
+
+function! s:popup_cancel(default) abort
+  if dein#tap('asyncomplete.vim')
+    return asyncomplete#cancel_popup()
+  else
+    return a:default
+  endif
+endfunction
+
+inoremap <expr> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <CR>         pumvisible() ? <SID>popup_select("\<C-y>") : "\<CR>"
+inoremap <expr> <Space>      pumvisible() ? <SID>popup_cancel("\<C-e>") : "\<Space>"
+inoremap <expr> <C-y>        pumvisible() ? <SID>popup_select("\<C-y>") : "\<C-y>"
+inoremap <expr> <C-e>        pumvisible() ? <SID>popup_cancel("\<C-e>") : "\<C-e>"
 
 " }}}
 
@@ -704,19 +774,33 @@ augroup restore_t_Co
   autocmd VimLeave * let &t_Co = s:saved_t_Co
 augroup END
 
-" vimdiff config
-" http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
-" vimdiffの色設定
-highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
-highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
-highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
-highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
-
 " カラー設定(?)
-" augroup vimrc-highlight
-"   autocmd!
-"   autocmd ColorScheme * highlight ZenSpace ctermbg=Red guibg=Red
-" augroup END
+augroup vimrc-highlight
+  autocmd!
+  " vimdiff config
+  " http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
+  " vimdiffの色設定
+  " autocmd ColorScheme * highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
+  " autocmd ColorScheme * highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
+  " autocmd ColorScheme * highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
+  " autocmd ColorScheme * highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
+
+  " based on https://thinca.hatenablog.com/entry/20160214/1455415240
+  " autocmd ColorScheme * highlight ZenSpace ctermbg=Red guibg=Red
+
+  " based on http://secret-garden.hatenablog.com/entry/2016/08/16/000149
+  autocmd ColorScheme * highlight link EndOfBuffer Ignore
+
+  " based on http://qiita.com/svjunic/items/f987d51ed3fc078fa27e
+  " based on http://d.hatena.ne.jp/ryochack/20111029/1319913548
+  " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
+
+  " autocmd ColorScheme * highlight Comment ctermfg=103
+  " autocmd ColorScheme * highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
+
+augroup END
+
+" 'cursorlineopt' setting in autocmd
 
 " }}}
 
@@ -883,10 +967,14 @@ map <silent> [Tab]p :tabprevious<CR>
 " tp 前のタブ
 
 "矢印キーでは表示行単位で行移動する
-nmap <UP> gk
-nmap <DOWN> gj
-vmap <UP> gk
-vmap <DOWN> gj
+nnoremap <UP> gk
+nnoremap <DOWN> gj
+vnoremap <UP> gk
+vnoremap <DOWN> gj
+
+" ctrlで行固定移動
+nnoremap <C-j> <C-e>j
+nnoremap <C-k> <C-y>k
 
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
@@ -908,6 +996,7 @@ nnoremap s "_s
 vnoremap s "_s
 nnoremap S "_S
 vnoremap S "_S
+" s use easymotion
 
 " based on http://deris.hatenablog.jp/entry/2013/05/02/192415
 " 誤操作すると困るキーを無効化する
@@ -918,21 +1007,18 @@ nnoremap ZQ <Nop>
 " exモード
 nnoremap Q <Nop>
 
-" prev setting:xxx see yyy
-" let mapleader = ","
-" nnoremap <Subleader> <Nop>
-" F3 toggle rel-number
-" C-L refresh and hl clear, diff update, syntax resync
-" C-],C-[ tag jump multi/pop
+" from 0Delta/vimrc
+" (shift)Tab でインデント
+nnoremap <Tab>   >>
+nnoremap <S-Tab> <<
+vnoremap <Tab>   >>
+vnoremap <S-Tab> <<
 
-" q readonly is close(small setting)
-" help and other readonly popup window : q is close
-autocmd MyAutoGroup FileType help nnoremap <buffer> q <C-w>c
-autocmd MyAutoGroup FileType git-status,git-log nnoremap <buffer> q <C-w>c
-
-" autocmd MyAutoGroup FileType qf nnoremap <buffer> q <C-w>c
-
-" tc/tn/tb/tx/t1-9 TAB setting
+" コマンドラインで単語移動
+" based skanehira/dotfiles
+cnoremap <c-b> <S-Left>
+cnoremap <c-f> <S-Right>
+cnoremap <c-a> <Home>
 
 " based on https://postd.cc/vim-galore-4/
 " nを前方へ、Nを後方へと固定
@@ -943,6 +1029,32 @@ autocmd MyAutoGroup FileType git-status,git-log nnoremap <buffer> q <C-w>c
 " 先頭が現在のコマンドラインと一致するコマンドラインを呼び出し
 cnoremap <c-n>  <down>
 cnoremap <c-p>  <up>
+
+" 念のため、pasteモードのトグルの設定はする
+set pastetoggle=<F12>
+
+" prev setting:xxx see yyy
+" let mapleader = ","
+" nnoremap <Subleader> <Nop>
+" F3 toggle rel-number
+" C-L refresh and hl clear, diff update, syntax resync
+" C-],C-[ tag jump multi/pop
+"
+" inoremap
+" <C-x>     completion menu
+" <Tab>     completion select down
+" <S-Tab>   completion select down
+" <S-CR>    completion select done
+" <S-Space> completion select cancel
+
+" q readonly is close(small setting)
+" help and other readonly popup window : q is close
+autocmd MyAutoGroup FileType help nnoremap <buffer> q <C-w>c
+autocmd MyAutoGroup FileType git-status,git-log nnoremap <buffer> q <C-w>c
+
+" autocmd MyAutoGroup FileType qf nnoremap <buffer> q <C-w>c
+
+" tc/tn/tb/tx/t1-9 TAB setting
 " }}}
 
 " plugin設定 {{{
@@ -956,6 +1068,23 @@ cnoremap <c-p>  <up>
 " let g:loaded_zip = 1
 " let g:loaded_zipPlugin = 1
 " let g:loaded_matchparen = 1
+" }}}
+
+" syntax buildin plugin {{{
+" ft-posix-synax
+let g:is_posix = 1
+
+" ft-python-syntax
+let python_highlight_all = 1
+
+" doxygen-syntax
+let g:load_doxygen_syntax = 1
+let g:doxygen_enhanced_color = 1
+" doxygenErrorComment
+" doxygenLinkError
+
+" ft-yaml-syntax
+let g:yaml_schema = 'json'
 " }}}
 
 " netrw {{{
@@ -1079,7 +1208,13 @@ command! BufferToTab       call <SID>ExpandAllBufferToTab()
 command! -bar TabInfo      call <SID>show_tab_info()
 
 " see https://github.com/rinx/dotfiles/blob/master/vimrc
-command! -nargs=1 -complete=option ToggleOption set <args>! <args>?
+function! s:toggle_option(optname) abort
+  execute 'set ' . a:optname . '!'
+  echo ''
+  redraw
+  execute 'set ' . a:optname . '?'
+endfunction
+command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>)
 " }}}
 
 " autocmd {{{
@@ -1089,21 +1224,33 @@ command! -nargs=1 -complete=option ToggleOption set <args>! <args>?
 " augroup END
 " }}}
 
-" testging {{{
-" runtimepath update
-" let &runtimepath =  &runtimepath . ',' . expand('')
-
-" test function and command
-function! TestRunFunction() abort
-  echo 'test not set'
-  " or test write to below
-  " echo 'test run'
-  " let s:V = vital#of('vital')
-  " echo "test result:"
+" local setting {{{
+" load non init vimrc setting in .vim/rc/
+function! s:vimrc_load_noninit_setting(loc)
+  let files = glob(expand(escape(a:loc, ' ')) . '*.vim', 1, 1)
+  for i in reverse(filter(files, 'filereadable(v:val)'))
+    source `=i`
+  endfor
 endfunction
 
-command! TestRun call TestRunFunction()
+call s:vimrc_load_noninit_setting($HOME . '/.vim/rc/')
+" }}}
 
+" testing {{{
+" template
+" " runtimepath update
+" let &runtimepath =  &runtimepath . ',' . expand('')
+"
+" " test function and command
+" function! s:testrun() abort
+"   echo 'test not set'
+"   " or test write to below
+"   " echo 'test run'
+"   " let s:V = vital#of('vital')
+"   " echo "test result:"
+" endfunction
+"
+" command! TestRun call <SID>testrun()
 " }}}
 
 " }}}

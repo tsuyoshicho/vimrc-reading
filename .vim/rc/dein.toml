@@ -22,17 +22,107 @@ repo = 'lambdalisue/vital-Whisky'
 depends = ['vital.vim']
 
 [[plugins]]
+repo = 'Shougo/vimproc.vim'
+merged = 0
+hook_post_update = '''
+  " from 0Delta/vimrc
+  " if !has('nvim')
+  "   call dein#add('roxma/nvim-yarp')
+  "   call dein#add('roxma/vim-hug-neovim-rpc')
+  " endif
+
+  if dein#util#_is_windows()
+    let cmd = 'tools\\update-dll-mingw'
+  elseif dein#util#_is_cygwin()
+    let cmd = 'make -f make_cygwin.mak'
+  elseif executable('gmake')
+    let cmd = 'gmake'
+  else
+    let cmd = 'make'
+  endif
+  let g:dein#plugin.build = cmd
+'''
+
+[[plugins]]
 repo = 'prabirshrestha/async.vim'
 
 [[plugins]]
 repo = 'kana/vim-submode'
+hook_add = '''
+  " submode option
+
+  " show submode
+  " show lightline status
+  let g:submode_always_show_submode = 0  " rel 'showmode' status
+
+  " leave submode keytype not ignore
+  let g:submode_keep_leaving_key = 1
+
+  " submode timeout?
+  " let g:submode_timeout = 1              " rel 'timeout' status
+
+  " submode timeout len
+  let g:submode_timeoutlen = 1000 * 3    " 3sec (unit:msec)
+'''
+hook_post_source = '''
+  " global and basic vim bind setting
+  " undo/redo
+  call submode#enter_with('undo/redo', 'n', '', 'g-', 'g-')
+  call submode#enter_with('undo/redo', 'n', '', 'g+', 'g+')
+  call submode#leave_with('undo/redo', 'n', '', '<Esc>')
+  call submode#map('undo/redo', 'n', '', '-', 'g-')
+  call submode#map('undo/redo', 'n', '', 'p', 'g-')
+  call submode#map('undo/redo', 'n', '', '+', 'g+')
+  call submode#map('undo/redo', 'n', '', 'n', 'g+')
+
+  " tabe move
+  call submode#enter_with('tabmove', 'n', '', 'gt', 'gt')
+  call submode#enter_with('tabmove', 'n', '', 'gT', 'gT')
+  call submode#map('tabmove', 'n', '', 't', 'gt')
+  call submode#map('tabmove', 'n', '', 'n', 'gt')
+  call submode#map('tabmove', 'n', '', 'T', 'gT')
+  call submode#map('tabmove', 'n', '', 'p', 'gT')
+'''
 
 [[plugins]]
 repo = 'LeafCage/laptime.vim'
 
 [[plugins]]
+repo = 'kyoh86/vim-editerm'
+# Put below lines in .zshrc or .bashrc.
+#
+#> if [[ "${VIM_EDITERM_SETUP}" != "" ]]; then
+#>   source "${VIM_EDITERM_SETUP}"
+#> fi
+
+[[plugins]]
 # repo = 'mtsmfm/vim-cursorline-boost'
 repo = 'delphinus/vim-auto-cursorline'
+
+# [[plugins]]
+# repo = 'terryma/vim-multiple-cursors'
+# hook_add = '''
+#   let g:multi_cursor_use_default_mapping = 0
+#
+#   " Default mapping
+#   let g:multi_cursor_start_word_key      = '<C-n>'
+#   let g:multi_cursor_select_all_word_key = '<A-n>'
+#   let g:multi_cursor_start_key           = 'g<C-n>'
+#   let g:multi_cursor_select_all_key      = 'g<A-n>'
+#   let g:multi_cursor_next_key            = '<C-n>'
+#   let g:multi_cursor_prev_key            = '<C-p>'
+#   let g:multi_cursor_skip_key            = '<C-x>'
+#   let g:multi_cursor_quit_key            = 'g<Esc>'
+# '''
+
+[[plugins]]
+repo = 'machakann/vim-swap'
+hook_add = '''
+  omap i,, <Plug>(swap-textobject-i)
+  xmap i,, <Plug>(swap-textobject-i)
+  omap a,, <Plug>(swap-textobject-a)
+  xmap a,, <Plug>(swap-textobject-a)
+'''
 
 [[plugins]]
 repo = 'kshenoy/vim-signature'
@@ -143,8 +233,8 @@ repo = 'tyru/restart.vim'
 [[plugins]]
 repo = 'mattn/vim-sl'
 
-[[plugins]]
-repo = 'skanehira/train.vim'
+# [[plugins]]
+# repo = 'skanehira/train.vim'
 
 [[plugins]]
 repo = 'blueyed/vim-diminactive'
@@ -156,9 +246,11 @@ hook_source = '''
   if has('clientserver')
     " non-lazyでsource処理時はロード済みを活用する
     " singleton完了待ちリスト
+    " git editmsg,rebase todo,rebase-xxx PRed
+    " hub PRed
     let g:singleton#entrust_pattern = extend({
           \ 'git': [
-          \  '/\.git/\%(modules/\%([^/]\+/\)*\|worktrees/\%([^/]\+/\)\?\)\?\%(COMMIT_EDIT\|TAG_EDIT\|MERGE_\|SQUASH_\)MSG$',
+          \  '/\.git/\%(modules/.\+/\)\?\%(COMMIT_EDIT\|TAG_EDIT\|MERGE_\|SQUASH_\)MSG$',
           \  '/\.git/.*git-rebase-todo$',
           \  '/\.git/.*\.diff$',
           \  '/\.git/\%(modules\|worktrees\)/',
@@ -197,15 +289,6 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 'drmingdrmer/vim-toggle-quickfix'
-hook_post_source = '''
-  nmap <C-g><C-o> <Plug>window:quickfix:toggle
-'''
-
-[[plugins]]
-repo = 'thinca/vim-qfreplace'
-
-[[plugins]]
 repo = 'Shougo/echodoc.vim'
 depends = ['context_filetype.vim']
 hook_add = '''
@@ -226,8 +309,18 @@ repo = 'rbtnn/vimconsole.vim'
 [[plugins]]
 repo = 'paroxayte/vwm.vim'
 
-[[plugins]]
+[[plugins]] # color edit
+repo = 'rbtnn/vim-coloredit'
+
+[[plugins]] # カラースキーマ sample generator
 repo = 'cocopon/colorswatch.vim'
+
+[[plugins]] # カラースキーマ inspect
+repo = 'cocopon/inspecthi.vim'
+
+[[plugins]] # カラースキーマ template engine
+repo = 'cocopon/pgmnt.vim'
+depends = ['inspecthi.vim']
 
 [[plugins]]
 repo = 'lifepillar/vim-colortemplate'
@@ -324,7 +417,21 @@ repo = 'thinca/vim-showtime'
 
 # Quick Fix
 [[plugins]]
+repo = 'drmingdrmer/vim-toggle-quickfix'
+hook_post_source = '''
+  nmap <C-g><C-o> <Plug>window:quickfix:toggle
+'''
+
+[[plugins]]
+repo = 'thinca/vim-qfreplace'
+
+[[plugins]]
 repo = 'itchyny/vim-qfedit'
+
+# [[plugins]]
+# repo = 'fuenor/qfixgrep'
+# hook_add = '''
+# '''
 
 # Session
 # 'tpope/vim-obsession'
@@ -332,9 +439,9 @@ repo = 'itchyny/vim-qfedit'
 # 'gikmx/vim-ctrlposession'
 
 [[plugins]]
-# repo = 'deris/vim-rengbang'
-repo = 'tsuyoshicho/vim-rengbang'
-rev  = 'develop'
+repo = 'deris/vim-rengbang'
+# repo = 'tsuyoshicho/vim-rengbang'
+# rev  = 'develop'
 depends = ['vim-operator-user']
 hook_post_source = '''
   " xmap
@@ -344,9 +451,9 @@ hook_post_source = '''
   " You can use following operator.
 
   " This operator like :'<,'>RengBang (use default options).
-  map ZS <Plug>(operator-rengbang)
+  map zS <Plug>(operator-rengbang)
   " This operator like :'<,'>RengBangUsePrev (use previous options).
-  map ZP <Plug>(operator-rengbang-useprev)
+  map zP <Plug>(operator-rengbang-useprev)
 
   " see https://vim-jp.org/blog/2015/06/30/visual-ctrl-a-ctrl-x.html
   " visual ctrl-x/ctrl-a
@@ -413,27 +520,28 @@ repo = 'arecarn/vim-fold-cycle'
 hook_source = '''
 '''
 
-[[plugins]] # folding support
-repo = 'pseewald/vim-anyfold'
-hook_source = '''
-  " see option and other : https://github.com/pseewald/vim-anyfold
-
-  " activate anyfold by default
-  " augroup anyfold
-  "   autocmd!
-  "   autocmd Filetype * AnyFoldActivate
-  " augroup END
-
-  " option
-  let g:anyfold_fold_display = 0 " use foldCC
-  " let g:anyfold_motion = 1 " default
-  " let g:anyfold_identify_comments = 1 " default
-  let g:anyfold_fold_comments = 1 " enable
-  " let g:anyfold_comments = '' " unused
-  " let g:anyfold_fold_toplevel = 0 " default
-  " let g:anyfold_fold_size_str = 'xxx' " default and unused
-  " let g:anyfold_fold_level_str = 'xxx' " default and unused
-'''
+# [[plugins]] # folding support
+# repo = 'pseewald/vim-anyfold'
+# # merged = 0
+# hook_source = '''
+#   " see option and other : https://github.com/pseewald/vim-anyfold
+#
+#   " activate anyfold by default
+#   " augroup anyfold
+#   "   autocmd!
+#   "   autocmd Filetype * AnyFoldActivate
+#   " augroup END
+#
+#   " option
+#   let g:anyfold_fold_display = 0 " use foldCC
+#   " let g:anyfold_motion = 1 " default
+#   " let g:anyfold_identify_comments = 1 " default
+#   let g:anyfold_fold_comments = 1 " enable
+#   " let g:anyfold_comments = '' " unused
+#   " let g:anyfold_fold_toplevel = 0 " default
+#   " let g:anyfold_fold_size_str = 'xxx' " default and unused
+#   " let g:anyfold_fold_level_str = 'xxx' " default and unused
+# '''
 
 [[plugins]]
 repo = 'mattn/wwwrenderer-vim'
@@ -441,15 +549,22 @@ depends = ['webapi-vim']
 
 [[plugins]]
 repo = 'thinca/vim-prettyprint'
+hook_add = '''
+  let g:prettyprint_string          = [ 'split', 'raw' ]
+  let g:prettyprint_show_expression = 1
+'''
 
 [[plugins]]
 repo = 's417-lama/carbonpaper.vim'
 
 [[plugins]]
-repo = 'vim-jp/autofmt'
+repo = 'kristijanhusak/vim-carbon-now-sh'
+hook_post_source = '''
+  vnoremap <F5> :CarbonNowSh<CR>
+'''
 
 [[plugins]]
-repo = 'tpope/vim-repeat'
+repo = 'vim-jp/autofmt'
 hook_add = '''
   " based on https://github.com/vim-jp/vimdoc-ja-working/issues/54#issuecomment-395459077
   " based on https://github.com/vim-jp/vimdoc-ja-working/wiki/Guide
@@ -465,6 +580,16 @@ hook_add = '''
 
   set colorcolumn=+1
 '''
+
+[[plugins]]
+repo = 'mattn/emmet-vim'
+hook_add = '''
+let g:user_emmet_mode = 'nv'
+'''
+
+[[plugins]]
+# repo = 'tpope/vim-repeat'
+repo = 'kana/vim-repeat'
 
 [[plugins]]
 repo = 'tpope/vim-unimpaired'
@@ -486,6 +611,29 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 'deton/jasegment.vim'
+hook_add = '''
+  " if MeCab exists, change model default to mecab
+  " normal check
+  if executable('mecab')
+    let g:jasegment#model = 'mecab'
+    if executable('cabocha')
+      let g:jasegment#model = 'cabocha'
+    endif
+  endif
+
+  " if need?
+  let is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if is_windows
+    " 32bit check
+    " let g:jasegment#cabocha#cmd = '"C:/Program Files/CaboCha/bin/cabocha.exe"'
+    " let g:jasegment#mecab#cmd = '"C:/Program Files/MeCab/bin/mecab.exe"'
+  endif
+
+  let g:jasegment#highlight = 1
+'''
+
+[[plugins]]
 repo = 'osyo-manga/vim-jplus'
 hook_add = '''
   " J の挙動を jplus.vim で行う
@@ -496,14 +644,32 @@ hook_add = '''
   nmap <Leader>J <Plug>(jplus-getchar)
   vmap <Leader>J <Plug>(jplus-getchar)
 
+  " inputで複数
+  nmap <Leader>gJ <Plug>(jplus-input)
+  vmap <Leader>gJ <Plug>(jplus-input)
+
   " let g:jplus#config = {}
+
   let g:jplus#input_config = {
-        \	"," : {
-        \		"delimiter_format" : "%d "
-        \	},
-        \	"+" : {
-        \		"delimiter_format" : " %d "
-        \	}
+        \ '__DEFAULT__' : {
+        \  'delimiter_format' : '%d ',
+        \ },
+        \ '__EMPTY__'   : {
+        \  'delimiter'        : '	',
+        \  'delimiter_format' : '%d',
+        \ },
+        \ '+' : {
+        \  'delimiter_format' : ' %d '
+        \ },
+        \ '.' : {
+        \  'delimiter_format' : '%d'
+        \ },
+        \ '_' : {
+        \  'delimiter_format' : '%d'
+        \ },
+        \ '->' : {
+        \  'delimiter_format' : '%d'
+        \ },
         \}
 '''
 
@@ -520,10 +686,10 @@ hook_add = '''
 
   let c_style = { 'begin': '/**', 'char': ' * ', 'end': ' */' }
   let g:fileheader_delimiter_map = {
-  \ 'c': c_style,
-  \ 'cpp': c_style,
-  \ 'java': c_style,
-  \ }
+        \ 'c'    : c_style,
+        \ 'cpp'  : c_style,
+        \ 'java' : c_style,
+        \}
 '''
 
 [[plugins]]
@@ -568,8 +734,8 @@ hook_add = '''
 repo = 'uplus/vim-clurin'
 depends = ['vim-speeddating']
 hook_add = '''
-" original syngan use_default define top(all lang)
-" modified uplus  use_default define per-lang
+  " original syngan use_default define top(all lang)
+  " modified uplus  use_default define per-lang
 
   " see https://bitbucket.org/hokorobi/vimfiles_pub/src
   " see https://github.com/syngan/vim-clurin
@@ -593,88 +759,164 @@ hook_add = '''
   endfunction
 
   let g:clurin = {
-  \   '-': {
-  \     'use_default': 0,
-  \     'nomatch': function('g:CtrlAX'),
-  \     'def': [
-  \        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  \        ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-  \        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  \        ['true', 'false'],
-  \        ['True', 'False'],
-  \        ['TRUE', 'FALSE'],
-  \        ['on', 'off'],
-  \        ['On', 'Off'],
-  \        ['ON', 'OFF'],
-  \        ['yes', 'no'],
-  \        ['Yes', 'No'],
-  \        ['YES', 'NO'],
-  \        ['enable', 'disable'],
-  \        ['Enable', 'Disable'],
-  \        ['ENABLE', 'DISABLE'],
-  \        ['left', 'right'],
-  \        ['=', ' = '],
-  \        ['+', ' + '],
-  \        ['-', ' - '],
-  \        ['*', ' * '],
-  \        ['/', ' / '],
-  \        ['%', ' % '],
-  \        ['⬜', '⬛', '☑️', '☒'] ,
-  \        ['☆', '★'] ,
-  \        [
-  \          {'pattern': '月\(\%[曜日]\)', 'replace': '月\1'},
-  \          {'pattern': '火\(\%[曜日]\)', 'replace': '火\1'},
-  \          {'pattern': '水\(\%[曜日]\)', 'replace': '水\1'},
-  \          {'pattern': '木\(\%[曜日]\)', 'replace': '木\1'},
-  \          {'pattern': '金\(\%[曜日]\)', 'replace': '金\1'},
-  \          {'pattern': '土\(\%[曜日]\)', 'replace': '土\1'},
-  \          {'pattern': '日\(\%[曜日]\)', 'replace': '日\1'},
-  \        ],
-  \     ]
-  \   },
-  \   'toml vim': {
-  \     'def': [
-  \        [
-  \          {'pattern': '"' . '\([^"]*\)'  . '"' , 'replace': '"' . '\1' . '"'},
-  \          {'pattern': "'" . '\([^'']*\)' . "'" , 'replace': "'" . '\1' . "'"},
-  \        ]
-  \     ]
-  \   },
-  \   'vim': {
-  \     'def': [
-  \        [
-  \          {'pattern': '\[''\(\k\+\)''\]', 'replace': '[''\1'']'},
-  \          {'pattern': '\["\(\k\+\)"\]'  , 'replace': '["\1"]'},
-  \          {'pattern': '\.\(\k\+\)'      , 'replace': '.\1'},
-  \        ]
-  \     ]
-  \   },
-  \   'markdown': {
-  \     'def': [
-  \        ['[ ]', '[x]'],
-  \     ]
-  \   },
-  \   'gitrebase': {
-  \     'def': [
-  \        ['pick', 'fixup', 'reword', 'edit', 'squash', 'drop', 'exec'],
-  \     ]
-  \   },
-  \   'c cpp' : {
-  \     'def': [
-  \       [ '&&', '||' ],
-  \       [
-  \         {'pattern': '\(\k\+\)\.', 'replace': '\1.'},
-  \         {'pattern': '\(\k\+\)->', 'replace': '\1->'},
-  \       ]
-  \     ]
-  \   }
-  \}
+        \ '-': {
+        \   'use_default': 0,
+        \   'nomatch': function('g:CtrlAX'),
+        \   'def': [
+        \      ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        \      ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        \      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        \      ['true', 'false'],
+        \      ['True', 'False'],
+        \      ['TRUE', 'FALSE'],
+        \      ['on', 'off'],
+        \      ['On', 'Off'],
+        \      ['ON', 'OFF'],
+        \      ['yes', 'no'],
+        \      ['Yes', 'No'],
+        \      ['YES', 'NO'],
+        \      ['enable', 'disable'],
+        \      ['Enable', 'Disable'],
+        \      ['ENABLE', 'DISABLE'],
+        \      ['left', 'right'],
+        \      ['=', ' = '],
+        \      ['+', ' + '],
+        \      ['-', ' - '],
+        \      ['*', ' * '],
+        \      ['/', ' / '],
+        \      ['%', ' % '],
+        \      ['□', '■', '☑️', '☒'] ,
+        \      ['☆', '★'] ,
+        \      [
+        \        {'pattern': '月\(\%[曜日]\)', 'replace': '月\1'},
+        \        {'pattern': '火\(\%[曜日]\)', 'replace': '火\1'},
+        \        {'pattern': '水\(\%[曜日]\)', 'replace': '水\1'},
+        \        {'pattern': '木\(\%[曜日]\)', 'replace': '木\1'},
+        \        {'pattern': '金\(\%[曜日]\)', 'replace': '金\1'},
+        \        {'pattern': '土\(\%[曜日]\)', 'replace': '土\1'},
+        \        {'pattern': '日\(\%[曜日]\)', 'replace': '日\1'},
+        \      ],
+        \   ]
+        \ },
+        \ 'toml vim': {
+        \   'def': [
+        \      [
+        \        {'pattern': '"' . '\([^"]*\)'  . '"' , 'replace': '"' . '\1' . '"'},
+        \        {'pattern': "'" . '\([^'']*\)' . "'" , 'replace': "'" . '\1' . "'"},
+        \      ]
+        \   ]
+        \ },
+        \ 'vim': {
+        \   'def': [
+        \      [
+        \        {'pattern': '\[''\(\k\+\)''\]', 'replace': '[''\1'']'},
+        \        {'pattern': '\["\(\k\+\)"\]'  , 'replace': '["\1"]'},
+        \        {'pattern': '\.\(\k\+\)'      , 'replace': '.\1'},
+        \      ]
+        \   ]
+        \ },
+        \ 'markdown': {
+        \   'def': [
+        \      ['[ ]', '[x]'],
+        \   ]
+        \ },
+        \ 'gitrebase': {
+        \   'def': [
+        \      ['pick', 'fixup', 'reword', 'edit', 'squash', 'drop', 'exec'],
+        \   ]
+        \ },
+        \ 'c cpp' : {
+        \   'def': [
+        \     [ '&&', '||' ],
+        \     [
+        \       {'pattern': '\(\k\+\)\.', 'replace': '\1.'},
+        \       {'pattern': '\(\k\+\)->', 'replace': '\1->'},
+        \     ]
+        \   ]
+        \ }
+        \}
 '''
 hook_post_source = '''
   nmap + <Plug>(clurin-next)
   nmap - <Plug>(clurin-prev)
   vmap + <Plug>(clurin-next)
   vmap - <Plug>(clurin-prev)
+'''
+
+[[plugins]]
+repo = 'kamykn/spelunker.vim'
+hook_add = '''
+  " Enable spelunker.vim. (default: 1)
+  " 1: enable
+  " 0: disable
+  " let g:enable_spelunker_vim = 1
+
+  " Enable spelunker.vim on readonly files or buffer. (default: 0)
+  " 1: enable
+  " 0: disable
+  " let g:enable_spelunker_vim_on_readonly = 0
+
+  " Check spelling for words longer than set characters. (default: 4)
+  " let g:spelunker_target_min_char_len = 4
+
+  " Max amount of word suggestions. (default: 15)
+  let g:spelunker_max_suggest_words = min([(&lines/2), 10])
+  autocmd MyAutoGroup VimResized * let g:spelunker_max_suggest_words = min([(&lines/2), 10])
+
+  " Max amount of highlighted words in buffer. (default: 100)
+  " let g:spelunker_max_hi_words_each_buf = 100
+
+  " Spellcheck type: (default: 1)
+  " 1: File is checked for spelling mistakes when opening and saving. This
+  " may take a bit of time on large files.
+  " 2: Spellcheck displayed words in buffer. Fast and dynamic. The waiting time
+  " depends on the setting of CursorHold `set updatetime=1000`.
+  let g:spelunker_check_type = 2
+
+  " Highlight type: (default: 1)
+  " 1: Highlight all types (SpellBad, SpellCap, SpellRare, SpellLocal).
+  " 2: Highlight only SpellBad.
+  " FYI: https://vim-jp.org/vimdoc-en/spell.html#spell-quickstart
+  " let g:spelunker_highlight_type = 1
+
+  " Disable default autogroup. (default: 0)
+  " let g:spelunker_disable_auto_group = 1
+
+  " Create own custom autogroup to enable spelunker.vim for specific filetypes.
+
+  " autocmd MyAutoGroup Filetype startify
+  "      \ if g:enable_spelunker_vim  | call spelunker#toggle() | endif
+
+  " Override highlight group name of incorrectly spelled words. (default:
+  " 'SpelunkerSpellBad')
+  " let g:spelunker_spell_bad_group = 'SpelunkerSpellBad'
+
+  " Override highlight group name of complex or compound words. (default:
+  " 'SpelunkerComplexOrCompoundWord')
+  " let g:spelunker_complex_or_compound_word_group = 'SpelunkerComplexOrCompoundWord'
+
+  " skip word
+  let g:spelunker_white_list_for_user = ['tsuyoshi_cho']
+'''
+hook_post_source = '''
+  set nospell
+  set complete-=kspell
+
+  " jump keymap
+  nnoremap ]s :call spelunker#jump_next()<CR>
+  nnoremap [s :call spelunker#jump_prev()<CR>
+'''
+
+[[plugins]] # codic support
+repo = 'koron/codic-vim'
+
+[[plugins]] # codic support
+repo = 'tsuyoshicho/codic-web.vim'
+rev  = 'develop'
+depends = ['vim-pass']
+hook_add = '''
+  " let g:codicweb_token = '<token>'
+  call pass#get_startup('g:codicweb_token','Develop/Codic')
 '''
 
 [[plugins]]
@@ -688,7 +930,7 @@ hook_add = '''
 
   " remove windows setting
   if is_windows
-    vunmap <C-X>
+    silent! vunmap <C-X>
   endif
 '''
 hook_post_source = '''
@@ -748,7 +990,6 @@ repo = 'kana/vim-textobj-user'
 # repo = 'thinca/vim-textobj-between'
 # depends = ['vim-textobj-user']
 
-
 # 複数のカッコで処理を実施し、マッチしたものor(listなら)一番内側を使う
 # amb, imb
 [[plugins]]
@@ -792,7 +1033,6 @@ hook_post_source = '''
   vmap amb <Plug>(textobj-multiblock-a)
   vmap imb <Plug>(textobj-multiblock-i)
 '''
-
 
 # カッコ系で複数の処理を実施し、マッチしたものor(listなら)一番内側を使う
 # amt, imt
@@ -885,7 +1125,6 @@ hook_add = '''
   let g:textobj_jabraces_no_default_key_mappings = 1
 '''
 
-
 # 関数内
 # af, if
 # # af, if -> aF, iFにマップ (betweenとバッティング)
@@ -951,6 +1190,10 @@ hook_add = '''
 # a%, i%
 # at vim-matchup
 
+# swap可能なオブジェクト(引数や配列メンバなどの,区切りデータ)
+# a,, i,,
+# at vim-swap
+
 # operator
 # see https://qiita.com/rbtnn/items/a47ed6684f1f0bc52906
 # ToDo Keymap list up and setup
@@ -958,7 +1201,7 @@ hook_add = '''
 repo = 'kana/vim-operator-user'
 
 # 連番付与
-# operator:viwなど 選択状態にしてZS(normal)/ZP(prev)で処理
+# operator:viwなど 選択状態にしてzS(normal)/zP(prev)で処理
 # 'deris/vim-rengbang'
 
 # operator:viwなど 選択状態にしてsa/sd/sr+<char>で処理
@@ -966,6 +1209,41 @@ repo = 'kana/vim-operator-user'
 [[plugins]]
 repo = 'machakann/vim-sandwich'
 hook_add = '''
+  let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
+  let g:sandwich#recipes += [
+        \ {
+        \   'buns': ['\(', '\)'],
+        \   'filetype': ['vim'],
+        \   'nesting': 1,
+        \ },
+        \ {
+        \   'buns': ['\%(', '\)'],
+        \   'filetype': ['vim'],
+        \   'nesting': 1,
+        \ },
+        \ {
+        \   'buns': ['\<', '\>'],
+        \   'filetype': ['vim'],
+        \   'nesting': 0,
+        \ },
+        \ {
+        \   'buns': ['`', '`'],
+        \   'filetype': ['markdown'],
+        \   'nesting': 0,
+        \ },
+        \ {'buns' : ['「', '」']},
+        \ {'buns' : ['【', '】']},
+        \ {'buns' : ['（', '）']},
+        \ {'buns' : ['『', '』']},
+        \]
+
+  let g:sandwich#magicchar#f#patterns = deepcopy(g:sandwich#magicchar#f#default_patterns)
+  let g:sandwich#magicchar#f#patterns += [
+        \ {
+        \   'header' : '\<\h\k*', 'footer' : '',
+        \   'bra'    : '(',       'ket'    : ')',
+        \ },
+        \]
 '''
 
 # vim-sandwitchを使う
@@ -994,65 +1272,65 @@ hook_add = '''
 #      \ ]
 # '''
 
-# viwなど 選択状態にしてZrで処理 yankと入れ替え
+# viwなど 選択状態にしてzrで処理 yankと入れ替え
 [[plugins]]
 repo = 'kana/vim-operator-replace'
 depends = ['vim-operator-user']
 hook_add = '''
-  map Zr <Plug>(operator-replace)
+  map zr <Plug>(operator-replace)
 '''
 
-# viwなど 選択状態にしてZsで処理
+# viwなど 選択状態にしてzsで処理
 [[plugins]]
 repo = 'emonkak/vim-operator-sort'
 depends = ['vim-operator-user']
 hook_add = '''
-  map Zs <Plug>(operator-sort)
+  map zs <Plug>(operator-sort)
 '''
 
-# viwなど 選択状態にしてZu/ZUで処理 / 当座はciwで
+# viwなど 選択状態にしてzu/zUで処理 / 当座はciwで
 [[plugins]]
 repo = 'emonkak/vim-operator-comment'
 depends = ['vim-operator-user']
 hook_add = '''
-  map Zu <Plug>(operator-comment)
-  map ZU <Plug>(operator-uncomment)
+  map zu <Plug>(operator-comment)
+  map zU <Plug>(operator-uncomment)
 '''
 
-# viwなど 選択状態にしてZc/ZCで処理
+# viwなど 選択状態にしてzc/zCで処理
 [[plugins]]
 repo = 'mopp/vim-operator-convert-case'
 depends = ['vim-operator-user']
 hook_add = '''
-  map Zc <Plug>(operator-convert-case-loop)
-  map ZC <Plug>(operator-convert-case-convert)
+  map zc <Plug>(operator-convert-case-loop)
+  map zC <Plug>(operator-convert-case-convert)
 '''
 # [[plugins]]
 # repo = 'tyru/operator-camelize.vim'
 # depends = ['vim-operator-user']
 # hook_add = '''
-#   map Zc <Plug>(operator-camelize)
-#   map ZC <Plug>(operator-decamelize)
+#   map zc <Plug>(operator-camelize)
+#   map zC <Plug>(operator-decamelize)
 # '''
 
-# viwなど 選択状態にしてZt/Zlで検索
+# viwなど 選択状態にしてzt/zlで検索
 [[plugins]]
 repo = 'tyru/operator-reverse.vim'
 depends = ['vim-operator-user']
 hook_add = '''
-  map Zt <Plug>(operator-reverse-text)
-  map Zl <Plug>(operator-reverse-lines)
+  map zt <Plug>(operator-reverse-text)
+  map zl <Plug>(operator-reverse-lines)
 '''
 
-# viwなど 選択状態にしてZ*/Z#で検索
+# viwなど 選択状態にしてz*/zg*/zg#/z#で検索
 [[plugins]]
 repo = 'tyru/operator-star.vim'
 depends = ['vim-operator-user','visualstar']
 hook_add = '''
-  map Z*  <Plug>(operator-*)
-  map Zg* <Plug>(operator-g*)
-  map Z#  <Plug>(operator-#)
-  map Zg# <Plug>(operator-g#)
+  map z*  <Plug>(operator-*)
+  map zg* <Plug>(operator-g*)
+  map z#  <Plug>(operator-#)
+  map zg# <Plug>(operator-g#)
 '''
 
 # Startup
@@ -1063,14 +1341,24 @@ hook_add = '''
 # '''
 
 [[plugins]]
-repo = 'mhinz/vim-startify'
+# repo = 'mhinz/vim-startify'
+repo = 'tsuyoshicho/vim-startify'
+rev  = 'develop'
+depends = ['vital.vim']
 hook_post_source = '''
+  let Filepath = g:V.import('System.Filepath')
+  let List     = g:V.import('Data.List')
+  let String   = g:V.import('Data.String')
+
+  let g:startify_padding_left=3
+  let l:padding = repeat(" ", g:startify_padding_left)
+
   let g:startify_lists = [
-        \ { 'type': 'files',     'header': ['   MRU']            },
-        \ { 'type': 'dir',       'header': ['   MRU '. expand($HOME)] },
-        \ { 'type': 'commands',  'header': ['   Commands']       },
-        \ { 'type': 'sessions',  'header': ['   Sessions']       },
-        \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      },
+        \ { 'type': 'files',     'header': [l:padding . 'MRU']            },
+        \ { 'type': 'dir',       'header': [l:padding . 'MRU '. getcwd()] },
+        \ { 'type': 'commands',  'header': [l:padding . 'Commands']       },
+        \ { 'type': 'sessions',  'header': [l:padding . 'Sessions']       },
+        \ { 'type': 'bookmarks', 'header': [l:padding . 'Bookmarks']      },
         \]
 
   let g:startify_files_number = 15
@@ -1105,23 +1393,43 @@ hook_post_source = '''
   " let g:startify_skiplist_server = [ 'GVIM' ]
 
   " ignore MRU file
-  let g:startify_skiplist = extend(get(g:, 'startify_skiplist',[]), [
-        \ 'git-rebase-todo',
-        \ 'COMMIT_EDITMSG',
-        \ 'TAG_EDITMSG',
-        \ 'MERGE_MSG',
-        \ 'SQUASH_MSG',
-        \ 'RELEASE_EDITMSG',
-        \ 'PULLREQ_EDITMSG',
-        \ 'ISSUE_EDITMSG',
-        \ 'fugitiveblame',
-        \ ])
+  " Git and other special files
+  let specialskiplist = [
+        \  Filepath.separator() . '.git' . Filepath.separator(),
+        \ 'fugitiveblame$',
+        \]
+
+  " Vim help files
+  " position
+  let deinpath = fnamemodify(Filepath.realpath(
+        \    g:dein.dir.plugins . Filepath.separator() .
+        \    '.cache' . Filepath.separator() .
+        \    '.vimrc' . Filepath.separator() .
+        \    '.dein'
+        \  ), ":p:~")
+  let deinrelpath = String.replace_first(deinpath, '~' . Filepath.separator(), '')
+
+  let position = [
+        \  Filepath.abspath(resolve($VIMRUNTIME)) . Filepath.separator(),
+        \ 'runtime'                               . Filepath.separator(),
+        \ 'bundle'  . Filepath.separator() . '.*' . Filepath.separator(),
+        \ 'plugged' . Filepath.separator() . '.*' . Filepath.separator(),
+        \ deinrelpath,
+        \]
+  let helpfiles = ['.*\.txt', '.*\.jax']
+
+  let helpskiplist = []
+  for helpfile in helpfiles
+    let helpskiplist = List.concat([helpskiplist, List.map(position,
+          \ { v ->  escape(v . 'doc' . Filepath.separator(), '\') . helpfile })])
+  endfor
+
+  let g:startify_skiplist = List.concat([get(g:, 'startify_skiplist',[]), specialskiplist, helpskiplist])
 
   " let g:startify_fortune_use_unicode=1
   " autocmd MyAutoGroup User Startified setlocal ambiwidth=single
   " oops: open mru and other keep ambiwidth...
-
-  let g:startify_padding_left=3
+  let g:startify_files_number = 12
 
   let l:logo = [
         \ '___    ______________  ___',
@@ -1132,16 +1440,25 @@ hook_post_source = '''
         \]
 
   let l:datetime = ['*** '.strftime("%Y/%m/%d(%a)", localtime()).' ***']
-  let l:padding = repeat(" ", g:startify_padding_left)
   let g:startify_custom_header =
-        \ map(l:logo + startify#fortune#boxed() + l:datetime, 'l:padding.v:val')
+        \ map(l:logo + startify#fortune#boxed() + l:datetime, 'l:padding . v:val')
   " space same as padding_left
+
+  let l:vimver = ['vim version:', ' ' . 'short:' . string(v:version)]
+  if exists('v:versionlong')
+    call add(l:vimver, ' ' . 'long :' . string(v:versionlong))
+  endif
+  let g:startify_custom_footer =
+        \ map(l:vimver, 'l:padding . v:val')
 
   unlet l:logo
   unlet l:datetime
   unlet l:padding
 
-  " let g:startify_custom_footer = ''
+  let g:startify_update_oldfiles = 1
+  " oldfile refine unix/win path style
+  call map(v:oldfiles, 'Filepath.realpath(v:val)')
+  call map(v:oldfiles, 'fnamemodify(v:val, ":p:~")')
 '''
 
 [[plugins]]
@@ -1163,6 +1480,11 @@ hook_add = '''
 
 [[plugins]]
 repo = 'tyru/open-browser.vim'
+hook_add = '''
+  let g:netrw_nogx = 1 " disable netrw's gx mapping.
+  nmap gx <Plug>(openbrowser-smart-search)
+  vmap gx <Plug>(openbrowser-smart-search)
+'''
 
 [[plugins]]
 repo = 'tyru/open-browser-unicode.vim'
@@ -1242,7 +1564,31 @@ hook_post_source = '''
         \  {
         \   'start' : '\_.\%(@startuml\)\@=',
         \   'end' : '\%(@enduml\)\@<=\_.', 'filetype' : 'plantuml'
-        \  }
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startgantt\)\@=',
+        \   'end' : '\%(@endgantt\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startditaa\)\@=',
+        \   'end' : '\%(@endditaa\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startdot\)\@=',
+        \   'end' : '\%(@enddot\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startsalt\)\@=',
+        \   'end' : '\%(@endsalt\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startwbs\)\@=',
+        \   'end' : '\%(@endwbs\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
+        \  {
+        \   'start' : '\_.\%(@startmindmap\)\@=',
+        \   'end' : '\%(@endmindmap\)\@<=\_.', 'filetype' : 'plantuml'
+        \  },
         \ ],
         \ l:default_filetypes['markdown']
         \)
@@ -1384,10 +1730,6 @@ hook_post_source = '''
   " silent はなくても平気そう?
 '''
 
-# [[plugins]]
-# repo = 'fuenor/qfixgrep'
-# hook_add = '''
-# '''
 
 # autocomplete
 [[plugins]]
@@ -1396,16 +1738,65 @@ depends = ['async.vim']
 hook_add = '''
   " let g:lsp_async_completion = 1
 
+  let g:lsp_item = []
+
+  if executable('clangd')
+    call add(g:lsp_item, {
+          \ 'name': 'clangd',
+          \ 'cmd': {server_info->['clangd', '-background-index']},
+          \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
+          \ })
+  endif
+
+  if executable('efm-langserver')
+    " let wl = []
+    " if executable('vint')
+    "   call add(wl, ['vim'])
+    " endif
+    " if executable('markdownlint')
+    "   call add(wl, ['markdown'])
+    " endif
+    " if executable('vale')
+    "   call add(wl, ['text', 'asciidoc' ,'markdown'])
+    " endif
+    "
+    " call add(g:lsp_item, {
+    "      \ 'name': 'efm-langserver',
+    "      \ 'cmd': {server_info->['efm-langserver', '-c=~/.config/efm-langserver/config.yaml']},
+    "      \ 'whitelist': uniq(sort(copy(wl))),
+    "      \ })
+
+    function s:efm_generate(name, cmds, types)
+      let retval = {}
+      let retval['name'] = 'efm-langserver-' . a:name
+
+      let cmdarg = ['efm-langserver', '-stdin', &shell, &shellcmdflag] + a:cmds
+      let retval['cmd'] = { server_info -> cmdarg }
+      let retval['whitelist'] = a:types
+      return retval
+    endfunction
+
+    " if executable('vint')
+    "   call add(g:lsp_item, s:efm_generate('vint', ['vint -'], ['vim']))
+    " endif
+    " if executable('markdownlint')
+    "   call add(g:lsp_item, s:efm_generate('markdownlint', ['markdownlint -s'], ['markdown']))
+    " endif
+    " if executable('vale')
+    "   call add(g:lsp_item, s:efm_generate('vale', ['vale --output line'], ['text', 'asciidoc', 'markdown']))
+    " endif
+  endif
+
+  function! g:Lsp_setup() abort
+    for item in g:lsp_item
+      call lsp#register_server(item)
+    endfor
+  endfunction
+
   " c/c++ clangd
   augroup vim-lsp
     autocmd!
-    if executable('clangd')
-      autocmd User lsp_setup call lsp#register_server({
-            \ 'name': 'clangd',
-            \ 'cmd': {server_info->['clangd']},
-            \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
-            \ })
-    endif
+    autocmd User lsp_setup call g:Lsp_setup()
   augroup END
 
   let g:lsp_signs_enabled = 1           " enable signs
@@ -1444,9 +1835,7 @@ hook_source = '''
 '''
 
 [[plugins]]
-# repo = 'prabirshrestha/asyncomplete-tags.vim'
-repo = 'tsuyoshicho/asyncomplete-tags.vim'
-rev  = 'hotfix/getcompletion'
+repo = 'prabirshrestha/asyncomplete-tags.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
   autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#tags#get_source_options({
@@ -1653,8 +2042,10 @@ hook_add = '''
   " based on https://christina04.hatenablog.com/entry/2014/10/30/100612
   " based on https://postd.cc/how-to-boost-your-vim-productivity/
   if executable('pt')
+    " let fallback_command = 'pt --nocolor --nogroup --hidden -S -l -g "" %s'
     let fallback_command = 'pt --nocolor --nogroup -S -l -g "" %s'
   elseif executable('ag')
+    " let fallback_command = 'ag -a --nocolor --nogroup --hidden -S -l -g "" %s'
     let fallback_command = 'ag -a --nocolor --nogroup -S -l -g "" %s'
   endif
   if exists('fallback_command')
@@ -1668,12 +2059,11 @@ hook_add = '''
         \     1: ['.git', 'cd %s && git ls-files'  ],
         \     2: ['.hg' , 'hg --cwd %s locate -I .'],
         \   },
-        \   'fallback': fallback_command,
         \ }
   if exists('fallback_command')
     let g:ctrlp_use_caching  = 0
     let g:ctrlp_user_command = extend(g:ctrlp_user_command,
-          \ { 'fallback': fallback_command })
+          \ { 'fallback': fallback_command }, "keep")
   endif
 
   " let g:ctrlp_cmd = 'CtrlP' " default
@@ -1893,22 +2283,30 @@ depends = ['vim-ref']
 # QuickRun
 [[plugins]]
 repo = 'thinca/vim-quickrun'
+# depends = ['quickrun-hook-u-nya-', 'shabadou.vim', 'open-browser.vim', 'vim-quickrunex']
+depends = ['vimproc.vim', 'quickrun-hook-u-nya-', 'shabadou.vim', 'open-browser.vim', 'vim-quickrunex']
 hook_add = '''
   " <Plug>(precious-quickrun-op) in osyo-manga/vim-precious
   if dein#tap('vim-precious')
     nnoremap <Leader>o <Plug>(precious-quickrun-op)
   endif
 
+
   " if untype buffer, prev run timing type detect work hook
   "
   " config
   let g:quickrun_config = extend({
         \ '_' : {
-        \   'outputter' : 'error',
-        \   'outputter/error/success' : 'buffer',
-        \   'outputter/error/error'   : 'quickfix',
-        \   'outputter/buffer/split'  : ':rightbelow 8sp',
+        \   'hook/u_nya_/enable'              : 1,
+        \   'outputter'                       : 'error',
+        \   'outputter/error/success'         : 'buffer',
+        \   'outputter/error/error'           : 'quickfix',
+        \   'outputter/buffer/split'          : ':rightbelow 8sp',
         \   'outputter/buffer/close_on_empty' : 1,
+        \   "hook/slash/enable" : 1,
+        \ },
+        \ 'vim' : {
+        \   "hook/slash/enable" : 0,
         \ },
         \ 'markdown' : {
         \   'type' : 'markdown/pandoc',
@@ -1922,22 +2320,77 @@ hook_add = '''
         \ },
         \}, get(g:, 'quickrun_config', {}), "keep")
 
- if has('job')
-   let g:quickrun_config._['runner'] = 'job'
- elseif has('clientserver')
-   let g:quickrun_config._['runner'] = 'remote'
- else
-   let g:quickrun_config._['runner'] = 'system'
- endif
+  " shift jis: 'cp932'
+  " shift jis: 'cp65001'
+  let is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if is_windows
+    for typename in ['python', 'ruby', 'markdown']
+      let g:quickrun_config[typename]['hook/output_encode/enable'] = 1
+      let g:quickrun_config[typename]['hook/output_encode/encoding'] = 'cp932'
+    endfor
+  endif
+
+  " shabadou
+  " \   'hook/echo/enable'                : 1,
+  " \   'hook/echo/output_success'        : 'success',
+  " \   'hook/echo/output_failure'        : 'failure',
+
+  function s:vimproc_ok() abort
+    let vimproc = 1
+    try
+      silent call vimproc#version()
+    catch
+      let vimproc = 0
+    endtry
+
+    return vimproc
+  endfunction
+
+  if s:vimproc_ok()
+    let g:quickrun_config._['runner'] = 'vimproc'
+  elseif has('job')
+    let g:quickrun_config._['runner'] = 'job'
+  elseif has('clientserver')
+    let g:quickrun_config._['runner'] = 'remote'
+  else
+    let g:quickrun_config._['runner'] = 'system'
+  endif
+'''
+hook_post_source = '''
+  let s:slash_hook = {
+        \	"name" : "slash",
+        \	"kind" : "hook",
+        \ "config" : {
+        \  "enable"     : 0,
+        \  "shellslash" : 0,
+        \ }
+        \}
+
+  function! s:slash_hook.on_hook_loaded(session, context) abort
+    if self.config.enable && exists('+shellslash')
+      let self.config.shellslash = &shellslash
+      set noshellslash
+    endif
+  endfunction
+
+  function! s:slash_hook.on_exit(session, context) abort
+    if self.config.enable && exists('+shellslash')
+      let &shellslash = self.config.shellslash
+    endif
+  endfunction
+
+  call quickrun#module#register(s:slash_hook, 1)
+  unlet s:slash_hook
 '''
 
 [[plugins]]
 repo = 'osyo-manga/quickrun-hook-u-nya-'
-depends = ['vim-quickrun']
+
+[[plugins]]
+repo = 'osyo-manga/shabadou.vim'
 
 [[plugins]]
 repo = 'mattn/vim-quickrunex'
-depends = ['vim-quickrun']
 
 # UI
 # based on https://tmnm.tech/2017/10/11/vim-setting-with-cica/
@@ -1947,13 +2400,18 @@ repo = 'ryanoasis/vim-devicons'
 hook_add = '''
   " フォルダアイコンの表示をON
   let g:WebDevIconsUnicodeDecorateFolderNodes = 1
-
-  " original
-  " let g:NERDTreeDirArrowExpandable = "\uf0da"  " nf-fa-caret_right
-  " let g:NERDTreeDirArrowCollapsible = "\uf0d7" " nf-fa-caret_down
-
+  " let g:WebDevIconsUnicodeDecorateFolderNodesDefaultSymbol = ''
+  " ? let g:WebDevIconsDefaultFolderOpenSymbol = ''
+'''
+hook_post_source = '''
   let g:NERDTreeDirArrowExpandable  = nr2char(0xf0da) "  nf-fa-caret_right
   let g:NERDTreeDirArrowCollapsible = nr2char(0xf0d7) "  nf-fa-caret_down
+
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['html']     = nr2char(0xe736) " ''
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['css']      = nr2char(0xe749) " ''
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['markdown'] = nr2char(0xf48a) " ''
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['md']       = nr2char(0xf48a) " ''
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['txt']      = nr2char(0xf0f6) " ''
 '''
 
 [[plugins]]
@@ -2049,23 +2507,51 @@ hook_add = '''
   "
 '''
 
-[[plugins]] # カラースキーマ template engine
-repo = 'cocopon/pgmnt.vim'
-
 [[plugins]] # カラースキーマ
 # http://blog-sk.com/vim/vim-transparent/
 repo = 'cocopon/iceberg.vim'
 depends = ['pgmnt.vim']
+# " colorscheme : 'iceberg'
+# " lightline   : 'iceberg'
 
 [[plugins]] # カラースキーマ
 # https://tmg0525.hatenadiary.jp/entry/2017/09/02/080541
 repo = 'morhetz/gruvbox'
+# " colorscheme : 'gruvbox'
+# " lightline   : 'gruvbox'
+
+[[plugins]] # カラースキーマ
+repo = 'sainnhe/gruvbox-material'
+# " colorscheme : 'gruvbox-material'
+# " lightline   : 'gruvbox_material'
+
+[[plugins]] # カラースキーマ
+repo = 'Rigellute/rigel'
+hook_add = '''
+  " colorscheme : 'rigel'
+  " lightline   : 'rigel' and let g:rigel_lightline = 1
+  let g:rigel_lightline = 1
+'''
 
 [[plugins]] # カラースキーマ
 repo = 'aereal/vim-colors-japanesque'
 
 [[plugins]] # カラースキーマ
+repo = 'davidosomething/vim-colors-meh'
+
+[[plugins]] # カラースキーマ
 repo = 'rhysd/vim-color-spring-night'
+
+[[plugins]] # カラースキーマ
+repo = 'sainnhe/vim-color-forest-night'
+# " colorscheme : 'forest-night'
+# " lightline   : 'forest_night'
+
+# [[plugins]] # カラースキーマ
+# repo = 'https://raw.githubusercontent.com/jan-warchol/selenized/master/vim/selenized.vim'
+# name = 'selenized'
+# type = 'raw'
+# script_type = 'colors'
 
 [[plugins]] # カラースキーマ
 repo = 'KKPMW/moonshine-vim'
@@ -2106,6 +2592,32 @@ repo = 'tomasr/molokai'
 [[plugins]] # カラースキーマ
 repo = 'sjl/badwolf'
 
+[[plugins]] # カラースキーマ
+repo = 'cormacrelf/vim-colors-github'
+hook_add = '''
+  " colorscheme : 'github'
+  " lightline   : 'github'
+  " airline     : 'github'
+
+  " use a slightly darker background, like GitHub inline code blocks
+  let g:github_colors_soft = 1
+
+  " more blocky diff markers in signcolumn (e.g. GitGutter)
+  let g:github_colors_block_diffmark = 1
+'''
+
+[[plugins]] # カラースキーマ
+repo = 'kaicataldo/material.vim'
+hook_add = '''
+  " colorscheme : 'material'
+  " lightline   : 'material_vim'
+
+  " let g:material_terminal_italics = 1
+
+  " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
+  let g:material_theme_style = 'ocean'
+'''
+
 [[plugins]]
 repo = 'mopp/sky-color-clock.vim'
 depends = ['vim-pass']
@@ -2140,7 +2652,10 @@ repo = 'tpope/vim-fugitive'
 hook_add = '''
   augroup MyAutoGroup
     " based on https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
-     autocmd QuickFixCmdPost Ggrep cwindow
+    autocmd QuickFixCmdPost Ggrep cwindow
+    " see https://vi.stackexchange.com/questions/11502/how-to-execute-a-command-when-leaving-the-fugitiveblame-window
+    " autocmd FileType fugitiveblame nnoremap <silent><buffer> q :q<CR>wincmd =
+    autocmd FileType fugitiveblame nnoremap <silent><buffer> q :q<CR><C-W>=
   augroup END
 '''
 
@@ -2239,8 +2754,7 @@ hook_add = '''
 repo = 'delphinus/lightline-delphinus'
 # repo  = 'tsuyoshicho/lightline-delphinus'
 # rev   = 'develop'
-# depends = ['lightline.vim', 'vim-devicons', 'ale', 'tagbar', 'iceberg', 'gruvbox']
-depends = ['lightline.vim', 'vim-devicons', 'ale', 'tagbar', 'iceberg', 'gruvbox', 'vim-anzu']
+depends = ['lightline.vim', 'vim-devicons', 'ale', 'tagbar', 'iceberg', 'gruvbox', 'vim-anzu', 'vim-submode']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -2341,7 +2855,7 @@ hook_post_source = '''
      \   ],
      \   'right': [
      \     [ 'sky_color_clock' ],
-     \     [ 'lineinfo', 'percent', 'anzu' ],
+     \     [ 'lineinfo', 'percent', 'anzu', 'submode' ],
      \     [ 'fileformat', 'fileencoding', 'filetype' ],
      \     [ 'char_code' ],
      \   ],
@@ -2369,6 +2883,7 @@ hook_post_source = '''
      \   'currenttag':   'lightline#delphinus#components#currenttag',
      \   'gitgutter':    'lightline#delphinus#components#gitgutter',
      \   'anzu':         'anzu#search_status',
+     \   'submode':      'submode#current',
      \ },
      \ 'component_function_visible_condition': {
      \   'mode': 1,
@@ -2407,8 +2922,10 @@ hook_post_source = '''
 [[plugins]]
 # repo = 'nightsense/night-and-day'
 repo = 'tsuyoshicho/night-and-day'
-rev  = 'develop'
-depends = ['lightline-delphinus', 'iceberg', 'gruvbox']
+# rev  = 'develop'
+rev  = 'feature/autoload'
+merged = 0
+depends = ['lightline-delphinus', 'iceberg.vim', 'gruvbox', 'vim-solarized8', 'vim-colors-github', 'material.vim', 'gruvbox-material', 'rigel']
 hook_add = '''
   " " colorscheme 処理 - 必要な依存関係は処理すること
   " if has('gui_running')
@@ -2439,9 +2956,15 @@ hook_add = '''
   if has('gui_running')
     " guiならgruvbox,cliはicebergにする(base)
     let g:nd_themes = [
-      \ ['sunrise+0',  'solarized8', 'light', 'solarized_improved'],
-      \ ['sunset+0',   'gruvbox',    'dark',  'gruvbox'],
-      \ ['sunset+1/4', 'iceberg',    'dark',  'iceberg'],
+      \ ['sunrise+0',   'solarized8',       'light', 'solarized_improved'],
+      \ ['sunrise+1/3', 'github',           'light', 'github'],
+      \ ['sunrise+2/3', 'gruvbox-material', 'light', 'gruvbox_material'],
+      \ ['sunset+0',    'solarized8',       'dark',  'solarized_improved'],
+      \ ['sunset+1/6',  'iceberg',          'dark',  'iceberg'],
+      \ ['sunset+2/6',  'forest-night',     'dark',  'forest_night'],
+      \ ["sunset+3/6",  'material',         'dark',  'material_vim'],
+      \ ['sunset+4/6',  'gruvbox',          'dark',  'gruvbox'],
+      \ ['sunset+5/6',  'rigel',            'dark',  'rigel'],
       \]
   else
     let g:nd_themes = [
@@ -2450,8 +2973,8 @@ hook_add = '''
       \]
   endif
 
-  let g:nd_latitude = 30 " Asia/Tokyo 35
-  let g:nd_timeshift = 0
+  let g:nd_latitude  = '30' " Asia/Tokyo 35
+  let g:nd_timeshift =  '0' " shift minutes
 
   " " debug
   " let g:nd_themes = [
@@ -2500,6 +3023,9 @@ hook_add = '''
 
   " no conceal for edit
   let g:indentLine_fileTypeExclude = ['help','json']
+
+  " conceallevel/concealcursor set in vimrc
+  let g:indentLine_setConceal = 0
 '''
 hook_post_source = '''
   " based on http://d.hatena.ne.jp/osyo-manga/20140722/1406040828
@@ -2522,6 +3048,7 @@ repo = 'ConradIrwin/vim-bracketed-paste'
 
 [[plugins]]
 repo = 'tweekmonster/braceless.vim'
+# merged = 0
 hook_add = '''
   augroup braceless_filetype
     autocmd!
@@ -2546,18 +3073,6 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 'thinca/vim-zenspace'
-hook_post_source = '''
-  " https://qiita.com/tmsanrinsha/items/d6c11f2b7788eb24c776
-
-  " add non zenspace (UCS spaces)
-  augroup zenspace
-    autocmd!
-    autocmd VimEnter,WinEnter * match ZenSpace /\%u180E\|\%u2000\|\%u2001\|\%u2002\|\%u2003\|\%u2004\|\%u2005\|\%u2006\|\%u2007\|\%u2008\|\%u2009\|\%u200A\|\%u2028\|\%u2029\|\%u202F\|\%u205F\|\%u3000/
-  augroup END
-'''
-
-[[plugins]]
 repo = 'itchyny/vim-cursorword'
 
 # Match
@@ -2569,9 +3084,10 @@ repo = 'andymass/vim-matchup'
 hook_add = '''
   " let g:matchup_matchparen_enabled = 0
   " if use parenmatch
+  " deliver text object a%/i%
 '''
 
-[[plugins]]
+[[plugins]] # paren match rainbow
 repo = 'luochen1990/rainbow'
 hook_add = '''
   let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
@@ -2579,14 +3095,54 @@ hook_add = '''
   let g:rainbow_conf = {
     \ 'separately': {
     \   'cpp': {
-    \    'parentheses': ['start=/(/ end=/)/ fold', 'start=/\[/ end=/\]/ fold', 'start=/\</ end=/\>/ fold','start=/{/ end=/}/ fold'],
-    \  },
+    \     'parentheses': ['start=/(/ end=/)/ fold', 'start=/\[/ end=/\]/ fold', 'start=/\</ end=/\>/ fold','start=/{/ end=/}/ fold'],
+    \   },
+    \   'markdown': {
+    \     'parentheses_options': 'containedin=markdownCode contained',
+    \   },
+    \   'vim': {
+    \     'parentheses_options': 'containedin=vimFuncBody',
+    \   },
+    \   'css': 0,
     \ },
     \}
 '''
 
-[[plugins]] # codic support
-repo = 'koron/codic-vim'
+[[plugins]]
+repo = 't9md/vim-quickhl'
+hook_add = '''
+  let g:quickhl_manual_enable_at_startup = 1
+'''
+hook_post_source = '''
+  nmap <Space>m <Plug>(quickhl-manual-this)
+  xmap <Space>m <Plug>(quickhl-manual-this)
+  nmap <Space>M <Plug>(quickhl-manual-reset)
+  xmap <Space>M <Plug>(quickhl-manual-reset)
+
+  nmap <Space>j <Plug>(quickhl-cword-toggle)
+  nmap <Space>] <Plug>(quickhl-tag-toggle)
+
+  let g:quickhl_manual_keywords = [
+        \ 'Tsuyoshi CHO',
+        \ 'Tsuyoshi.CHO',
+        \ 'tsuyoshi.cho',
+        \ 'Tsuyoshi_CHO',
+        \ 'tsuyoshi_cho',
+        \ 'tsuyoshicho',
+        \]
+'''
+
+[[plugins]]
+repo = 'thinca/vim-zenspace'
+hook_post_source = '''
+  " https://qiita.com/tmsanrinsha/items/d6c11f2b7788eb24c776
+
+  " add non zenspace (UCS spaces)
+  augroup zenspace
+    autocmd!
+    autocmd VimEnter,WinEnter * match ZenSpace /\%u180E\|\%u2000\|\%u2001\|\%u2002\|\%u2003\|\%u2004\|\%u2005\|\%u2006\|\%u2007\|\%u2008\|\%u2009\|\%u200A\|\%u2028\|\%u2029\|\%u202F\|\%u205F\|\%u3000/
+  augroup END
+'''
 
 [[plugins]]
 repo = 'cohama/lexima.vim'
@@ -2648,6 +3204,24 @@ hook_post_source = '''
         \   'filetype': 'plantuml',
         \   'syntax': [],
         \ },
+        \ {
+        \   'char': '<CR>',
+        \   'input': s:cr_key,
+        \   'input_after': '<CR>' . '@endwbs',
+        \   'at': '\%(^\s*#.*\)\@<!@startwbs\>.*\%#',
+        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endwbs',
+        \   'filetype': 'plantuml',
+        \   'syntax': [],
+        \ },
+        \ {
+        \   'char': '<CR>',
+        \   'input': s:cr_key,
+        \   'input_after': '<CR>' . '@endmindmap',
+        \   'at': '\%(^\s*#.*\)\@<!@startmindmap\>.*\%#',
+        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endmindmap',
+        \   'filetype': 'plantuml',
+        \   'syntax': [],
+        \ },
         \]
 
   for rule in s:additional_rules
@@ -2688,7 +3262,7 @@ hook_post_source = '''
 [[plugins]]
 repo = 'rhysd/clever-f.vim'
 hook_add = '''
-  let g:clever_f_ignore_case           = 1
+  " let g:clever_f_ignore_case           = 1
   let g:clever_f_smart_case            = 1
   let g:clever_f_use_migemo            = 1
   let g:clever_f_fix_key_direction     = 1
@@ -2745,12 +3319,17 @@ hook_post_source = '''
   nmap <Leader>f <Plug>(easymotion-overwin-f)
 
   " s{char}{char} to move to {char}{char}
-  map s <Plug>(easymotion-bd-f2)
-  nmap s <Plug>(easymotion-overwin-f2)
+  " map s <Plug>(easymotion-bd-f2)
+  map ss <Plug>(easymotion-bd-f2)
+  " nmap s <Plug>(easymotion-overwin-f2)
+  nmap ss <Plug>(easymotion-overwin-f2)
 
   " Move to line
   map <Leader>L <Plug>(easymotion-bd-jk)
   nmap <Leader>L <Plug>(easymotion-overwin-line)
+  " JK motions: Line motions
+  map <Leader>j <Plug>(easymotion-j)
+  map <Leader>k <Plug>(easymotion-k)
 
   " Move to word
   map  <Leader>w <Plug>(easymotion-bd-w)
@@ -2775,32 +3354,80 @@ hook_post_source = '''
   nmap <silent> <F7> :MinimapToggle<CR>
 '''
 
-[[plugins]]
-repo = 't9md/vim-quickhl'
-hook_add = '''
-  let g:quickhl_manual_enable_at_startup = 1
-'''
-hook_post_source = '''
-  nmap <Space>m <Plug>(quickhl-manual-this)
-  xmap <Space>m <Plug>(quickhl-manual-this)
-  nmap <Space>M <Plug>(quickhl-manual-reset)
-  xmap <Space>M <Plug>(quickhl-manual-reset)
-
-  nmap <Space>j <Plug>(quickhl-cword-toggle)
-  nmap <Space>] <Plug>(quickhl-tag-toggle)
-
-  let g:quickhl_manual_keywords = [
-        \ 'Tsuyoshi CHO',
-        \ 'Tsuyoshi.CHO',
-        \ 'tsuyoshi.cho',
-        \ 'Tsuyoshi_CHO',
-        \ 'tsuyoshi_cho',
-        \ 'tsuyoshicho',
-        \]
-'''
-
 [[plugins]] # Doxygen
 repo = 'vim-scripts/DoxygenToolkit.vim'
+depends = ['vital.vim']
+hook_post_source = '''
+  let now  = g:V.import('DateTime').now()
+  let year = string(now.year())
+
+  " basic
+  " let g:DoxygenToolkit_briefTag_pre = '@brief '
+  " let g:DoxygenToolkit_briefTag_post = ''
+  " let g:DoxygenToolkit_templateParamTag_pre = '@tparam '
+  " let g:DoxygenToolkit_templateParamTag_post = ''
+  " let g:DoxygenToolkit_paramTag_pre = '@param '
+  " let g:DoxygenToolkit_paramTag_post = ''
+  " let g:DoxygenToolkit_returnTag = '@return '
+  " let g:DoxygenToolkit_throwTag_pre = '@throw ' " @exception is also valid
+  " let g:DoxygenToolkit_throwTag_post = ''
+
+  " let g:DoxygenToolkit_fileTag = '@file '
+  " let g:DoxygenToolkit_authorTag = '@author '
+  " let g:DoxygenToolkit_dateTag = '@date '
+  " let g:DoxygenToolkit_versionTag = '@version '
+  " let g:DoxygenToolkit_undocTag = 'DOX_SKIP_BLOCK'
+  " let g:DoxygenToolkit_blockTag = '@name '
+  " let g:DoxygenToolkit_classTag = '@class '
+
+  " format tuning : default OK
+  " let g:DoxygenToolkit_cinoptions = 'c1C1'
+
+  " Work area format
+  let g:DoxygenToolkit_authorName='Tsuyoshi CHO'
+  " projct specfic
+  " let g:DoxygenToolkit_blockHeader = ''
+  " let g:DoxygenToolkit_blockFooter = ''
+  " let g:DoxygenToolkit_licenseTag = 'need simple license string: (C) 2009 - ' . year . ' xxx Corporation All rights reserved.'
+  " let g:DoxygenToolkit_versionString = 1.0
+
+  " let g:DoxygenToolkit_compactOneLineDoc = 'no'
+  " let g:DoxygenToolkit_compactDoc = 'no'
+  " let g:DoxygenToolkit_ignoreForReturn =
+
+  " Style
+  " let g:DoxygenToolkit_commentType = 'C++'
+  let g:DoxygenToolkit_commentType = 'C'
+  " C type
+  " let g:DoxygenToolkit_startCommentTag = '/** '
+  " let g:DoxygenToolkit_startCommentBlock = '/* '
+  " let g:DoxygenToolkit_interCommentTag = '* '
+  " let g:DoxygenToolkit_interCommentBlock = '* '
+  " let g:DoxygenToolkit_endCommentTag = '*/'
+  " let g:DoxygenToolkit_endCommentBlock = '*/'
+
+  " C++ type
+  " let g:DoxygenToolkit_startCommentTag = '/// '
+  " let g:DoxygenToolkit_startCommentBlock = '// '
+  " let g:DoxygenToolkit_interCommentTag = '/// '
+  " let g:DoxygenToolkit_interCommentBlock = '// '
+  " let g:DoxygenToolkit_endCommentTag = ''
+  " let g:DoxygenToolkit_endCommentBlock = ''
+
+  " need tuning
+  " let g:DoxygenToolkit_maxFunctionProtoLines = 10
+
+  " let g:DoxygenToolkit_briefTag_className = 'no'
+  " let g:DoxygenToolkit_briefTag_structName = 'no'
+  " let g:DoxygenToolkit_briefTag_enumName = 'no'
+  " let g:DoxygenToolkit_briefTag_namespaceName = 'no'
+  " let g:DoxygenToolkit_briefTag_funcName = 'no'
+
+  " let g:DoxygenToolkit_keepEmptyLineAfterComment = 'no'
+
+  " let g:DoxygenToolkit_python_autoRemoveSelfParam = 'yes'
+  " let g:DoxygenToolkit_python_autoFunctionReturn = 'yes'
+'''
 
 [[plugins]] # PowerShell
 repo = 'PProvost/vim-ps1'
@@ -2991,26 +3618,38 @@ hook_add = '''
 '''
 
 [[plugins]] # Slack
+repo = 'higashi000/sarahck.vim'
+depends = ['slackstatus.vim', 'webapi-vim','vim-pass']
+
+[[plugins]] # Slack
 repo = 'mizukmb/slackstatus.vim'
 depends = ['webapi-vim','vim-pass']
 hook_add = '''
-  " let g:slackstatus_token = '<YOUR_SLACK_TOKEN>'
+  " slackstatus.vim use g:slackstatus_token
+  " sarahck.vim     use g:slackToken
   " team m-falcon
   call pass#get_startup('g:slackstatus_token','Message/Slack/team-m-falcon.legacy')
+  call pass#get_startup('g:slackToken',       'Message/Slack/team-m-falcon.legacy')
   " vim-jp
   " call pass#get_startup('g:slackstatus_token','Message/Slack/vim-jp.legacy')
-  "
+  " call pass#get_startup('g:slackToken',       'Message/Slack/vim-jp.legacy')
+
+
   function! s:slack_team_completion(A,L,P) abort
     let team_list = ['team-m-falcon','vim-jp']
     return join(team_list,"\n")
   endfunction
 
-  function s:slackstatus_change_token(team) abort
+  function s:slack_token_change(team) abort
     let path = 'Message/Slack/' . a:team . '.legacy'
-    let g:slackstatus_token = pass#get(path)
+
+    let token = pass#get(path)
+
+    let g:slackstatus_token = token
+    let g:slackToken        = token
   endfunction
 
-  command! -nargs=1 -complete=custom,<SID>slack_team_completion SlackStatusChange :call <SID>slackstatus_change_token(<f-args>)
+  command! -nargs=1 -complete=custom,<SID>slack_team_completion SlackWorkspaceChange :call <SID>slack_token_change(<f-args>)
 '''
 
 [[plugins]] # Mastodon
@@ -3057,8 +3696,8 @@ repo = 'jceb/vim-orgmode'
 [[plugins]] # memo
 repo = 'glidenote/memolist.vim'
 # depends = ['qfixgrep', 'ctrlp.vim']
-merged = 0
 depends = ['ctrlp.vim']
+merged = 0
 hook_add = '''
   let g:memolist_path = expand($HOME) . "/.vim/memo/"
   let g:memolist_template_dir_path = expand($HOME) . "/.vim/memo_template/"

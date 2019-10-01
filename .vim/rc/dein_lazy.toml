@@ -22,30 +22,61 @@ on_if= '(has("win32") || has("win64")) && has("gui_running")'
 repo = 'edkolev/promptline.vim'
 on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
 
-[[plugins]]
-repo = 'kassio/neoterm'
-on_if = '(has("nvim") || has("terminal"))'
-hook_add = '''
-  " based on https://qiita.com/hanajori/items/1bcd0c567a9fa193b9cd
-  let g:neoterm_autoscroll=1
-  " let g:neoterm_position='vertical'
-'''
+# [[plugins]]
+# repo = 'kassio/neoterm'
+# on_if = '(has("nvim") || has("terminal"))'
+# hook_add = '''
+#   " based on https://qiita.com/hanajori/items/1bcd0c567a9fa193b9cd
+#   let g:neoterm_autoscroll=1
+#   " let g:neoterm_position='vertical'
+# '''
+# hook_post_source = '''
+#   tnoremap <silent> <ESC> <C-\><C-n><C-w>
+#   " nnoremap <silent> <C-e> :TREPLSendLine<CR>j0
+#   " vnoremap <silent> <C-e> V:TREPLSendSelection<CR>'>j0
+# '''
+
+[[plugins]] # cmigemoが必要
+repo = 'haya14busa/vim-migemo'
+on_if= 'executable("cmigemo")'
+depends = ['vital.vim']
 hook_post_source = '''
-  tnoremap <silent> <ESC> <C-\><C-n><C-w>
-  " nnoremap <silent> <C-e> :TREPLSendLine<CR>j0
-  " vnoremap <silent> <C-e> V:TREPLSendSelection<CR>'>j0
+  let Filepath = g:V.import('System.Filepath')
+
+  " dict
+  let g:migemodict = ''
+
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows
+    let dict = fnamemodify(
+          \ Filepath.realpath(
+          \   'c:/tools/dictionary/Migemo/' . &encoding . '/migemo-dict'
+          \ ),
+          \ ':p')
+    if filereadable(dict)
+      let g:migemodict = dict
+    endif
+  endif
+
+  if empty(g:migemodict)
+    let dict = fnamemodify(
+          \ Filepath.realpath(
+          \   $HOME . '/.vim/dict/' . &encoding . '/migemo-dict'
+          \ ),
+          \ ':p')
+    if filereadable(dict)
+      let g:migemodict = dict
+    endif
+  endif
 '''
 
 [[plugins]] # WebAPIのライブラリ curlが必要
 repo = 'mattn/webapi-vim'
 on_if= 'executable("curl")'
 
-# need MeCab
-# [[plugins]]
-# repo = 'deton/jasegment.vim'
-
 [[plugins]] # fzf
 repo = 'junegunn/fzf'
+merged = 0
 on_if= 'executable("fzf")'
 
 [[plugins]]
@@ -55,12 +86,52 @@ depends = ['fzf']
 hook_add = '''
   let g:fzf_command_prefix = 'Fzf'
 
+  " fzfからファイルにジャンプできるようにする
+  let g:fzf_buffers_jump = 1
+
+  " Customize fzf colors to match your color scheme
+  let g:fzf_colors = {
+        \ 'fg':      ['fg', 'Normal'],
+        \ 'bg':      ['bg', 'Normal'],
+        \ 'hl':      ['fg', 'Comment'],
+        \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+        \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+        \ 'hl+':     ['fg', 'Statement'],
+        \ 'info':    ['fg', 'PreProc'],
+        \ 'border':  ['fg', 'Ignore'],
+        \ 'prompt':  ['fg', 'Conditional'],
+        \ 'pointer': ['fg', 'Exception'],
+        \ 'marker':  ['fg', 'Keyword'],
+        \ 'spinner': ['fg', 'Label'],
+        \ 'header':  ['fg', 'Comment'],
+        \}
+'''
+hook_post_source = '''
   " see https://qiita.com/hisawa/items/fc5300a526cb926aef08
   " ,<C-]>でタグ検索
   nnoremap <silent> <leader><C-]> :call fzf#vim#tags(expand('<cword>'))<CR>
 
-  " fzfからファイルにジャンプできるようにする
-  let g:fzf_buffers_jump = 1
+  " based on https://qiita.com/Sa2Knight/items/6635af9fc648a5431685
+  nnoremap [fzf]     <Nop>
+  nmap     <leader>z [fzf]
+
+  function! s:fzf_command(cmd) abort
+    return g:fzf_command_prefix . a:cmd
+  endfunction
+
+  nnoremap <silent><expr> [fzf]f ':' . <SID>fzf_command('GFiles')  . '<CR>'
+  nnoremap <silent><expr> [fzf]F ':' . <SID>fzf_command('GFiles?') . '<CR>'
+  nnoremap <silent><expr> [fzf]b ':' . <SID>fzf_command('Buffers') . '<CR>'
+  nnoremap <silent><expr> [fzf]l ':' . <SID>fzf_command('BLines')  . '<CR>'
+  nnoremap <silent><expr> [fzf]h ':' . <SID>fzf_command('History') . '<CR>'
+  nnoremap <silent><expr> [fzf]m ':' . <SID>fzf_command('Mark')    . '<CR>'
+'''
+
+[[plugins]]
+repo = 'mbbill/undotree'
+on_if= 'has("persistent_undo")'
+hook_post_source = '''
+  nnoremap <F6> :UndotreeToggle<CR>
 '''
 
 # dirvish
@@ -170,13 +241,19 @@ hook_add = '''
       \    {
       \       'book'       : 'C:/tools/dictionary/FreePWING/EIJIRO',
       \       'name'       : 'eijiro',
-      \       'title'      : '英辞郎 Ver.144.5',
+      \       'title'      : '英辞郎 Ver.144.6',
       \       'skip'       : 0,
       \    },
       \    {
       \       'book'       : 'C:/tools/dictionary/FreePWING/FLOWER',
       \       'name'       : 'flower',
       \       'title'      : '花の咲く草木名小事典 (K,s Bookshelf)',
+      \       'skip'       : 0,
+      \    },
+      \    {
+      \       'book'       : 'C:/tools/dictionary/FreePWING/GENE95',
+      \       'name'       : 'gene95',
+      \       'title'      : 'GENE95辞書',
       \       'skip'       : 0,
       \    },
       \    {
@@ -299,6 +376,19 @@ hook_post_source = '''
   " nmap --- <Plug>(TransparencyOn)
   " nmap --- <Plug>(TransparencyOff)
   nmap <F4> <Plug>(TransparencyToggle)
+
+  " based on https://sy-base.com/myrobotics/vim/vim-transparent/
+  " terminal mode; it has transparent function and enabled
+  if !has('gui_running')
+    augroup TransparentBG
+      autocmd!
+      autocmd Colorscheme * highlight Normal ctermbg=none
+      autocmd Colorscheme * highlight NonText ctermbg=none
+      autocmd Colorscheme * highlight LineNr ctermbg=none
+      autocmd Colorscheme * highlight Folded ctermbg=none
+      autocmd Colorscheme * highlight EndOfBuffer ctermbg=none
+    augroup END
+  endif
 '''
 
 [[plugins]]
@@ -332,22 +422,37 @@ hook_add = '''
         \ {
         \   '*'  : ['.', '>', ':'],
         \ })
+
+  " completeopt manual set
+  let g:asyncomplete_auto_completeopt = 0
 '''
 hook_post_source = '''
-  inoremap <expr> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
-  " Ctrl-y cr is fix completion
-  " inoremap <expr> <CR>         pumvisible() ? "\<C-y>" : "\<CR>"
-  inoremap <expr> <C-Y><CR>    pumvisible() ? "\<C-y>" : "\<CR>"
-
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
 
   " augroup asyncomplete
   "   autocmd!
-  "   autocmd CompleteDone * if pumvisible() != 0 | pclose | endif
+  "   " asyncomplete original
+  "   " autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+  "   " my refine
+  "   autocmd CompleteDone * if pumvisible() | pclose | endif
   " augroup END
 '''
 
+[[plugins]]
+repo = 'bfrg/vim-qf-preview'
+on_if= 'exists("*popup_create")'
+
+# [[plugins]]
+# repo = 'AndrewRadev/quickpeek.vim'
+# # repo = 'tsuyoshicho/quickpeek.vim'
+# # rev  = ''
+# on_if= 'exists("*popup_create")'
+# hook_add = '''
+#   let g:quickpeek_auto = v:true
+# '''
+# hook_post_source = '''
+#   autocmd MyAutoGroup FileType qf nnoremap <buffer><silent> <C-P> :QuickpeekToggle<cr>
+# '''
 
 [[plugins]]
 # repo = 'soramugi/auto-ctags.vim'
@@ -435,7 +540,8 @@ hook_add = '''
 # '''
 
 [[plugins]]
-repo = 'w0rp/ale'
+# repo = 'w0rp/ale' old URL
+repo = 'dense-analysis/ale'
 depends = ['lightline.vim','vim-devicons']
 on_if = 'has("job") && has("channel") && has("timers")'
 hook_add = '''
@@ -484,6 +590,7 @@ hook_add = '''
 
   " linter setting
   let g:ale_linters = {
+        \ 'vim'        : ['vint'],
         \ 'c'          : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
         \ 'cpp'        : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
         \ 'php'        : ['phpcs',       'php'],
@@ -514,7 +621,8 @@ hook_add = '''
 
   " Fixer
   let g:ale_fixers = {
-        \ '*':    ['remove_trailing_lines', 'trim_whitespace'],
+        \ '*'   : ['remove_trailing_lines', 'trim_whitespace'],
+        \ 'vim' : ['vint'],
         \ 'json': ['prettier', 'jq', 'fixjson'],
         \}
 
@@ -541,8 +649,8 @@ hook_post_source = '''
   " nmap <silent> <Subleader>p <Plug>(ale_previous)
   " nmap <silent> <Subleader>n <Plug>(ale_next)
   " nmap <silent> <Subleader>a <Plug>(ale_toggle)
-  nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-  nmap <silent> <C-j> <Plug>(ale_next_wrap)
+  nmap <silent> <Subleader><C-k> <Plug>(ale_previous_wrap)
+  nmap <silent> <Subleader><C-j> <Plug>(ale_next_wrap)
 '''
 
 # [[plugins]] # ale x lightline support plugin & setting lightline for ale
@@ -658,6 +766,10 @@ depends = ['open-browser.vim']
 on_ft = ['markdown','asciidoc','rst','textile']
 
 [[plugins]]
+repo = 'tokorom/vim-review'
+on_ft = ['review']
+
+[[plugins]]
 repo = 'aklt/plantuml-syntax'
 on_ft = ['plantuml']
 hook_add = '''
@@ -696,15 +808,18 @@ hook_add = '''
 # '''
 
 [[plugins]]
-repo = 'weirongxu/plantuml-previewer.vim'
+# repo = 'weirongxu/plantuml-previewer.vim'
+repo = 'tsuyoshicho/plantuml-previewer.vim'
+# rev  = 'develop'
+rev  = 'fix/vitalupdate-windowsopen'
 depends = ['open-browser.vim']
 on_ft = ['plantuml']
 on_if= 'executable("dot") && executable("java")'
 hook_add = '''
   let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
   if s:is_windows && executable('plantumlc.exe')
-    let s:bin_path = fnamemodify(system('where plantumlc.exe'), ":p")
-    let s:lib_path = fnamemodify(s:bin_path, ":p:h") . '/../lib/plantuml/tools/plantuml.jar'
+    let s:bin_path = exepath('plantumlc.exe')
+    let s:lib_path = fnamemodify(s:bin_path, ":p:h:h") . '/lib/plantuml/tools/plantuml.jar'
 
     let g:plantuml_previewer#plantuml_jar_path = fnamemodify(s:lib_path, ":p")
     let g:plantuml_previewer#save_format = 'svg'

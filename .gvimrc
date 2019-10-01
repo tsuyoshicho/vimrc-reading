@@ -7,6 +7,8 @@ scriptencoding utf-8
 
 " Windows check
 let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+" Mac check
+let s:is_mac = has('mac')
 
 " see http://qiita.com/janus_wel/items/86082f69190f40df09e8
 " display & information
@@ -14,7 +16,12 @@ set lines=25        " typical
 set columns=90      " margin for 'number' and 'foldcolumn'
 set linespace=0
 
-set cmdheight=1     " MacVim $VIM/gvimrc overwrites my .vimrc settings
+if s:is_mac
+  " MacVim $VIM/gvimrc overwrites my .vimrc settings
+  " set cmdheight=1
+  set cmdheight=2
+endif
+
 " set guioptions=c    " show no GUI components
 " based on http://blog.remora.cx/2010/03/vim-proggy-and-osaka-fonts.html
 set ambiwidth=double " override ambiwidth
@@ -31,7 +38,7 @@ endif
 
 " FontとOSごとの設定例
 " based on http://auewe.hatenablog.com/entry/2013/05/06/200425
-if has('unix') || has('mac')
+if has('unix') || s:is_mac
   " Unix と Mac の共通設定
 
   " Unix
@@ -42,7 +49,7 @@ if has('unix') || has('mac')
   endif
 
   " Mac
-  if has('mac')
+  if s:is_mac
     set guifont=Cica:h12,Myrica:h12,VL\ Gothic:h12
     " set printfont=Myrica:h9
     set printfont=Cica:h9
@@ -73,7 +80,16 @@ endif
 
 " http://qiita.com/enomotok_/items/9d38b716fe883675d35b
 " http://kaworu.jpn.org/kaworu/2008-03-07-1.php
-set iminsert=0
-set imsearch=-1
+" use SKK (nathancorvussolis/corvusskk) setting in .vimrc
+" set iminsert=0
+" set imsearch=-1
+
+" Vitsual bell status update. (bell and visutal bell need not opt eixsts
+" belloff)
+if exists('&belloff')
+  set noerrorbells
+  set visualbell
+  set t_vb=
+endif
 
 " EOF
