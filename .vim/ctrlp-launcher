@@ -18,21 +18,25 @@ twitter Owned List			OwnedListsTwitter
 twitter Post				PosttoTwitter
 
 # capture
-option						Capture set
 abbreviate					Capture abbreviate
 augroup						Capture augroup
 autocmd						Capture autocmd
+colorscheme					Capture echo join(sort(getcompletion('*', 'color')),"\n")
 command						Capture command
 compiler					Capture compiler
+digraphs					Capture digraphs
 function					Capture function
 highlight					Capture highlight
 keymap						Capture map
+keymap commandline			Capture map!
+keymap language				Capture lmap
 keymap noremap				Capture noremap
 let							Capture let
 menu						Capture menu
 message						Capture messages
 noreabbrev					Capture noreabbrev
 noremenu					Capture noremenu
+option						Capture set
 scriptnames					Capture scriptnames
 syntax						Capture syntax
 version						Capture version

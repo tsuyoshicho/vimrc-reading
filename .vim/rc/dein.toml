@@ -88,6 +88,9 @@ hook_post_source = '''
 repo = 'LeafCage/laptime.vim'
 
 [[plugins]]
+repo = '0Delta/vimodoro'
+
+[[plugins]]
 repo = 'kyoh86/vim-editerm'
 # Put below lines in .zshrc or .bashrc.
 #
@@ -288,19 +291,19 @@ hook_add = '''
   nnoremap <silent> <Leader>S :OverCommandLine<cr>
 '''
 
-[[plugins]]
-repo = 'Shougo/echodoc.vim'
-depends = ['context_filetype.vim']
-hook_add = '''
-  let g:echodoc#enable_at_startup = 1
-  let g:echodoc#type = 'echo'
-'''
-hook_post_source = '''
-  if 2 > &cmdheight
-    " cmdheightは各タブに値が保持されるのでtabdoする必要がある
-    tabdo set cmdheight=2
-  endif
-'''
+# [[plugins]]
+# repo = 'Shougo/echodoc.vim'
+# depends = ['context_filetype.vim']
+# hook_add = '''
+#   let g:echodoc#enable_at_startup = 1
+#   let g:echodoc#type = 'echo'
+# '''
+# hook_post_source = '''
+#   if 2 > &cmdheight
+#     " cmdheightは各タブに値が保持されるのでtabdoする必要がある
+#     tabdo set cmdheight=2
+#   endif
+# '''
 
 [[plugins]]
 repo = 'rbtnn/vimconsole.vim'
@@ -389,21 +392,36 @@ hook_add = '''
    let g:findroot_patterns = ['.svn/', '.git/', '.hg/', '.bzr/', 'CVS/']
 '''
 
-# [[plugins]]
-# repo = 'airblade/vim-rooter'
-# hook_add = '''
-#   let g:rooter_change_directory_for_non_project_files = 'home'
-#
-#   " " directories and all files (default)
-#   " let g:rooter_targets = '/,*'
-#
-#   " root mark file/dir
-#   let g:rooter_patterns = ['.svn/', '.git/', '.hg/', 'CVS/']
-#
-#   let g:rooter_use_lcd = 1
-#   let g:rooter_silent_chdir = 1
-#   " let g:rooter_manual_only = 1
-# '''
+[[plugins]]
+repo = 'LeafCage/yankround.vim'
+depends = ['ctrlp.vim', 'vital.vim']
+hook_add = '''
+  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
+        \ + ['yankround']
+
+  let g:yankround_max_history = 40 " default 30
+  let g:yankround_use_region_hl = 1
+
+  " auto create dir in plugin
+  let g:yankround_dir = expand($XDG_CACHE_HOME . '/' . 'yankround')
+'''
+hook_post_source = '''
+  " keymap
+  nmap p <Plug>(yankround-p)
+  xmap p <Plug>(yankround-p)
+  nmap P <Plug>(yankround-P)
+  nmap gp <Plug>(yankround-gp)
+  xmap gp <Plug>(yankround-gp)
+  nmap gP <Plug>(yankround-gP)
+
+  if get(g:, 'ctrlp_map', '') ==? '<c-p>'
+    nnoremap <silent><SID>(ctrlp_cmd) :<C-u>execute g:ctrlp_cmd<CR>
+    nmap <expr><C-p> yankround#is_active() ? "\<Plug>(yankround-prev)" : "<SID>(ctrlp_cmd)"
+  else
+    nmap <C-p> <Plug>(yankround-prev)
+  endif
+  nmap <C-n> <Plug>(yankround-next)
+'''
 
 [[plugins]]
 repo = 'tpope/vim-characterize'
@@ -479,8 +497,8 @@ repo = 'LeafCage/lastmess.vim'
 [[plugins]]
 repo = 'LeafCage/echos.vim'
 
-[[plugins]]
-repo = 'myrobo/smart_tabline.vim'
+# [[plugins]]
+# repo = 'myrobo/smart_tabline.vim'
 
 [[plugins]] # folding support
 repo = 'tyru/foldballoon.vim'
@@ -1736,10 +1754,23 @@ hook_post_source = '''
 repo = 'prabirshrestha/vim-lsp'
 depends = ['async.vim']
 hook_add = '''
-  " let g:lsp_async_completion = 1
+  let g:lsp_async_completion = 1
 
+  let g:lsp_auto_enable = 1          " default 1
+  let g:lsp_diagnostics_enabled = 1  " default 1
+  " textprop or float enable default 1
+  let g:lsp_signs_enabled = 1           " default 1 enable signs
+  let g:lsp_diagnostics_echo_cursor = 1 " default 0 enable echo under cursor when in normal mode
+
+  let g:lsp_signs_error       = {'text': '🔥'}
+  let g:lsp_signs_warning     = {'text': '❗'}
+  let g:lsp_signs_information = {'text': '👁️'}
+
+
+  " server setup
   let g:lsp_item = []
 
+  " c/c++ clangd
   if executable('clangd')
     call add(g:lsp_item, {
           \ 'name': 'clangd',
@@ -1748,6 +1779,7 @@ hook_add = '''
           \ })
   endif
 
+  " efm server
   if executable('efm-langserver')
     " let wl = []
     " if executable('vint')
@@ -1793,18 +1825,10 @@ hook_add = '''
     endfor
   endfunction
 
-  " c/c++ clangd
   augroup vim-lsp
     autocmd!
     autocmd User lsp_setup call g:Lsp_setup()
   augroup END
-
-  let g:lsp_signs_enabled = 1           " enable signs
-  let g:lsp_diagnostics_echo_cursor = 1 " enable echo under cursor when in normal mode
-
-  let g:lsp_signs_error       = {'text': '🔥'}
-  let g:lsp_signs_warning     = {'text': '❗'}
-  let g:lsp_signs_information = {'text': '👁️'}
 '''
 
 [[plugins]]
@@ -1974,19 +1998,18 @@ hook_post_source = '''
 
       let l:success = 0
       try
-        execute('substitute' . '/' . '\%#'.l:gh_word . '/' . '\=emoji#for(l:word)' . '/el')
+        call execute('substitute' . '/' . '\%#'.l:gh_word . '/' . '\=emoji#for(l:word)' . '/')
         let l:success = 1
+      catch
+        " let l:success = 0
       finally
         call cursor(pos[1], pos[2])
       endtry
 
       if l:success
         call cursor(pos[1], target_col)
-        call search(emoji#for(l:word))
+        call search(emoji#for(l:word), 'z')
       endif
-
-      " debug
-      " echom 'emoji:' . 'pos:'.pos[2] . ',word:'.word_col . ',target:'.target_col . ',success:'.l:success
 
     endif
     let &iskeyword=l:keywords
@@ -2175,8 +2198,15 @@ rev  = 'develop'
 merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
+  " ['yankring', 'menu', 'cmd']
+
+  " yank use LeafCage/yankround.vim
+  let g:ctrlp_yankring_disable = 1
+  " let g:ctrlp_yankring_limit = 50 " default 100
+  " let let g:ctrlp_yankring_minimum_chars = 4 " default 2
+
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
-        \ + ['yankring', 'menu', 'cmd']
+        \ + ['menu', 'cmd']
 
   let g:ctrlp_cmd = 'CtrlPMenu' " menu override
 '''
@@ -2526,6 +2556,16 @@ repo = 'sainnhe/gruvbox-material'
 # " lightline   : 'gruvbox_material'
 
 [[plugins]] # カラースキーマ
+repo = 'yuttie/inkstained-vim'
+# " colorscheme : 'inkstained'
+# " lightline   : 'inkstained'
+
+[[plugins]] # カラースキーマ
+repo = 'yuttie/hydrangea-vim'
+# " colorscheme : 'hydrangea'
+# " lightline   : 'hydrangea'
+
+[[plugins]] # カラースキーマ
 repo = 'Rigellute/rigel'
 hook_add = '''
   " colorscheme : 'rigel'
@@ -2748,13 +2788,79 @@ hook_add = '''
   " lightline setting in lightline-delphinus
 '''
 
+[[plugins]]
+repo = 'taohexxx/lightline-buffer'
+depends = ['lightline.vim', 'vim-devicons']
+hook_add = '''
+  " lightline-buffer setting in lightline-delphinus
+
+  " lightline-buffer ui settings
+  " replace these symbols with ascii characters if your environment does not support unicode
+  let g:lightline_buffer_logo = nr2char(0xe7c5)  " original ' '
+  let g:lightline_buffer_readonly_icon = ''
+  let g:lightline_buffer_modified_icon = '✭'
+  let g:lightline_buffer_git_icon = ' '
+  let g:lightline_buffer_ellipsis_icon = '..'
+  let g:lightline_buffer_expand_left_icon = '◀ '
+  let g:lightline_buffer_expand_right_icon = ' ▶'
+  let g:lightline_buffer_active_buffer_left_icon = ''
+  let g:lightline_buffer_active_buffer_right_icon = ''
+  " let g:lightline_buffer_separator_icon = '  '
+
+  " enable devicons, only support utf-8
+  " require <https://github.com/ryanoasis/vim-devicons>
+  let g:lightline_buffer_enable_devicons = 1
+
+  " lightline-buffer function settings
+  let g:lightline_buffer_show_bufnr = 1
+
+  " :help filename-modifiers
+  " let g:lightline_buffer_fname_mod = ':t'
+  let g:lightline_buffer_fname_mod = ':p:~'
+
+  " " hide buffer list
+  " let g:lightline_buffer_excludes = ['vimfiler']
+  "
+  " " max file name length
+  " let g:lightline_buffer_maxflen = 30
+  "
+  " " max file extension length
+  " let g:lightline_buffer_maxfextlen = 3
+  "
+  " " min file name length
+  " let g:lightline_buffer_minflen = 16
+  "
+  " " min file extension length
+  " let g:lightline_buffer_minfextlen = 3
+  "
+  " " reserve length for other component (e.g. info, close)
+  " let g:lightline_buffer_reservelen = 20
+'''
+hook_post_source = '''
+  " need lightline-buffer
+  set showtabline=2 " 常にタブラインを表示
+  set hidden        " バッファが編集中でもその他のファイルを開けるように
+
+  " remap arrow keys
+  " nnoremap <Left>  :bprev<CR>
+  " nnoremap <Right> :bnext<CR>
+  nnoremap <Left>  :tabprevious<CR>
+  nnoremap <Right> :tabnext<CR>
+
+  " current lightline-buffer off
+  " gui use text tabline
+  " if has('gui_running')
+  "   set guioptions-=e
+  " endif
+'''
+
 # lightline setting use lightline-delphinus
 # based on https://qiita.com/delphinus/items/af5809b587f2af0a9f7f
 [[plugins]]
 repo = 'delphinus/lightline-delphinus'
 # repo  = 'tsuyoshicho/lightline-delphinus'
 # rev   = 'develop'
-depends = ['lightline.vim', 'vim-devicons', 'ale', 'tagbar', 'iceberg', 'gruvbox', 'vim-anzu', 'vim-submode']
+depends = ['lightline.vim', 'lightline-buffer', 'vim-devicons', 'ale', 'tagbar', 'iceberg', 'gruvbox', 'vim-anzu', 'vim-submode']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -2847,7 +2953,7 @@ hook_post_source = '''
   " endif
   let g:lightline = extend(g:lightline , {
      \ 'active': {
-     \   'left': [
+     \   'left' : [
      \     [ 'mode', 'paste' ],
      \     [ 'fugitive', 'gitgutter' ],
      \     [ 'filepath' ],
@@ -2861,47 +2967,61 @@ hook_post_source = '''
      \   ],
      \ },
      \ 'inactive': {
-     \   'left': [ [ 'filepath' ], [ 'filename' ] ],
-     \   'right': [ [ 'sky_color_clock' ], [ 'lineinfo' ], [ 'percent' ] ],
+     \   'left'  : [ [ 'filepath' ], [ 'filename' ] ],
+     \   'right' : [ [ 'sky_color_clock' ], [ 'lineinfo' ], [ 'percent' ] ],
+     \ },
+     \ 'tabline': {
+     \   'left'  : [ [ 'bufferinfo' ],
+     \               [ 'separator' ],
+     \               [ 'tabs' ], ],
+     \   'right' : [ [ 'close' ], ],
      \ },
      \ 'component': {
-     \   'lineinfo': nr2char(0xe0a1) . ':' . nr2char(0xe0a3) . ' ' . '%l[%L]:%-v',
-     \   'sky_color_clock': "%#SkyColorClock#%{' ' . sky_color_clock#statusline() . ' '}%#SkyColorClockTemp# ",
+     \   'lineinfo'        : nr2char(0xe0a1) . ':' . nr2char(0xe0a3) . ' ' . '%l[%L]:%-v',
+     \   'sky_color_clock' : "%#SkyColorClock#%{' ' . sky_color_clock#statusline() . ' '}%#SkyColorClockTemp# ",
+     \   'separator'       : nr2char(0xff9e8),
      \ },
      \ 'component_function': {
-     \   'modified':     'lightline#delphinus#components#modified',
-     \   'readonly':     'lightline#delphinus#components#readonly',
-     \   'fugitive':     'lightline#delphinus#components#fugitive',
-     \   'filepath':     'lightline#delphinus#components#filepath',
-     \   'filename':     'lightline#delphinus#components#filename',
-     \   'fileformat':   'lightline#delphinus#components#fileformat',
-     \   'filetype':     'lightline#delphinus#components#filetype',
-     \   'fileencoding': 'lightline#delphinus#components#fileencoding',
-     \   'mode':         'lightline#delphinus#components#mode',
-     \   'char_code':    'lightline#delphinus#components#charcode',
-     \   'percent':      'lightline#delphinus#components#percent',
-     \   'currenttag':   'lightline#delphinus#components#currenttag',
-     \   'gitgutter':    'lightline#delphinus#components#gitgutter',
-     \   'anzu':         'anzu#search_status',
-     \   'submode':      'submode#current',
+     \   'modified'     : 'lightline#delphinus#components#modified',
+     \   'readonly'     : 'lightline#delphinus#components#readonly',
+     \   'fugitive'     : 'lightline#delphinus#components#fugitive',
+     \   'filepath'     : 'lightline#delphinus#components#filepath',
+     \   'filename'     : 'lightline#delphinus#components#filename',
+     \   'fileformat'   : 'lightline#delphinus#components#fileformat',
+     \   'filetype'     : 'lightline#delphinus#components#filetype',
+     \   'fileencoding' : 'lightline#delphinus#components#fileencoding',
+     \   'mode'         : 'lightline#delphinus#components#mode',
+     \   'char_code'    : 'lightline#delphinus#components#charcode',
+     \   'percent'      : 'lightline#delphinus#components#percent',
+     \   'currenttag'   : 'lightline#delphinus#components#currenttag',
+     \   'gitgutter'    : 'lightline#delphinus#components#gitgutter',
+     \   'anzu'         : 'anzu#search_status',
+     \   'submode'      : 'submode#current',
+     \   'bufferinfo'   : 'lightline#buffer#bufferinfo',
      \ },
      \ 'component_function_visible_condition': {
-     \   'mode': 1,
-     \   'currenttag': 0,
-     \   'char_code': 0,
-     \   'fileformat': 0,
-     \   'filetype': 0,
-     \   'fileencoding': 0,
+     \   'mode'         : 1,
+     \   'currenttag'   : 0,
+     \   'char_code'    : 0,
+     \   'fileformat'   : 0,
+     \   'filetype'     : 0,
+     \   'fileencoding' : 0,
      \ },
      \ 'component_expand': {
-     \   'ale_error':   'lightline#delphinus#components#ale_error',
-     \   'ale_warning': 'lightline#delphinus#components#ale_warning',
-     \   'ale_ok':      'lightline#delphinus#components#ale_ok',
+     \   'ale_error'     : 'lightline#delphinus#components#ale_error',
+     \   'ale_warning'   : 'lightline#delphinus#components#ale_warning',
+     \   'ale_ok'        : 'lightline#delphinus#components#ale_ok',
+     \   'buffercurrent' : 'lightline#buffer#buffercurrent',
+     \   'bufferbefore'  : 'lightline#buffer#bufferbefore',
+     \   'bufferafter'   : 'lightline#buffer#bufferafter',
      \ },
      \ 'component_type': {
-     \   'ale_error':   'error',
-     \   'ale_warning': 'warning',
-     \   'ale_ok':      'ok',
+     \   'ale_error'     : 'error',
+     \   'ale_warning'   : 'warning',
+     \   'ale_ok'        : 'ok',
+     \   'buffercurrent' : 'tabsel',
+     \   'bufferbefore'  : 'raw',
+     \   'bufferafter'   : 'raw',
      \ },
      \ 'component_raw': {
      \    'sky_color_clock': 1,
@@ -2910,6 +3030,13 @@ hook_post_source = '''
      \ 'subseparator': { 'left': nr2char(0xe0b1), 'right': nr2char(0xe0b3) }
      \ }
      \)
+
+  " lightline-buffer
+  " \ 'tabline': {
+  " \   'left'  : [ [ 'bufferinfo' ],
+  " \               [ 'separator' ],
+  " \               [ 'bufferbefore', 'buffercurrent', 'bufferafter' ], ],
+  " \   'right' : [ [ 'close' ], ],
 
   " colorscheme setting in night-and-day
 
@@ -2925,7 +3052,7 @@ repo = 'tsuyoshicho/night-and-day'
 # rev  = 'develop'
 rev  = 'feature/autoload'
 merged = 0
-depends = ['lightline-delphinus', 'iceberg.vim', 'gruvbox', 'vim-solarized8', 'vim-colors-github', 'material.vim', 'gruvbox-material', 'rigel']
+depends = ['lightline-delphinus', 'iceberg.vim', 'gruvbox', 'vim-solarized8', 'vim-colors-github', 'material.vim', 'gruvbox-material', 'rigel', 'inkstained-vim', 'hydrangea-vim']
 hook_add = '''
   " " colorscheme 処理 - 必要な依存関係は処理すること
   " if has('gui_running')
@@ -2957,14 +3084,16 @@ hook_add = '''
     " guiならgruvbox,cliはicebergにする(base)
     let g:nd_themes = [
       \ ['sunrise+0',   'solarized8',       'light', 'solarized_improved'],
-      \ ['sunrise+1/3', 'github',           'light', 'github'],
-      \ ['sunrise+2/3', 'gruvbox-material', 'light', 'gruvbox_material'],
+      \ ['sunrise+1/4', 'github',           'light', 'github'],
+      \ ['sunrise+2/4', 'gruvbox-material', 'light', 'gruvbox_material'],
+      \ ['sunrise+3/4', 'inkstained',       'light', 'inkstained'],
       \ ['sunset+0',    'solarized8',       'dark',  'solarized_improved'],
-      \ ['sunset+1/6',  'iceberg',          'dark',  'iceberg'],
-      \ ['sunset+2/6',  'forest-night',     'dark',  'forest_night'],
-      \ ["sunset+3/6",  'material',         'dark',  'material_vim'],
-      \ ['sunset+4/6',  'gruvbox',          'dark',  'gruvbox'],
-      \ ['sunset+5/6',  'rigel',            'dark',  'rigel'],
+      \ ['sunset+1/7',  'hydrangea',        'dark',  'hydrangea'],
+      \ ['sunset+2/7',  'iceberg',          'dark',  'iceberg'],
+      \ ['sunset+3/7',  'forest-night',     'dark',  'forest_night'],
+      \ ['sunset+4/7',  'material',         'dark',  'material_vim'],
+      \ ['sunset+5/7',  'gruvbox',          'dark',  'gruvbox'],
+      \ ['sunset+6/7',  'rigel',            'dark',  'rigel'],
       \]
   else
     let g:nd_themes = [
@@ -2989,6 +3118,49 @@ hook_add = '''
 
 [[plugins]]
 repo = 'bronson/vim-trailing-whitespace'
+
+[[plugins]]
+repo = 'junegunn/goyo.vim'
+hook_post_source = '''
+  " curently, statusline update and enter/leave (rel)number
+  " manipulation conflict.
+  nnoremap <silent> <F12> :Goyo<CR>
+'''
+
+[[plugins]]
+repo = 'junegunn/limelight.vim'
+hook_add = '''
+  if !has("gui_running")
+    " Color name (:help cterm-colors) or ANSI code
+    let g:limelight_conceal_ctermfg = 'gray'
+    let g:limelight_conceal_ctermfg = 240
+  else
+    " Color name (:help gui-colors) or RGB color
+    let g:limelight_conceal_guifg = 'DarkGray'
+    let g:limelight_conceal_guifg = '#777777'
+  endif
+
+  " Default: 0.5
+  " let g:limelight_default_coefficient = 0.7
+
+  " Number of preceding/following paragraphs to include (default: 0)
+  " let g:limelight_paragraph_span = 1
+
+  " Beginning/end of paragraph
+  "   When there's no empty line between the paragraphs
+  "   and each paragraph starts with indentation
+  " let g:limelight_bop = '^\s'
+  " let g:limelight_eop = '\ze\n^\s'
+
+  " Highlighting priority (default: 10)
+  "   Set it to -1 not to overrule hlsearch
+  " let g:limelight_priority = -1
+'''
+hook_post_source = '''
+  " with Goyo
+  autocmd! MyAutoGroup User GoyoEnter Limelight
+  autocmd! MyAutoGroup User GoyoLeave Limelight!
+'''
 
 [[plugins]]
 repo = 'nathanaelkane/vim-indent-guides'
@@ -3057,8 +3229,8 @@ hook_add = '''
   augroup END
 '''
 
-[[plugins]]
-repo = 'h1mesuke/vim-alignta'
+# [[plugins]]
+# repo = 'h1mesuke/vim-alignta'
 
 [[plugins]]
 repo = 'editorconfig/editorconfig-vim'
@@ -3075,9 +3247,8 @@ hook_add = '''
 [[plugins]]
 repo = 'itchyny/vim-cursorword'
 
-# Match
-# [[plugins]]
-# repo = 'itchyny/vim-parenmatch'
+[[plugins]]
+repo = 'mattn/sonictemplate-vim'
 
 [[plugins]]
 repo = 'andymass/vim-matchup'

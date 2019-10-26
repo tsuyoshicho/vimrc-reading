@@ -201,6 +201,7 @@ set softtabstop=0
 " 自動インデントの幅
 set shiftwidth=2
 " 行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけインデントする。
+set shiftround
 set smarttab
 
 let s:skk = 0
@@ -233,20 +234,21 @@ set diffopt+=algorithm:histogram
 " }}}
 
 " Tags. {{{
+let s:home = ''
 if has('path_extra')
-  let $HOME_TMP = expand($HOME)
-  set tags+=./tags;$HOME_TMP
-  set tags+=./TAGS;$HOME_TMP
-  set tags+=./**2/tags;
-  set tags+=./**2/TAGS;
-  set tags+=tags
-  set tags+=TAGS
-else
-  set tags+=./tags
-  set tags+=./TAGS
-  set tags+=tags
-  set tags+=TAGS
+  let s:home = ';' . expand($HOME)
 endif
+execute 'set tags+=./tags' . s:home
+execute 'set tags+=./TAGS' . s:home
+
+if has('path_extra')
+  set tags+=./**2/tags
+  set tags+=./**2/TAGS
+endif
+
+set tags+=tags
+set tags+=TAGS
+
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
 " if dein#tap('ctrlp.vim')
@@ -574,8 +576,10 @@ set complete-=i   " disable scanning included files
 set complete-=t   " disable searching tags
 
 set completeopt=menuone,noselect,noinsert
+set completeopt+=preview
 if has('patch-8.1.1882')
- set completeopt+=popup
+  set completeopt-=preview
+  set completeopt+=popup
 endif
 
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000

@@ -470,18 +470,15 @@ hook_add = '''
   let g:auto_ctags_directory_list = ['.git', '.svn', '.hg', '.bzr', 'CVS', '.']
   let g:auto_ctags_search_recursively = 1
   let g:auto_ctags_absolute_path = 1
+  let s:home = ''
   if has('path_extra')
-    let $HOME_TMP = expand($HOME)
-    set tags+=./.svn/tags;$HOME_TMP
-    set tags+=./.git/tags;$HOME_TMP
-    " set tags+=./.svn/*.tags;$HOME_TMP
-    " set tags+=./.git/*.tags;$HOME_TMP
-  else
-    set tags+=./.svn/tags;
-    set tags+=./.git/tags;
-    " set tags+=./.svn/*.tags;
-    " set tags+=./.git/*.tags;
+    let s:home = ';' . expand($HOME)
   endif
+  for dir in g:auto_ctags_directory_list
+    if dir !=? '.'
+      execute 'set tags+=./' . dir . '/tags' . s:home
+    endif
+  endfor
 
   " git リポジトリ内などでも直にtagsを生成する関数
   function! DirectAutoCtags()
@@ -592,7 +589,7 @@ hook_add = '''
   let g:ale_linters = {
         \ 'vim'        : ['vint'],
         \ 'c'          : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
-        \ 'cpp'        : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
+        \ 'cpp'        : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd', 'cpplint'],
         \ 'php'        : ['phpcs',       'php'],
         \ 'java'       : ['checkstyle',  'javac',      'PMD'],
         \ 'css'        : ['prettier',    'stylelint'],
@@ -672,11 +669,13 @@ hook_post_source = '''
 # per filetypes
 [[plugins]]
 repo = 'rhysd/vim-clang-format'
-on_ft = ['c', 'cpp', 'objc', 'javascript', 'java', 'typescript', 'proto', 'arduino']
+on_if= 'executable("clang")'
+# on_ft = ['c', 'cpp', 'objc', 'javascript', 'java', 'typescript', 'proto', 'arduino']
 
 [[plugins]]
 repo = 'justmao945/vim-clang'
-on_ft = ['c', 'cpp']
+on_if= 'executable("clang")'
+# on_ft = ['c', 'cpp']
 hook_add = '''
   let g:clang_c_options = '-std=c11'
   let g:clang_cpp_options = '-std=c++14 -stdlib=libc++'
@@ -927,6 +926,10 @@ on_ft = ['csv', 'tsv']
 [[plugins]]
 repo = 'ap/vim-css-color'
 on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'vim', 'xdefaults', 'xml', 'yaml']
+
+# [[plugins]]
+# repo = 'gko/vim-coloresque'
+# on_ft = ['html', 'css', 'less', 'sass', 'scss', 'stylus', 'vim']
 
 [[plugins]]
 repo = 'cakebaker/scss-syntax.vim'
