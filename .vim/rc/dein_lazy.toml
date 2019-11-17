@@ -472,7 +472,7 @@ hook_add = '''
   let g:auto_ctags_absolute_path = 1
   let s:home = ''
   if has('path_extra')
-    let s:home = ';' . expand($HOME)
+    let s:home = ';$HOME'
   endif
   for dir in g:auto_ctags_directory_list
     if dir !=? '.'
@@ -588,8 +588,8 @@ hook_add = '''
   " linter setting
   let g:ale_linters = {
         \ 'vim'        : ['vint'],
-        \ 'c'          : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd'],
-        \ 'cpp'        : ['cppcheck',    'clang',      'gcc',        'clang-format', 'clangd', 'cpplint'],
+        \ 'c'          : ['cppcheck', 'clang-format', 'clangd'],
+        \ 'cpp'        : ['cppcheck', 'clang-format', 'clangd', 'cpplint'],
         \ 'php'        : ['phpcs',       'php'],
         \ 'java'       : ['checkstyle',  'javac',      'PMD'],
         \ 'css'        : ['prettier',    'stylelint'],
@@ -666,24 +666,88 @@ hook_post_source = '''
 #   let g:lightline.component_type['linter_ok'        ] = 'left'
 # '''
 
+[[plugins]]
+repo = 'LeafCage/laptime.vim'
+on_func = ['laptime#new']
+
+[[plugins]]
+repo = '0Delta/vimodoro'
+on_cmd = ['Pomodoro', 'PomodoroStop']
+
+[[plugins]]
+repo = 'tyru/restart.vim'
+on_cmd = ['Restart']
+
+[[plugins]]
+repo = 'mhinz/vim-sayonara'
+on_cmd = ['Sayonara']
+
+[[plugins]]
+repo = 'rbtnn/vim-mru'
+on_cmd = ['MRU']
+
+[[plugins]]
+repo = 'tyru/capture.vim'
+on_cmd = ['Capture']
+hook_add = '''
+  let g:capture_open_command = 'tabnew'
+'''
+
+[[plugins]]
+repo = 'LeafCage/lastmess.vim'
+on_cmd = ['LastMess']
+
+[[plugins]]
+repo = 'LeafCage/echos.vim'
+on_cmd = ['Echos']
+
+[[plugins]]
+repo = 'tweekmonster/helpful.vim'
+on_cmd = ['HelpfulVersion']
+
+[[plugins]]
+repo = 'liuchengxu/vim-clap'
+on_cmd = ['Clap']
+
+[[plugins]]
+repo = 'tamago324/vim-clap-help'
+depends = ['vim-clap']
+on_cmd = ['Clap']
+
+[[plugins]]
+repo = 'hokorobi/vim-clap-filelist'
+depends = ['vim-clap']
+on_cmd = ['Clap']
+hook_add = '''
+  " let g:clap_filelist_file = expand($XDG_CACHE_HOME . '/' . 'mrulist')
+'''
+
 # per filetypes
 [[plugins]]
 repo = 'rhysd/vim-clang-format'
-on_if= 'executable("clang")'
-# on_ft = ['c', 'cpp', 'objc', 'javascript', 'java', 'typescript', 'proto', 'arduino']
-
-[[plugins]]
-repo = 'justmao945/vim-clang'
-on_if= 'executable("clang")'
-# on_ft = ['c', 'cpp']
+on_if= 'executable("clang-format")'
 hook_add = '''
-  let g:clang_c_options = '-std=c11'
-  let g:clang_cpp_options = '-std=c++14 -stdlib=libc++'
-
-  " with vim-clang-format : command off
-  let g:clang_enable_format_command = 0
-  let g:clang_format_style = 'Google'
+  let g:clang_format#auto_formatexpr = 1
 '''
+
+# [[plugins]]
+# repo = 'justmao945/vim-clang'
+# on_if= 'executable("clang")'
+# # on_ft = ['c', 'cpp']
+# hook_add = '''
+#   let g:clang_c_options = '-std=c11'
+#   let g:clang_cpp_options = '-std=c++14 -stdlib=libc++'
+#
+#   " with vim-clang-format : command off
+#   let g:clang_enable_format_command = 0
+#
+#   " keep manual set completeopt value in vimrc.
+#   let g:clang_c_completeopt   = ''
+#   let g:clang_cpp_completeopt = ''
+#
+#   " diag off
+#   let g:clang_diagsopt = ''
+# '''
 
 [[plugins]]
 repo = 'justinmk/vim-syntax-extra'

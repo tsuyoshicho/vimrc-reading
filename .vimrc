@@ -51,7 +51,6 @@ map \ <Subleader>
 " f,tでの移動の逆にする機能が設定されているので、保持はする
 nnoremap <Subleader>, ,
 
-
 if s:is_cygwin
   " Git for Windows(MSYS2)にも対応のため、Windowsは手動で強制再設定
   " * $HOMEは定義済み(MSYS2では再定義される)
@@ -131,7 +130,7 @@ endif
 " runtime path setup
 "  at last
 "   add ~/.vim
-let &runtimepath =  &runtimepath . ',' . expand($HOME . '/.vim')
+set runtimepath+=$HOME/.vim
 
 filetype plugin indent on
 
@@ -236,7 +235,7 @@ set diffopt+=algorithm:histogram
 " Tags. {{{
 let s:home = ''
 if has('path_extra')
-  let s:home = ';' . expand($HOME)
+  let s:home = ';$HOME'
 endif
 execute 'set tags+=./tags' . s:home
 execute 'set tags+=./TAGS' . s:home
@@ -263,7 +262,7 @@ nnoremap <C-[> :pop<CR>
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  let &undodir = expand($HOME . '/.vim/undo', ':p') . '//' " // use fullpath
+  set undodir=$HOME/.vim/undo// " // use fullpath
   set undofile
   " set undolevels=1000 " default
 endif
@@ -276,17 +275,62 @@ set viminfo='200,<50,s10,h,rA:,rB:,n$HOME/.vim/info
 " }}}
 
 " Safety. {{{
+" 変更後終了時エラーではなく確認を求める
+set confirm
+
 " バックアップファイルを作らない
 set nobackup
-let &backupdir = expand($HOME . '/.vim/backup') . '//' " // use fullpath
+set backupdir=$HOME/.vim/backup// " // use fullpath
+
+" backupは上書き時だけつくって、成功で削除
+set writebackup
 
 " スワップファイルを作らない -> 作るがROで対応
+" -> thinca さんのIFを移植(ROでコマンドでRecover/Delete)
 " set noswapfile
-let &directory = expand($HOME . '/.vim/swap') . '//' " // use fullpath
+set directory=$HOME/.vim/swap// " // use fullpath
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
-autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
+" autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
 
-set writebackup
+" Swap
+" from thinca/config
+" setglobal swapfile
+" augroup vimrc-swapfile
+"   autocmd!
+augroup MyAutoGroup
+  autocmd SwapExists * call s:on_SwapExists()
+augroup END
+
+function! s:on_SwapExists() abort
+  if !filereadable(expand('<afile>'))
+    let v:swapchoice = 'd'
+    return
+  endif
+  let v:swapchoice = get(b:, 'swapfile_choice', 'o')
+  unlet! b:swapfile_choice
+  if v:swapchoice !=# 'd'
+    let b:swapfile_exists = 1
+  endif
+endfunction
+
+command! SwapfileRecovery call s:swapfile_recovery()
+command! SwapfileDelete call s:swapfile_delete()
+
+function! s:swapfile_recovery() abort
+  if get(b:, 'swapfile_exists', 0)
+    let b:swapfile_choice = 'r'
+    unlet b:swapfile_exists
+    edit
+  endif
+endfunction
+
+function! s:swapfile_delete() abort
+  if get(b:, 'swapfile_exists', 0)
+    let b:swapfile_choice = 'd'
+    unlet b:swapfile_exists
+    edit
+  endif
+endfunction
 
 " 編集中のファイルが変更されたら自動で読み直す
 set autoread
@@ -349,6 +393,8 @@ set lazyredraw
 set title
 " intro off
 set shortmess+=I
+" complete msg off
+set shortmess+=c
 
 " モード表示
 set showmode
@@ -379,6 +425,7 @@ set showcmd
 
 " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 set scrolloff=3
+set sidescrolloff=3
 
 " 現在のカーソルの色をつける
 " 現在の行を強調表示
@@ -483,7 +530,23 @@ set statusline=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V
 
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set display=lastline
+set display+=uhex
 set synmaxcol=512
+
+" }}}
+
+" View. {{{
+" let &viewdir = expand($HOME . '/.vim/view')
+set viewdir=$HOME/.vim/view
+" " from muramount/conf_files
+" " ファイル全般に設定
+" " augroup General
+" "  autocmd!
+" augroup MyAutoGroup
+"  " 設定の保存と復元
+"  autocmd BufWinLeave * silent mkview
+"  autocmd BufWinEnter * silent loadview
+" augroup END
 
 " }}}
 " }}}

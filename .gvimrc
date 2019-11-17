@@ -22,7 +22,11 @@ if s:is_mac
   set cmdheight=2
 endif
 
-" set guioptions=c    " show no GUI components
+" set guioptions-=c    " Do not show GUI components
+"                      " (GUI dialog change to console dialog)
+set guioptions-=T    " show no GUI Toolbar(disable)
+set guioptions+=k    " keep GUI Window size at scrollbar adding/removing
+
 " based on http://blog.remora.cx/2010/03/vim-proggy-and-osaka-fonts.html
 set ambiwidth=double " override ambiwidth
 

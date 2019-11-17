@@ -85,12 +85,6 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'LeafCage/laptime.vim'
-
-[[plugins]]
-repo = '0Delta/vimodoro'
-
-[[plugins]]
 repo = 'kyoh86/vim-editerm'
 # Put below lines in .zshrc or .bashrc.
 #
@@ -231,9 +225,6 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 'tyru/restart.vim'
-
-[[plugins]]
 repo = 'mattn/vim-sl'
 
 # [[plugins]]
@@ -283,9 +274,6 @@ hook_source = '''
 # on_if= 'executable("clang")'
 
 [[plugins]]
-repo = 'mhinz/vim-sayonara'
-
-[[plugins]]
 repo = 'osyo-manga/vim-over'
 hook_add = '''
   nnoremap <silent> <Leader>S :OverCommandLine<cr>
@@ -307,6 +295,10 @@ hook_add = '''
 
 [[plugins]]
 repo = 'rbtnn/vimconsole.vim'
+# depends = ['vim-prettyprint'] # non-depend, but if already exist; use PrettyPrint
+
+[[plugins]]
+repo = 'thinca/vim-editvar'
 # depends = ['vim-prettyprint'] # non-depend, but if already exist; use PrettyPrint
 
 [[plugins]]
@@ -483,19 +475,7 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'tyru/capture.vim'
-hook_add = '''
-  let g:capture_open_command = 'tabnew'
-'''
-
-[[plugins]]
 repo = 'thinca/vim-localrc'
-
-[[plugins]]
-repo = 'LeafCage/lastmess.vim'
-
-[[plugins]]
-repo = 'LeafCage/echos.vim'
 
 # [[plugins]]
 # repo = 'myrobo/smart_tabline.vim'
@@ -862,8 +842,15 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'kamykn/spelunker.vim'
+# repo = 'kamykn/spelunker.vim'
+repo = 'tsuyoshicho/spelunker.vim'
+rev  = 'feature/ctrlp'
+depends = ['ctrlp.vim']
 hook_add = '''
+  " ctrlp ext
+  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
+        \ + ['spell']
+
   " Enable spelunker.vim. (default: 1)
   " 1: enable
   " 0: disable
@@ -921,8 +908,8 @@ hook_post_source = '''
   set complete-=kspell
 
   " jump keymap
-  nnoremap ]s :call spelunker#jump_next()<CR>
-  nnoremap [s :call spelunker#jump_prev()<CR>
+  silent! nmap <unique> ]s <Plug>(spelunker-jump-next)
+  silent! nmap <unique> [s <Plug>(spelunker-jump-prev)
 '''
 
 [[plugins]] # codic support
@@ -1487,6 +1474,21 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 't9md/vim-choosewin'
+hook_add = '''
+  " use overlay feature
+  let g:choosewin_overlay_enable = 1
+
+  " workaround for the overlay font being broken on mutibyte buffer.
+  " let g:choosewin_overlay_clear_multibyte = 1
+'''
+hook_post_source = '''
+  " invoke with '-' : original
+  " key bind to ',-'
+  nmap  <Leader>-  <Plug>(choosewin)
+'''
+
+[[plugins]]
 repo = 'justincampbell/vim-eighties'
 hook_add = '''
   let g:eighties_enabled = 1
@@ -1506,6 +1508,7 @@ hook_add = '''
 
 [[plugins]]
 repo = 'tyru/open-browser-unicode.vim'
+depends = ['open-browser.vim']
 
 [[plugins]]
 repo = 'itchyny/calendar.vim'
@@ -1775,48 +1778,46 @@ hook_add = '''
     call add(g:lsp_item, {
           \ 'name': 'clangd',
           \ 'cmd': {server_info->['clangd', '-background-index']},
-          \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
+          \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'h', 'hpp'],
           \ })
+  endif
+
+  " c/c++ cquery
+  if executable('cquery')
+    ⦙ " call add(g:lsp_item, {
+    ⦙ "     \ 'name': 'cquery',
+    ⦙ "     \ 'cmd': {server_info->['cquery']},
+    ⦙ "     \ 'root_uri': {
+    ⦙ "     \   server_info->lsp#utils#path_to_uri(
+    ⦙ "     \     lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'compile_commands.json')
+    ⦙ "     \   )
+    ⦙ "     \ },
+    ⦙ "     \ 'initialization_options': { 'cacheDirectory': '~/tmp/cquery/cache' },
+    ⦙ "     \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+    ⦙ "     \ })
   endif
 
   " efm server
   if executable('efm-langserver')
-    " let wl = []
-    " if executable('vint')
-    "   call add(wl, ['vim'])
-    " endif
-    " if executable('markdownlint')
-    "   call add(wl, ['markdown'])
-    " endif
-    " if executable('vale')
-    "   call add(wl, ['text', 'asciidoc' ,'markdown'])
-    " endif
-    "
-    " call add(g:lsp_item, {
-    "      \ 'name': 'efm-langserver',
-    "      \ 'cmd': {server_info->['efm-langserver', '-c=~/.config/efm-langserver/config.yaml']},
-    "      \ 'whitelist': uniq(sort(copy(wl))),
-    "      \ })
+    let wl = []
+    if executable('vint')
+      call extend(wl, ['vim'])
+    endif
+    if executable('markdownlint')
+      call extend(wl, ['markdown'])
+    endif
+    if executable('vale')
+      call extend(wl, ['text', 'asciidoc', 'markdown'])
+    endif
+    if executable('cpplint')
+      call extend(wl, ['c', 'cpp', 'objc', 'objcpp', 'h', 'hpp'])
+    endif
 
-    function s:efm_generate(name, cmds, types)
-      let retval = {}
-      let retval['name'] = 'efm-langserver-' . a:name
-
-      let cmdarg = ['efm-langserver', '-stdin', &shell, &shellcmdflag] + a:cmds
-      let retval['cmd'] = { server_info -> cmdarg }
-      let retval['whitelist'] = a:types
-      return retval
-    endfunction
-
-    " if executable('vint')
-    "   call add(g:lsp_item, s:efm_generate('vint', ['vint -'], ['vim']))
-    " endif
-    " if executable('markdownlint')
-    "   call add(g:lsp_item, s:efm_generate('markdownlint', ['markdownlint -s'], ['markdown']))
-    " endif
-    " if executable('vale')
-    "   call add(g:lsp_item, s:efm_generate('vale', ['vale --output line'], ['text', 'asciidoc', 'markdown']))
-    " endif
+    call add(g:lsp_item, {
+         \ 'name': 'efm-langserver',
+         \ 'cmd': {server_info->['efm-langserver', '-c=~/.config/efm-langserver/config.yaml']},
+         \ 'whitelist': uniq(sort(copy(wl))),
+         \ })
   endif
 
   function! g:Lsp_setup() abort
@@ -2203,7 +2204,7 @@ hook_add = '''
   " yank use LeafCage/yankround.vim
   let g:ctrlp_yankring_disable = 1
   " let g:ctrlp_yankring_limit = 50 " default 100
-  " let let g:ctrlp_yankring_minimum_chars = 4 " default 2
+  " let g:ctrlp_yankring_minimum_chars = 4 " default 2
 
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
         \ + ['menu', 'cmd']
@@ -2734,6 +2735,16 @@ repo = 'teddywing/vim-gitcha'
 
 [[plugins]] # git rebase
 repo = 'hotwatermorning/auto-git-diff'
+hook_post_source = '''
+  function! s:setup_auto_git_diff() abort
+    nmap <buffer><C-l> <Plug>(auto_git_diff_scroll_manual_update)
+    nmap <buffer><C-n> <Plug>(auto_git_diff_scroll_down_half)
+    nmap <buffer><C-p> <Plug>(auto_git_diff_scroll_up_half)
+  endfunction
+  augroup MyAutoGroup
+    autocmd FileType gitrebase call <SID>setup_auto_git_diff()
+  augroup END
+'''
 
 # [[plugins]]
 # repo = 'mhinz/vim-signify'
