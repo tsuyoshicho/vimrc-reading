@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8 ff=unix ft=gitconfig
 ## vim
-/dict/
+/backup/*
+/dict/*
+/memo/*
+/swap/*
+/undo/*
+/view/*
+
+# system local setting
+/rc/*.vim
+# vim info
 /info
-/memo/
-/undo/
 
 # need not ignore
 !.gitkeep
+!needcopy.txt
 
 # EOF

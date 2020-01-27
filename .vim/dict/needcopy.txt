@@ -1,0 +1,14 @@
+# Migemo dictionary
+
+Copy from <tools>/dictionary/Migemo/<encoding> directory to under ~/.vim/dict/(current) dir
+
+ex.
+> ls .
+>  utf-8/
+
+# Thesaurus file
+Copy from <tools>/dictionary/mthesaur.txt to under ~/.vim/dict/(current) dir
+
+ex.
+> ls .
+>  mthesaur.txt

@@ -118,7 +118,7 @@ endif
 " call source
 call dein#call_hook('source')
 " set post source at non-lazy plugin
-autocmd MyAutoGroup VimEnter * call dein#call_hook('post_source')
+autocmd MyAutoGroup VimEnter * nested call dein#call_hook('post_source')
 
 " もし、未インストールものものがあったらインストール
 if (0 == v:vim_did_enter) && dein#check_install()
@@ -131,6 +131,7 @@ endif
 "  at last
 "   add ~/.vim
 set runtimepath+=$HOME/.vim
+set runtimepath+=$HOME/.vim/after
 
 filetype plugin indent on
 
@@ -184,24 +185,37 @@ set smartindent
 set breakindent
 set breakindentopt=min:50,shift:4,sbr
 
-" set whichwrap=b,s,h,l,<,>,[,]
 set wrap           " the longer line is wrapped
 set wrapmargin=8
 set linebreak      " wrap at 'breakat'
 "set breakat=\      " break point for linebreak (default " ^I!@*-+;:,./?")
-set showbreak=+\   " set showbreak
+" set showbreak=+\
+set showbreak=↪   " set break char
 
 " Tab文字を半角スペースにする
 set expandtab
-" Tabの幅（スペースいくつ分）
-set tabstop=2
-" ソフトタブ展開数(0はtabstopに同じ)
-set softtabstop=0
-" 自動インデントの幅
+" Tabの幅
+" koron さんの解説
+" * ts/tabstop      物理的なタブ文字の展開幅
+" * sw/shiftwidth   論理的な1インデントの幅
+" * sts/softtabstop ユーザーがタブ文字を入力・削除しようとしたときの操作幅
+" tyru さん設定を流用、タブを巨大にして強調する
+" タブの値 (表示はいくつ分?)
+set tabstop=8
+" タブの値 (自動インデントの幅)
 set shiftwidth=2
-" 行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけインデントする。
-set shiftround
+" ソフトタブ展開数 (0は無効、-1はshiftwidthに同じ)
+set softtabstop=-1
+" 行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけに整理される
 set smarttab
+set shiftround
+
+" vim script pre-escape continue line indent
+" in runtime : default shiftwidth() * 3
+" see:
+" http://rbtnn.hateblo.jp/entry/2014/11/30/174749
+" https://twitter.com/_tyru_/status/1206884044509569026
+let g:vim_indent_cont = 0
 
 let s:skk = 0
 if s:skk
@@ -254,7 +268,7 @@ nnoremap <C-]> g<C-]>
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
-" タグの戻りを[に割り当て
+" タグの戻りを[に割り当て / ESC 同等なのでつらい
 nnoremap <C-[> :pop<CR>
 " }}}
 
@@ -262,7 +276,7 @@ nnoremap <C-[> :pop<CR>
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  set undodir=$HOME/.vim/undo// " // use fullpath
+  set undodir=$HOME/.vim/undo
   set undofile
   " set undolevels=1000 " default
 endif
@@ -336,7 +350,7 @@ endfunction
 set autoread
 " based on https://vim-jp.org/vim-users-jp/2011/03/12/Hack-206.html
 " window move to autoread
-autocmd MyAutoGroup WinEnter * checktime
+autocmd MyAutoGroup WinEnter * nested checktime
 
 " バッファが編集中でもその他のファイルを開けるように
 " based on https://qiita.com/qtamaki/items/4da4ead3f2f9a525591a
@@ -409,23 +423,32 @@ set matchtime=1
 set modeline
 
 "ルーラー,行番号を表示
-set number
 set ruler
+set number
 " http://cohama.hateblo.jp/entry/2013/10/07/020453
 set relativenumber
 nnoremap <silent> <F3> :<C-u>setlocal relativenumber!<CR>
-augroup toggle_relative_number
-  autocmd!
-  autocmd InsertEnter * :setlocal norelativenumber
-  autocmd InsertLeave * :setlocal relativenumber
+
+function! s:relativenumber_toggle(mode) abort
+  let enter = a:mode ==? 'enter'
+
+  if enter
+    let b:relativenumber = &l:relativenumber " backup
+    setlocal norelativenumber
+  else
+    if get(b:,'relativenumber', 1)
+      " if backup value is relativenumber is active, re-active
+      setlocal relativenumber
+    endif
+  endif
+endfunction
+augroup MyAutoGroup
+  autocmd InsertEnter * nested call <SID>relativenumber_toggle('enter')
+  autocmd InsertLeave * nested call <SID>relativenumber_toggle('leave')
 augroup END
 
 " 入力中のコマンドをステータスに表示す
 set showcmd
-
-" based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
-set scrolloff=3
-set sidescrolloff=3
 
 " 現在のカーソルの色をつける
 " 現在の行を強調表示
@@ -440,25 +463,22 @@ set sidescrolloff=3
 " カレントウィンドウにのみ罫線を引く(ここで制御)
 " based on http://vimblog.hatenablog.com/entry/vimrc_autocmd_examples
 augroup MyAutoGroup
-  autocmd VimEnter,BufWinEnter,WinEnter * setlocal cursorline
-  autocmd VimEnter,BufWinEnter,WinEnter * setlocal cursorcolumn
-  autocmd WinLeave * setlocal nocursorline
-  autocmd WinLeave * setlocal nocursorcolumn
+  autocmd VimEnter,BufWinEnter,WinEnter * nested
+        \ setlocal cursorline cursorcolumn
+  autocmd WinLeave                      * nested
+        \ setlocal nocursorline nocursorcolumn
   " based on https://postd.cc/vim-galore-4/
   " edit off
   " if cursorlineopt support: Enter only show number/Leave show both
   if exists('&cursorlineopt')
-    autocmd InsertEnter * setlocal cursorlineopt=number
+    autocmd InsertEnter * nested setlocal cursorlineopt=number
+    autocmd InsertLeave * nested setlocal cursorlineopt=both
   else
-    autocmd InsertEnter * setlocal nocursorline
+    autocmd InsertEnter * nested setlocal nocursorline
+    autocmd InsertLeave * nested setlocal cursorline
   endif
-  autocmd InsertEnter * setlocal nocursorcolumn
-  if exists('&cursorlineopt')
-    autocmd InsertLeave * setlocal cursorlineopt=both
-  else
-    autocmd InsertLeave * setlocal cursorline
-  endif
-  autocmd InsertLeave * setlocal cursorcolumn
+  autocmd InsertEnter * nested setlocal nocursorcolumn
+  autocmd InsertLeave * nested setlocal cursorcolumn
 augroup END
 
 " gitgutter sign support
@@ -548,10 +568,62 @@ set viewdir=$HOME/.vim/view
 "  autocmd BufWinEnter * silent loadview
 " augroup END
 
+" based on http://blog.serverkurabe.com/vim-split-window
+" 新しいウィンドウを下に開く
+set splitbelow
+" 新しいウィンドウを右に開く
+" set splitright
+"
+set switchbuf=split
+
+" Tab数拡張
+set tabpagemax=99
+
+" }}}
+
+" Cursor Pos. {{{
+" from :help last-position-jump
+autocmd MyAutoGroup BufReadPost * nested
+      \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
+      \ |   exe "normal! g`\""
+      \ | endif
 " }}}
 " }}}
 
+
+" ##############################################################移動系############################################################## {{{
+" Command/Find Window. {{{
+
+" based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
+set scrolloff=3
+set sidescrolloff=3
+
+" set whichwrap=b,s,h,l,<,>,[,]
+
+" gg/G and other keep column
+set nostartofline
+" }}}
+
+" }}}
+
 " ##############################################################その他############################################################## {{{
+" Command/Find Window. {{{
+
+" cmdwinheight default 7
+let &cmdwinheight = min([(&lines/4), 10])
+autocmd MyAutoGroup VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
+
+" based on https://qiita.com/monaqa/items/e22e6f72308652fc81e2
+augroup MyAutoGroup
+  " 行数を非表示
+  autocmd CmdwinEnter [:\/\?=] nested setlocal nonumber norelativenumber
+  " signcolumn を非表示
+  autocmd CmdwinEnter [:\/\?=] nested setlocal signcolumn=no
+  " q で終了
+  autocmd CmdwinEnter [:\/\?=] nested nnoremap <buffer> q <C-w>c
+augroup END
+" }}}
+
 " Folding. {{{
 " overwrite at plugin
 " set foldenable
@@ -559,6 +631,22 @@ set viewdir=$HOME/.vim/view
 " set foldmethod=indent
 " set foldtext=Mopp_fold_text()
 " set foldmarker=\ {{{,\ }}}
+
+" from https://github.com/choplin/dotfiles/blob/master/_vimrc
+" ft-vim_fold {{{
+" augroup foldmethod-expr
+"   autocmd!
+augroup MyAutoGroup
+  autocmd InsertEnter * if &l:foldmethod ==# 'expr'
+  \                   |   let b:foldinfo = [&l:foldmethod, &l:foldexpr]
+  \                   |   setlocal foldmethod=manual foldexpr=0
+  \                   | endif
+  autocmd InsertLeave * if exists('b:foldinfo')
+  \                   |   let [&l:foldmethod, &l:foldexpr] = b:foldinfo
+  \                   | endif
+augroup END
+" }}}
+
 " }}}
 
 " Terminal/Shell. {{{
@@ -583,20 +671,13 @@ set viewdir=$HOME/.vim/view
 "   endif
 " endif
 
+set ttyfast
+set ttimeout
 " based on https://qiita.com/k2nakamura/items/fa19806a041d0429fc9f
 set ttimeoutlen=10
 " }}}
 
 " Others. {{{
-" based on http://blog.serverkurabe.com/vim-split-window
-" 新しいウィンドウを下に開く
-set splitbelow
-" 新しいウィンドウを右に開く
-" set splitright
-
-" Tab数拡張
-set tabpagemax=99
-
 " based on https://postd.cc/vim-galore-4/
 " カーソルスタイル
 " 一部動かない所があるので、一旦off
@@ -616,7 +697,7 @@ set tabpagemax=99
 set belloff=all
 
 " フォーマットを有効にする
-set formatoptions=tcqmBjro
+set formatoptions=tcmBjroq2l
 
 set matchpairs+=<:>
 
@@ -628,7 +709,7 @@ set matchpairs+=<:>
 " オムニ補完の設定(insertモードでCtrl+oで候補を出す、Ctrl+n Ctrl+pで選択、Ctrl+yで確定)
 " based on https://vim-jp.org/vim-users-jp/2009/11/01/Hack-96.html
 " 注意: この内容は:filetype onよりも後に記述すること。
-autocmd MyAutoGroup FileType * if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
+autocmd MyAutoGroup FileType * nested if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
 
 " 補完設定
 " set complete as default
@@ -668,8 +749,8 @@ set spell
 set complete+=kspell
 set spelllang=en_us,cjk
 let &spellfile = expand($HOME . '/.vim/dict/spell.' . &encoding . '.add')
-let &spellsuggest = 'best,' . string(min([(&lines/2), 10]))
-autocmd MyAutoGroup VimResized * let &spellsuggest = 'best,' . string(min([(&lines/2), 10]))
+let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
+autocmd MyAutoGroup VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
@@ -831,39 +912,37 @@ if !has('gui_running')
 endif
 
 " Restore t_Co for less command after vim quit
-augroup restore_t_Co
-  autocmd!
+augroup MyAutoGroup
   if s:saved_t_Co == 8
-    autocmd VimLeave * let &t_Co = 256
+    autocmd VimLeave * nested let &t_Co = 256
   else
-    autocmd VimLeave * let &t_Co = 8
+    autocmd VimLeave * nested let &t_Co = 8
   endif
-  autocmd VimLeave * let &t_Co = s:saved_t_Co
+  autocmd VimLeave * nested let &t_Co = s:saved_t_Co
 augroup END
 
 " カラー設定(?)
-augroup vimrc-highlight
-  autocmd!
+augroup MyAutoGroup
   " vimdiff config
   " http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
   " vimdiffの色設定
-  " autocmd ColorScheme * highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
-  " autocmd ColorScheme * highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
-  " autocmd ColorScheme * highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
-  " autocmd ColorScheme * highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
+  " autocmd ColorScheme * nested highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
+  " autocmd ColorScheme * nested highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
+  " autocmd ColorScheme * nested highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
+  " autocmd ColorScheme * nested highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
 
   " based on https://thinca.hatenablog.com/entry/20160214/1455415240
   " autocmd ColorScheme * highlight ZenSpace ctermbg=Red guibg=Red
 
   " based on http://secret-garden.hatenablog.com/entry/2016/08/16/000149
-  autocmd ColorScheme * highlight link EndOfBuffer Ignore
+  autocmd ColorScheme * nested highlight link EndOfBuffer Ignore
 
   " based on http://qiita.com/svjunic/items/f987d51ed3fc078fa27e
   " based on http://d.hatena.ne.jp/ryochack/20111029/1319913548
   " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 
-  " autocmd ColorScheme * highlight Comment ctermfg=103
-  " autocmd ColorScheme * highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
+  " autocmd ColorScheme * nested highlight Comment ctermfg=103
+  " autocmd ColorScheme * nested highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
 
 augroup END
 
@@ -877,7 +956,13 @@ augroup END
 
 " help
 " based on http://haya14busa.com/reading-vim-help/
-set keywordprg=:help " Open Vim internal help by K command
+" Open Vim internal help by K command default
+" currently K map vim-ref
+set keywordprg=:help
+augroup MyAutoGroup
+  " FileType vim force overwrite
+  autocmd FileType vim setlocal keywordprg=:help
+augroup END
 " }}}
 
 " Grep. {{{
@@ -897,9 +982,10 @@ elseif executable('grep')
 endif
 
 augroup MyAutoGroup
-  " based on https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
-   autocmd QuickFixCmdPost grep cwindow
-   autocmd QuickFixCmdPost vimgrep cwindow
+  " based on
+  " https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
+  " https://kaworu.jpn.org/kaworu/2008-06-07-1.php
+   autocmd QuickFixCmdPost make,grep,grepadd,vimgrep nested cwindow
 augroup END
 
 " }}}
@@ -957,7 +1043,7 @@ if has('autocmd')
       let &fileencoding=&encoding
     endif
   endfunction " }}}
-  autocmd MyAutoGroup BufReadPost * call AU_ReCheck_FENC()
+  autocmd MyAutoGroup BufReadPost * nested call AU_ReCheck_FENC()
 endif
 " 改行コードの自動認識
 if s:is_windows
@@ -979,7 +1065,7 @@ endif
 
 augroup MyAutoGroup
   " ssh config
-  autocmd BufNewFile,BufRead */.ssh/conf.d/*.conf  setf sshconfig
+  autocmd BufNewFile,BufRead */.ssh/conf.d/*.conf nested setf sshconfig
 augroup END
 
 " }}}
@@ -1000,6 +1086,12 @@ augroup END
 " imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |
 " cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |
 "---------------------------------------------------------------------------"
+
+" same key
+"   <C-i> == <Tab>
+"   <C-m> == <Enter>
+"   <C-[> == <ESC>
+" see http://rbtnn.hateblo.jp/entry/2014/11/30/174749
 
 " ################# キーマップ #######################
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
@@ -1043,13 +1135,16 @@ vnoremap <DOWN> gj
 nnoremap <C-j> <C-e>j
 nnoremap <C-k> <C-y>k
 
+" speed save & exit
+nnoremap <space>w :w<CR>
+nnoremap <space>q :q<CR>
+
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 nnoremap Y y$
 
 " x,s でレジスタを汚染しない
-
 " x,Xでカーソル文字を削除する際レジスタを汚さない
 " ビジュアルモードで選択すればヤンクしないdとして使用できる
 nnoremap x "_x
@@ -1063,6 +1158,7 @@ nnoremap s "_s
 vnoremap s "_s
 nnoremap S "_S
 vnoremap S "_S
+" setup in cutlass(future)
 " s use easymotion
 
 " based on http://deris.hatenablog.jp/entry/2013/05/02/192415
@@ -1072,7 +1168,12 @@ nnoremap ZZ <Nop>
 nnoremap ZQ <Nop>
 
 " exモード
-nnoremap Q <Nop>
+" プラグインで使うため、そちらで上書き
+" nnoremap Q <Nop>
+"
+" based on https://github.com/jspitkin/dot-files/blob/master/.vimrc
+" Redo
+nnoremap U <C-R>
 
 " from 0Delta/vimrc
 " (shift)Tab でインデント
@@ -1116,8 +1217,8 @@ set pastetoggle=<F12>
 
 " q readonly is close(small setting)
 " help and other readonly popup window : q is close
-autocmd MyAutoGroup FileType help nnoremap <buffer> q <C-w>c
-autocmd MyAutoGroup FileType git-status,git-log nnoremap <buffer> q <C-w>c
+autocmd MyAutoGroup FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
+autocmd MyAutoGroup FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
 
 " autocmd MyAutoGroup FileType qf nnoremap <buffer> q <C-w>c
 
@@ -1285,8 +1386,7 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 " }}}
 
 " autocmd {{{
-" augroup syntaxecho
-"   autocmd!
+" augroup MyAutoGroup
 "   autocmd CursorMoved call <SID>EchoSyntax(get(b:, 'SyntaxEchoStatus', 0))
 " augroup END
 " }}}

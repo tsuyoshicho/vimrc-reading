@@ -1,18 +1,4 @@
 # Core & Util
-# http://qiita.com/delphinus/items/00ff2c0ba972c6e41542
-# if windows download-auto/need first time manual depend clear `echo vimproc#version()`
-# https://qiita.com/from_kyushu/items/4e93ff2d228a359bea0e
-# MSYS,Cygwin split problem... disable
-# [[plugins]]
-# repo = 'Shougo/vimproc.vim'
-# merged = 0
-# # in non-windows need
-# # build = 'make'
-# on_if = '!has("nvim") && !has("win32unix")'
-# hook_add = '''
-#   let g:vimproc#download_windows_dll = 1
-# '''
-
 [[plugins]]
 repo = 'mattn/vimtweak'
 on_if= '(has("win32") || has("win64")) && has("gui_running")'
@@ -21,20 +7,6 @@ on_if= '(has("win32") || has("win64")) && has("gui_running")'
 [[plugins]]
 repo = 'edkolev/promptline.vim'
 on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
-
-# [[plugins]]
-# repo = 'kassio/neoterm'
-# on_if = '(has("nvim") || has("terminal"))'
-# hook_add = '''
-#   " based on https://qiita.com/hanajori/items/1bcd0c567a9fa193b9cd
-#   let g:neoterm_autoscroll=1
-#   " let g:neoterm_position='vertical'
-# '''
-# hook_post_source = '''
-#   tnoremap <silent> <ESC> <C-\><C-n><C-w>
-#   " nnoremap <silent> <C-e> :TREPLSendLine<CR>j0
-#   " vnoremap <silent> <C-e> V:TREPLSendSelection<CR>'>j0
-# '''
 
 [[plugins]] # cmigemoが必要
 repo = 'haya14busa/vim-migemo'
@@ -74,59 +46,6 @@ hook_post_source = '''
 repo = 'mattn/webapi-vim'
 on_if= 'executable("curl")'
 
-[[plugins]] # fzf
-repo = 'junegunn/fzf'
-merged = 0
-on_if= 'executable("fzf")'
-
-[[plugins]]
-repo = 'junegunn/fzf.vim'
-on_if= 'executable("fzf")'
-depends = ['fzf']
-hook_add = '''
-  let g:fzf_command_prefix = 'Fzf'
-
-  " fzfからファイルにジャンプできるようにする
-  let g:fzf_buffers_jump = 1
-
-  " Customize fzf colors to match your color scheme
-  let g:fzf_colors = {
-        \ 'fg':      ['fg', 'Normal'],
-        \ 'bg':      ['bg', 'Normal'],
-        \ 'hl':      ['fg', 'Comment'],
-        \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-        \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-        \ 'hl+':     ['fg', 'Statement'],
-        \ 'info':    ['fg', 'PreProc'],
-        \ 'border':  ['fg', 'Ignore'],
-        \ 'prompt':  ['fg', 'Conditional'],
-        \ 'pointer': ['fg', 'Exception'],
-        \ 'marker':  ['fg', 'Keyword'],
-        \ 'spinner': ['fg', 'Label'],
-        \ 'header':  ['fg', 'Comment'],
-        \}
-'''
-hook_post_source = '''
-  " see https://qiita.com/hisawa/items/fc5300a526cb926aef08
-  " ,<C-]>でタグ検索
-  nnoremap <silent> <leader><C-]> :call fzf#vim#tags(expand('<cword>'))<CR>
-
-  " based on https://qiita.com/Sa2Knight/items/6635af9fc648a5431685
-  nnoremap [fzf]     <Nop>
-  nmap     <leader>z [fzf]
-
-  function! s:fzf_command(cmd) abort
-    return g:fzf_command_prefix . a:cmd
-  endfunction
-
-  nnoremap <silent><expr> [fzf]f ':' . <SID>fzf_command('GFiles')  . '<CR>'
-  nnoremap <silent><expr> [fzf]F ':' . <SID>fzf_command('GFiles?') . '<CR>'
-  nnoremap <silent><expr> [fzf]b ':' . <SID>fzf_command('Buffers') . '<CR>'
-  nnoremap <silent><expr> [fzf]l ':' . <SID>fzf_command('BLines')  . '<CR>'
-  nnoremap <silent><expr> [fzf]h ':' . <SID>fzf_command('History') . '<CR>'
-  nnoremap <silent><expr> [fzf]m ':' . <SID>fzf_command('Mark')    . '<CR>'
-'''
-
 [[plugins]]
 repo = 'mbbill/undotree'
 on_if= 'has("persistent_undo")'
@@ -149,43 +68,15 @@ depends = ['vim-dirvish']
 # '''
 
 [[plugins]]
-repo = 'JazzCore/ctrlp-cmatcher'
-on_if= 'has("python")'
-merged = 0
-depends = ['ctrlp.vim']
-hook_post_update = '''
-  if (has("win32") || has("win64"))
-    let cmd = 'install_windows.bat'
-  else
-    let cmd = 'install.sh'
-  endif
-  let g:dein#plugin.build = cmd
-'''
-hook_add = '''
-  " need build
-  " echomsg "cmatcher:" . string(g:dein#plugin)
-
-  let rtp = dein#get('ctrlp-cmatcher').rtp
-
-  if (((has("win32") || has("win64"))
-        \    && filereadable(expand(rtp . '/autoload/fuzzycomt.pyd', ':p')))
-        \ || (!(has("win32") || has("win64"))
-        \    && filereadable(expand(rtp . '/autoload/fuzzycomt.so', ':p')))
-        \)
-    let g:ctrlp_match_func = {'match' : 'matcher#cmatch'}
-  endif
-'''
-
-[[plugins]]
 repo = 'deton/eblook.vim'
 on_if= 'executable("eblook")'
 hook_add = '''
-  " 'book'		辞書ディレクトリ。(eblookのbookコマンドの引数)
-  " 'name'		辞書名。(eblookのselectコマンドの引数)
-  " 'title' 	辞書識別子
-  " 'appendix' 	Appendix
-  " 'skip'		この辞書を検索対象にするかどうか
-  " 'autoformat'	content表示時に長い行を|gq|で整形するかどうか
+  " 'book'    辞書ディレクトリ。(eblookのbookコマンドの引数)
+  " 'name'    辞書名。(eblookのselectコマンドの引数)
+  " 'title'   辞書識別子
+  " 'appendix'  Appendix
+  " 'skip'    この辞書を検索対象にするかどうか
+  " 'autoformat'  content表示時に長い行を|gq|で整形するかどうか
   " let g:eblook_dictlist1 = [
   "   \    {
   "   \       'book'       : '',
@@ -340,11 +231,6 @@ hook_add = '''
   endif
 '''
 
-# currenly not work
-# [[plugins]]
-# repo = 'yuratomo/w3m.vim'
-# on_if= 'executable("w3m")'
-
 [[plugins]]
 repo = 'tyru/open-browser-github.vim'
 depends = ['open-browser.vim']
@@ -353,6 +239,10 @@ on_if= 'executable("hub")'
 [[plugins]]
 repo = 'iberianpig/tig-explorer.vim'
 on_if= 'executable("tig")'
+
+[[plugins]]
+repo = 'ConradIrwin/vim-bracketed-paste'
+on_if= '!has("patch-8.0.0210")'
 
 # Doc & File & Web
 
@@ -364,7 +254,7 @@ on_if= 'executable("tig")'
 # 'vimtweak' depends windows only
 [[plugins]]
 repo = 'tsuyoshicho/transparency.vim'
-depends = ['vimtweak']
+# depends = ['vimtweak']
 on_if= 'has("gui_running")'
 hook_add = '''
   let g:transparency_config = {
@@ -380,7 +270,7 @@ hook_post_source = '''
   " based on https://sy-base.com/myrobotics/vim/vim-transparent/
   " terminal mode; it has transparent function and enabled
   if !has('gui_running')
-    augroup TransparentBG
+    augroup vimrc_init-transparency
       autocmd!
       autocmd Colorscheme * highlight Normal ctermbg=none
       autocmd Colorscheme * highlight NonText ctermbg=none
@@ -407,52 +297,59 @@ hook_add = '''
   " let g:seiya_auto_enable=1
 '''
 
-# Edit operation
-# autocomplete
+# Clap
 [[plugins]]
-repo = 'prabirshrestha/asyncomplete.vim'
-on_if= 'has("lua")'
+repo = 'liuchengxu/vim-clap'
+on_event = ['VimEnter']
+
+[[plugins]]
+repo = 'tamago324/vim-clap-help'
+on_source = ['vim-clap']
+
+[[plugins]]
+repo = 'hokorobi/vim-clap-filelist'
+on_source = ['vim-clap']
 hook_add = '''
-  " let g:asyncomplete_auto_popup = 1
-
-  " let g:asyncomplete_completion_delay=10
-
-  " default
-  let g:asyncomplete_triggers = extend(get(g:,'asyncomplete_triggers',{}),
-        \ {
-        \   '*'  : ['.', '>', ':'],
-        \ })
-
-  " completeopt manual set
-  let g:asyncomplete_auto_completeopt = 0
+  " let g:clap_filelist_file = expand($XDG_CACHE_HOME . '/' . 'mrulist')
+  " based on https://qiita.com/hokorobi/items/615277a0ea8ab7c9c4c3
+  if !empty(get(g:, 'ctrlp_cache_dir', ''))
+    let g:clap_filelist_file = g:ctrlp_cache_dir . '/mru/cache.txt'
+  endif
 '''
-hook_post_source = '''
-  imap     <c-space>      <Plug>(asyncomplete_force_refresh)
 
-  " augroup asyncomplete
-  "   autocmd!
-  "   " asyncomplete original
-  "   " autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
-  "   " my refine
-  "   autocmd CompleteDone * if pumvisible() | pclose | endif
-  " augroup END
+[[plugins]]
+repo = 'hokorobi/vim-clap-launcher'
+on_source = ['vim-clap']
+hook_add = '''
+  let g:clap_launcher_file = expand($HOME . '/.vim/' . 'launcher')
+'''
+
+# Edit operation
+
+# Quick Fix
+[[plugins]]
+repo = 'thinca/vim-qfreplace'
+on_ft= ['qf']
+hook_add = '''
+  " keymap start preview
+  augroup vimrc_init-qfreplace
+    autocmd!
+    autocmd FileType qf nmap <buffer> r :Qfreplace<CR>
+  augroup END
 '''
 
 [[plugins]]
 repo = 'bfrg/vim-qf-preview'
-on_if= 'exists("*popup_create")'
-
-# [[plugins]]
-# repo = 'AndrewRadev/quickpeek.vim'
-# # repo = 'tsuyoshicho/quickpeek.vim'
-# # rev  = ''
-# on_if= 'exists("*popup_create")'
-# hook_add = '''
-#   let g:quickpeek_auto = v:true
-# '''
-# hook_post_source = '''
-#   autocmd MyAutoGroup FileType qf nnoremap <buffer><silent> <C-P> :QuickpeekToggle<cr>
-# '''
+# repo = 'tsuyoshicho/vim-qf-preview'
+# rev  = 'fix/keymap'
+on_ft= ['qf']
+hook_add = '''
+  " keymap start preview
+  augroup vimrc_init-vim-qf-preview
+    autocmd!
+    autocmd FileType qf nmap <buffer> <C-P> <plug>(qf-preview-open)
+  augroup END
+'''
 
 [[plugins]]
 # repo = 'soramugi/auto-ctags.vim'
@@ -527,145 +424,6 @@ hook_add = '''
   endif
 '''
 
-# Syntax
-# syntastic or ale
-# based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
-# [[plugins]]
-# repo = 'vim-syntastic/syntastic'
-# on_if = '!(has("job") && has("channel") && has("timers"))'
-# hook_add = '''
-# '''
-
-[[plugins]]
-# repo = 'w0rp/ale' old URL
-repo = 'dense-analysis/ale'
-depends = ['lightline.vim','vim-devicons']
-on_if = 'has("job") && has("channel") && has("timers")'
-hook_add = '''
-  " based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
-  " based on https://wonderwall.hatenablog.com/entry/2017/03/01/223934
-  " based on https://qiita.com/kaityo256/items/cb76c3f73753fe921e7b
-  " based on https://qiita.com/hisawa/items/a53bbebb235c1efd09ca
-
-  function! s:ale_list()
-    let g:ale_open_list = 1
-    call ale#Queue(0, 'lint_file')
-  endfunction
-  command! ALEList call s:ale_list()
-  nnoremap <silent> <Subleader>m :ALEList<CR>
-  autocmd MyAutoGroup FileType qf nnoremap <silent> <buffer> q :let g:ale_open_list = 0<CR>:q!<CR>
-  autocmd MyAutoGroup FileType help,qf,man,ref let b:ale_enabled = 0
-
-  " if lightline
-  autocmd MyAutoGroup User ALELint call lightline#update()
-
-  " based on https://github.com/delphinus/lightline-delphinus#glightline_delphinus_colorscheme
-  let g:ale_echo_msg_error_str   = nr2char(0xf421) . ' '
-  let g:ale_echo_msg_warning_str = nr2char(0xf420) . ' '
-  let g:ale_echo_msg_info_str    = nr2char(0xf05a) . ' '
-  let g:ale_echo_msg_format      = '%severity%  %linter% - %s'
-  let g:ale_sign_column_always   = 1
-  let g:ale_sign_error           = nr2char(0xf421)
-  let g:ale_sign_warning         = nr2char(0xf420)
-  let g:ale_statusline_format = [
-        \ g:ale_echo_msg_error_str . ' %d',
-        \ g:ale_echo_msg_warning_str . ' %d',
-        \ nr2char(0xf4a1) . '  ']
-
-  " only lint at save file
-  let g:ale_lint_on_save = 1
-  let g:ale_lint_on_text_changed = 0
-
-  " ファイルオープン時にチェックしたくない場合
-  let g:ale_lint_on_enter = 0
-
-  " PSR-1,2のチェックをおこなう
-  let g:ale_php_phpcs_standard = 'PSR1,PSR2'
-
-  " shellcheck rule
-  let g:ale_sh_shellcheck_options = '-e SC1090,SC2059,SC2155,SC2164'
-
-  " linter setting
-  let g:ale_linters = {
-        \ 'vim'        : ['vint'],
-        \ 'c'          : ['cppcheck', 'clang-format', 'clangd'],
-        \ 'cpp'        : ['cppcheck', 'clang-format', 'clangd', 'cpplint'],
-        \ 'php'        : ['phpcs',       'php'],
-        \ 'java'       : ['checkstyle',  'javac',      'PMD'],
-        \ 'css'        : ['prettier',    'stylelint'],
-        \ 'sass'       : [               'stylelint',  'sass-lint'],
-        \ 'scss'       : ['prettier',    'stylelint',  'sass-lint'],
-        \ 'javascript' : ['prettier',                                'eslint'],
-        \ 'typescript' : ['prettier',                                'eslint'],
-        \ 'jsx'        : [               'stylelint',                'eslint'],
-        \ 'toml'       : ['prettier'],
-        \ 'yaml'       : ['prettier'],
-        \ 'json'       : ['prettier',    'jq'],
-        \ 'sh'         : ['shellcheck'],
-        \ 'csh'        : ['shellcheck'],
-        \ 'zsh'        : ['shellcheck'],
-        \ 'tcsh'       : ['shellcheck'],
-        \ 'markdown'   : ['textlint',    'vale'],
-        \ 'asciidoc'   : ['textlint',    'vale'],
-        \}
-
-  let g:ale_linter_aliases = {
-        \ 'jsx': 'css',
-        \}
-
-  " Only run linters named in ale_linters settings.
-  let g:ale_linters_explicit = 1
-
-  " Fixer
-  let g:ale_fixers = {
-        \ '*'   : ['remove_trailing_lines', 'trim_whitespace'],
-        \ 'vim' : ['vint'],
-        \ 'json': ['prettier', 'jq', 'fixjson'],
-        \}
-
-  " compeetion
-  " let g:ale_completion_enabled = 1
-
-  " ロケーションリストの代わりにQuickFixを使用する場合は下記設定を追加。
-
-  let g:ale_set_loclist = 0
-  let g:ale_set_quickfix = 1
-
-  " エラーと警告の一覧を見るためにウィンドウを開いておきたい場合は下記設定を追加。
-  let g:ale_open_list = 1
-
-  " エラーと警告がなくなっても開いたままにする
-  " let g:ale_keep_list_window_open = 1
-'''
-hook_post_source = '''
-  " based on https://rcmdnk.com/blog/2017/09/25/computer-vim/
-  " based on https://wonderwall.hatenablog.com/entry/2017/03/01/223934
-  " based on https://qiita.com/kaityo256/items/cb76c3f73753fe921e7b
-  " based on https://qiita.com/hisawa/items/a53bbebb235c1efd09ca
-
-  " nmap <silent> <Subleader>p <Plug>(ale_previous)
-  " nmap <silent> <Subleader>n <Plug>(ale_next)
-  " nmap <silent> <Subleader>a <Plug>(ale_toggle)
-  nmap <silent> <Subleader><C-k> <Plug>(ale_previous_wrap)
-  nmap <silent> <Subleader><C-j> <Plug>(ale_next_wrap)
-'''
-
-# [[plugins]] # ale x lightline support plugin & setting lightline for ale
-# repo = 'maximbaz/lightline-ale'
-# depends = ['lightline.vim','ale']
-# hook_add = '''
-#   " based on  https://sinshutu-kibotu.hatenablog.jp/entry/2018/06/24/025319
-#   " modify : append process
-#   let g:lightline.component_expand['linter_checking'] = 'lightline#ale#checking'
-#   let g:lightline.component_expand['linter_warnings'] = 'lightline#ale#warnings'
-#   let g:lightline.component_expand['linter_errors'  ] = 'lightline#ale#errors'
-#   let g:lightline.component_expand['linter_ok'      ] = 'lightline#ale#ok'
-#   let g:lightline.component_type['linter_checking'  ] = 'left'
-#   let g:lightline.component_type['linter_warnings'  ] = 'warning'
-#   let g:lightline.component_type['linter_errors'    ] = 'error'
-#   let g:lightline.component_type['linter_ok'        ] = 'left'
-# '''
-
 [[plugins]]
 repo = 'LeafCage/laptime.vim'
 on_func = ['laptime#new']
@@ -677,6 +435,13 @@ on_cmd = ['Pomodoro', 'PomodoroStop']
 [[plugins]]
 repo = 'tyru/restart.vim'
 on_cmd = ['Restart']
+
+[[plugins]]
+repo = 'Asheq/close-buffers.vim'
+on_cmd = ['Bdelete', 'Bwipeout']
+hook_add = '''
+  nnoremap <silent> Q     :Bdelete menu<CR>
+'''
 
 [[plugins]]
 repo = 'mhinz/vim-sayonara'
@@ -705,23 +470,6 @@ on_cmd = ['Echos']
 repo = 'tweekmonster/helpful.vim'
 on_cmd = ['HelpfulVersion']
 
-[[plugins]]
-repo = 'liuchengxu/vim-clap'
-on_cmd = ['Clap']
-
-[[plugins]]
-repo = 'tamago324/vim-clap-help'
-depends = ['vim-clap']
-on_cmd = ['Clap']
-
-[[plugins]]
-repo = 'hokorobi/vim-clap-filelist'
-depends = ['vim-clap']
-on_cmd = ['Clap']
-hook_add = '''
-  " let g:clap_filelist_file = expand($XDG_CACHE_HOME . '/' . 'mrulist')
-'''
-
 # per filetypes
 [[plugins]]
 repo = 'rhysd/vim-clang-format'
@@ -729,25 +477,6 @@ on_if= 'executable("clang-format")'
 hook_add = '''
   let g:clang_format#auto_formatexpr = 1
 '''
-
-# [[plugins]]
-# repo = 'justmao945/vim-clang'
-# on_if= 'executable("clang")'
-# # on_ft = ['c', 'cpp']
-# hook_add = '''
-#   let g:clang_c_options = '-std=c11'
-#   let g:clang_cpp_options = '-std=c++14 -stdlib=libc++'
-#
-#   " with vim-clang-format : command off
-#   let g:clang_enable_format_command = 0
-#
-#   " keep manual set completeopt value in vimrc.
-#   let g:clang_c_completeopt   = ''
-#   let g:clang_cpp_completeopt = ''
-#
-#   " diag off
-#   let g:clang_diagsopt = ''
-# '''
 
 [[plugins]]
 repo = 'justinmk/vim-syntax-extra'
@@ -760,6 +489,14 @@ hook_add = '''
   let g:cpp_class_scope_highlight = 1
   let g:cpp_member_variable_highlight = 1
   let g:cpp_class_decl_highlight = 1
+'''
+
+[[plugins]]
+repo = 'vim-scripts/OmniCppComplete'
+on_ft = ['c', 'cpp']
+hook_add = '''
+  autocmd MyAutoGroup FileType c   setlocal omnifunc=omni#cpp#complete#Main
+  autocmd MyAutoGroup FileType cpp setlocal omnifunc=omni#cpp#complete#Main
 '''
 
 # [[plugins]] # RFC
@@ -804,6 +541,18 @@ hook_add = '''
   " let g:markdown_fold_style = 'nested'
   let g:markdown_fold_style = 'stacked'
   let g:markdown_fold_override_foldtext = 0
+'''
+
+[[plugins]]
+repo = 'skanehira/preview-markdown.vim'
+on_ft = ['markdown']
+hook_add = '''
+  " open window vartical when value is 1
+  let g:preview_markdown_vertical = 1
+  " use specified command to parse markdown, default is mdr
+  if executable('mdcat')
+    let g:preview_markdown_parser = 'mdcat'
+  endif
 '''
 
 [[plugins]] # need pdftotext
@@ -864,7 +613,7 @@ hook_add = '''
   " let g:slumlord_asciiart_utf = 1 " UTF
 '''
 # hook_post_source = '''
-#   augroup slumlord_custom
+#   augroup vimrc_init-slumlord
 #     autocmd!
 #     autocmd bufwritepre *.puml silent call slumlord#updatePreview({'write': 1})
 #   augroup END
@@ -890,9 +639,9 @@ hook_add = '''
 '''
 
 # include stable
-# [[plugins]] # asciidoc syntax
-# repo = 'asciidoc/vim-asciidoc'
-# on_ft = ['asciidoc']
+[[plugins]] # asciidoc syntax
+repo = 'habamax/vim-asciidoctor'
+on_ft = ['asciidoc']
 
 [[plugins]]
 repo = 'matcatc/vim-asciidoc-folding'
@@ -937,7 +686,7 @@ hook_add = '''
   " ftplugin
   let g:jsx_improve_motion_disable = 1
 
-  augroup javascript_folding
+  augroup vimrc_init-vim-jsx-improve
     autocmd!
     autocmd FileType javascript setlocal foldmethod=syntax
   augroup END
@@ -991,10 +740,6 @@ on_ft = ['csv', 'tsv']
 repo = 'ap/vim-css-color'
 on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'vim', 'xdefaults', 'xml', 'yaml']
 
-# [[plugins]]
-# repo = 'gko/vim-coloresque'
-# on_ft = ['html', 'css', 'less', 'sass', 'scss', 'stylus', 'vim']
-
 [[plugins]]
 repo = 'cakebaker/scss-syntax.vim'
 on_ft = ['scss']
@@ -1016,6 +761,10 @@ repo = 'thinca/vim-ft-help_fold'
 on_ft = ['help']
 
 [[plugins]]
+repo = 'machakann/vim-vimhelplint'
+on_ft = ['help']
+
+[[plugins]]
 repo = 'lfilho/cosco.vim'
 depends = ['vim-repeat']
 on_ft = ['javascript', 'typescript', 'jsx', 'json', 'css']
@@ -1023,8 +772,8 @@ hook_add = '''
   let g:cosco_ignore_comment_lines = 1
 '''
 hook_post_source = '''
-  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css nmap <silent> <Leader>; <Plug>(cosco-commaOrSemiColon)
-  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css imap <silent> <Leader>; <c-o><Plug>(cosco-commaOrSemiColon)
+  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css nmap <buffer><silent> <Leader>; <Plug>(cosco-commaOrSemiColon)
+  autocmd MyAutoGroup FileType javascript,typescript,jsx,json,css imap <buffer><silent> <Leader>; <c-o><Plug>(cosco-commaOrSemiColon)
 '''
 
 [[plugins]]
@@ -1034,14 +783,5 @@ on_ft = ['Dockerfile', 'docker-compose']
 [[plugins]]
 repo = 'pboettch/vim-cmake-syntax'
 on_ft = ['cmake']
-
-# [[plugins]]
-# repo = 'vim-pandoc/vim-pandoc'
-# on_if= 'executable("pandoc")'
-#
-# [[plugins]]
-# repo = 'vim-pandoc/vim-pandoc-syntax'
-# depends = ['vim-pandoc']
-# on_if= 'executable("pandoc")'
 
 # EOF
