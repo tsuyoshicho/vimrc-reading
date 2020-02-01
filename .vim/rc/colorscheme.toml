@@ -1,0 +1,364 @@
+# colorscheme
+
+[[plugins]] # カラースキーマ
+# https://teratail.com/questions/37382
+repo = 'altercation/vim-colors-solarized'
+hook_add = '''
+  " colorscheme : 'solarized'
+  " lightline   : 'solarized'      " built-in
+  " lightline   : 'solarized_dark' " built-in
+  " airline     : '<none>'
+
+  " if has('gui_running')
+  "   set background=light
+  " else
+  "   set background=dark
+  "   " set background=light
+  "
+  "   if stridx($TERM, "xterm-256color") >= 0
+  "     set background=dark
+  "     " set background=light
+  "
+  "     " let g:solarized_termcolors= 256
+  "     " let g:solarized_contrast = "high"
+  "     let g:solarized_termtrans = 1
+  "   elseif stridx($TERM, "cygwin") >= 0
+  "     " set background=dark
+  "     set background=light
+  "
+  "     "let g:solarized_termcolors= 256
+  "     let g:solarized_termtrans = 1
+  "   elseif ($ConEmuANSI == 'ON')
+  "     set background=dark
+  "     " set background=light
+  "
+  "     let g:solarized_termcolors= 256
+  "     " let g:solarized_contrast = "high"
+  "     " let g:solarized_termtrans = 1
+  "     " let g:solarized_visibility='low'
+  "   else
+  "     "set background=dark
+  "     set background=light
+  "
+  "     let g:solarized_termcolors= 16
+  "     let g:solarized_termtrans = 0
+  "     let g:solarized_visibility='low'
+  "   endif
+  " endif
+  "
+'''
+hook_post_source = '''
+  " " call mapping function
+  " call togglebg#map("<F5>")
+'''
+
+[[plugins]] # カラースキーマ
+# https://teratail.com/questions/37382
+repo = 'lifepillar/vim-solarized8'
+hook_add = '''
+  " colorscheme : 'solarized8_high'
+  " colorscheme : 'solarized8'
+  " colorscheme : 'solarized8_low'
+  " colorscheme : 'solarized8_flat'
+  " lightline   : 'solarized_improved' " built-in in lightline-delphinus
+  " airline     : ''
+
+  " if has('gui_running')
+  "   set background=light
+  " else
+  "   set background=dark
+  "
+  "   if stridx($TERM, "xterm-256color") >= 0
+  "     set background=dark
+  "     let g:solarized_termtrans = 1
+  "     " tmux and/or true color : right color
+  "     " let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  "     " let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  "   elseif stridx($TERM, "cygwin") >= 0
+  "     set background=light
+  "     let g:solarized_termtrans = 1
+  "   elseif ($ConEmuANSI == 'ON')
+  "     set background=light
+  "     " let g:solarized_termtrans = 1
+  "   " elseif (has('vtp') && has('vcon')) " currently off
+  "   "   set background=light
+  "   else
+  "     let g:solarized_use16 = 1
+  "   endif
+  " endif
+  "
+'''
+
+
+[[plugins]] # カラースキーマ
+# http://blog-sk.com/vim/vim-transparent/
+repo = 'cocopon/iceberg.vim'
+depends = ['pgmnt.vim']
+# " colorscheme : 'iceberg'
+# " lightline   : 'iceberg'
+# " airline     : 'iceberg'
+
+[[plugins]] # カラースキーマ
+# https://tmg0525.hatenadiary.jp/entry/2017/09/02/080541
+repo = 'morhetz/gruvbox'
+# " colorscheme : 'gruvbox'
+# " lightline   : 'gruvbox'
+# " airline     : 'gruvbox'
+
+[[plugins]] # カラースキーマ
+repo = 'gruvbox-material/vim'
+name = 'gruvbox-material'
+# " colorscheme : 'gruvbox-material'
+# " lightline   : 'gruvbox_material'
+# " airline     : 'gruvbox_material'
+
+[[plugins]] # カラースキーマ
+repo = 'yuttie/inkstained-vim'
+# " colorscheme : 'inkstained'
+# " lightline   : 'inkstained'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'kamykn/dark-theme.vim'
+# " colorscheme : 'darktheme'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'lucasprag/simpleblack'
+# " colorscheme : 'simpleblack'
+# " lightline   : 'simpleblack' " built-in
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'Rigellute/shades-of-purple.vim'
+# " colorscheme : 'shades_of_purple'
+# " lightline   : 'shades_of_purple'
+# " airline     : 'shades_of_purple'
+
+[[plugins]] # カラースキーマ
+repo = 'kjssad/quantum.vim'
+# " colorscheme : 'quantum'
+# " lightline   : 'quantum'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+# repo = 'nightsense/snow'
+repo = 'tsuyoshicho/snow'
+# " colorscheme : 'snow'
+# " lightline   : 'snow_light'
+# " lightline   : 'snow_dark'
+# " airline     : 'snow_light'
+# " airline     : 'snow_dark'
+
+[[plugins]] # カラースキーマ
+repo = 'yuttie/hydrangea-vim'
+# " colorscheme : 'hydrangea'
+# " lightline   : 'hydrangea'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'Rigellute/rigel'
+hook_add = '''
+  " colorscheme : 'rigel'
+  " lightline   : 'rigel' " and let g:rigel_lightline = 1
+  " airline     : 'rigel' " and let g:rigel_airline = 1
+  let g:rigel_lightline = 1
+  let g:rigel_airline = 1
+'''
+
+[[plugins]] # カラースキーマ
+repo = 'aereal/vim-colors-japanesque'
+# " colorscheme : 'japanesque'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'davidosomething/vim-colors-meh'
+# " colorscheme : 'meh'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'rhysd/vim-color-spring-night'
+# " colorscheme : 'spring-night'
+# " lightline   : '<none>'
+# " airline     : 'vim-color-spring-night'
+
+[[plugins]] # カラースキーマ
+repo = 'sainnhe/vim-color-forest-night'
+# " colorscheme : 'forest-night'
+# " lightline   : 'forest_night'
+# " lightline   : 'forest_night'
+# " airline     : 'forest_night'
+
+# [[plugins]] # カラースキーマ
+# repo = 'https://raw.githubusercontent.com/jan-warchol/selenized/master/vim/selenized.vim'
+# name = 'selenized'
+# type = 'raw'
+# script_type = 'colors'
+# " colorscheme : 'selenized'
+# " lightline   : 'selenized_dark' " built-in
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'KKPMW/moonshine-vim'
+# " colorscheme : 'moonshine'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'jeetsukumaran/vim-nefertiti'
+# " colorscheme : 'nefertiti'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'Haron-Prime/Antares'
+# " colorscheme : 'antares'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'AlessandroYorba/Alduin'
+# " colorscheme : 'alduin'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'freeo/vim-kalisi'
+# " colorscheme : 'kalisi'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'reedes/vim-colors-pencil'
+# " colorscheme : 'pencil'
+# " lightline   : '<none>'
+# " airline     : 'pencil'
+
+[[plugins]] # カラースキーマ
+repo = 'jacoborus/tender.vim'
+# " colorscheme : 'tender'
+# " lightline   : 'tender'
+# " airline     : ''
+
+[[plugins]] # カラースキーマ
+repo = 'romainl/Apprentice'
+# " colorscheme : 'apprentice'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'nanotech/jellybeans.vim'
+# " colorscheme : 'jellybeans'
+# " lightline   : 'jellybeans' " built-in
+# " airline     : ''
+
+[[plugins]] # カラースキーマ
+repo = 'w0ng/vim-hybrid'
+# " colorscheme : 'hybrid'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'chriskempson/vim-tomorrow-theme'
+# https://github.com/chriskempson/tomorrow-theme
+# " colorscheme : 'Tomorrow'
+# " colorscheme : 'Tomorrow-Night'
+# " colorscheme : 'Tomorrow-Night-Blue'
+# " colorscheme : 'Tomorrow-Night-Bright'
+# " colorscheme : 'Tomorrow-Night-Eighties'
+# " lightline   : 'Tomorrow'                " built-in
+# " lightline   : 'Tomorrow_Night'          " built-in
+# " lightline   : 'Tomorrow_Night_Blue'     " built-in
+# " lightline   : 'Tomorrow_Night_Bright'   " built-in
+# " lightline   : 'Tomorrow_Night_Eighties' " built-in
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'tomasr/molokai'
+# " colorscheme : 'molokai'
+# " lightline   : 'molokai' " built-in
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'sjl/badwolf'
+# " colorscheme : 'badwolf'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'cormacrelf/vim-colors-github'
+hook_add = '''
+  " colorscheme : 'github'
+  " lightline   : 'github'
+  " airline     : 'github'
+
+  " use a slightly darker background, like GitHub inline code blocks
+  let g:github_colors_soft = 1
+
+  " more blocky diff markers in signcolumn (e.g. GitGutter)
+  let g:github_colors_block_diffmark = 1
+'''
+
+[[plugins]] # カラースキーマ
+repo = 'kaicataldo/material.vim'
+hook_add = '''
+  " colorscheme : 'material'
+  " lightline   : 'material'    " built-in
+  " lightline   : 'material_vim'
+  " airline     : '<none>'
+
+  " let g:material_terminal_italics = 1
+
+  " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
+  let g:material_theme_style = 'ocean'
+'''
+
+[[plugins]] # カラースキーマ
+repo = 'machakann/vim-colorscheme-snowtrek'
+# " colorscheme : 'snowtrek'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+repo = 'arzg/vim-colors-xcode'
+hook_add = '''
+  " colorscheme : 'xcodelight'
+  " lightline   : '<none>'
+  " airline     : '<none>'
+
+  " light
+  " let g:xcodelight_green_comments = 0 " default: 0
+  " let g:xcodelight_emph_types     = 1 " default: 1
+  " let g:xcodelight_emph_funcs     = 0 " default: 0
+  " let g:xcodelight_emph_idents    = 0 " default: 0
+
+  " colorscheme : 'xcodedark'
+  " lightline   : '<none>'
+  " airline     : '<none>'
+
+  " dark
+  " let g:xcodedark_green_comments = 0 " default: 0
+  " let g:xcodedark_emph_types     = 1 " default: 1
+  " let g:xcodedark_emph_funcs     = 0 " default: 0
+  " let g:xcodedark_emph_idents    = 0 " default: 0
+'''
+
+[[plugins]] # カラースキーマ
+repo = 'yasukotelin/shirotelin'
+# " colorscheme : 'shirotelin'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーマ
+# https://github.com/creasty/candle-theme
+# name conflict https://github.com/hrsh7th/vim-candle
+repo = 'creasty/candle.vim'
+name = 'candle-colorscheme'
+merged = 0
+# " colorscheme : 'candle'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+

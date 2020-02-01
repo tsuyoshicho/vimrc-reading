@@ -189,6 +189,9 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'lambdalisue/fern.vim'
+
+[[plugins]]
 repo = 'tsuyoshicho/vim-pass'
 rev  = 'develop'
 depends = ['ctrlp.vim']
@@ -1343,7 +1346,8 @@ hook_post_source = '''
   let g:startify_bookmarks = [
         \ {'z': '~/.gvimrc'},
         \ {'x': '~/.vimrc'},
-        \ {'c': '~/.vim/rc/dein.toml'},
+        \ {'c': '~/.vim/rc/colorscheme.toml'},
+        \ {'d': '~/.vim/rc/dein.toml'},
         \ {'v': '~/.vim/rc/dein_lazy.toml'},
         \ {'b': '~/.bashrc'},
         \]
@@ -2515,229 +2519,6 @@ depends = ['dein.vim']
 [[plugins]]
 repo = 'vim-scripts/ScrollColors'
 
-[[plugins]] # カラースキーマ
-# https://teratail.com/questions/37382
-repo = 'altercation/vim-colors-solarized'
-hook_add = '''
-  " if has('gui_running')
-  "   set background=light
-  " else
-  "   set background=dark
-  "   " set background=light
-  "
-  "   if stridx($TERM, "xterm-256color") >= 0
-  "     set background=dark
-  "     " set background=light
-  "
-  "     " let g:solarized_termcolors= 256
-  "     " let g:solarized_contrast = "high"
-  "     let g:solarized_termtrans = 1
-  "   elseif stridx($TERM, "cygwin") >= 0
-  "     " set background=dark
-  "     set background=light
-  "
-  "     "let g:solarized_termcolors= 256
-  "     let g:solarized_termtrans = 1
-  "   elseif ($ConEmuANSI == 'ON')
-  "     set background=dark
-  "     " set background=light
-  "
-  "     let g:solarized_termcolors= 256
-  "     " let g:solarized_contrast = "high"
-  "     " let g:solarized_termtrans = 1
-  "     " let g:solarized_visibility='low'
-  "   else
-  "     "set background=dark
-  "     set background=light
-  "
-  "     let g:solarized_termcolors= 16
-  "     let g:solarized_termtrans = 0
-  "     let g:solarized_visibility='low'
-  "   endif
-  " endif
-  "
-'''
-hook_post_source = '''
-  " " call mapping function
-  " call togglebg#map("<F5>")
-'''
-
-[[plugins]] # カラースキーマ
-# https://teratail.com/questions/37382
-repo = 'lifepillar/vim-solarized8'
-hook_add = '''
-  " if has('gui_running')
-  "   set background=light
-  " else
-  "   set background=dark
-  "
-  "   if stridx($TERM, "xterm-256color") >= 0
-  "     set background=dark
-  "     let g:solarized_termtrans = 1
-  "     " tmux and/or true color : right color
-  "     " let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-  "     " let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-  "   elseif stridx($TERM, "cygwin") >= 0
-  "     set background=light
-  "     let g:solarized_termtrans = 1
-  "   elseif ($ConEmuANSI == 'ON')
-  "     set background=light
-  "     " let g:solarized_termtrans = 1
-  "   " elseif (has('vtp') && has('vcon')) " currently off
-  "   "   set background=light
-  "   else
-  "     let g:solarized_use16 = 1
-  "   endif
-  " endif
-  "
-'''
-
-[[plugins]] # カラースキーマ
-# http://blog-sk.com/vim/vim-transparent/
-repo = 'cocopon/iceberg.vim'
-depends = ['pgmnt.vim']
-# " colorscheme : 'iceberg'
-# " lightline   : 'iceberg'
-
-[[plugins]] # カラースキーマ
-# https://tmg0525.hatenadiary.jp/entry/2017/09/02/080541
-repo = 'morhetz/gruvbox'
-# " colorscheme : 'gruvbox'
-# " lightline   : 'gruvbox'
-
-[[plugins]] # カラースキーマ
-repo = 'sainnhe/gruvbox-material'
-# " colorscheme : 'gruvbox-material'
-# " lightline   : 'gruvbox_material'
-
-[[plugins]] # カラースキーマ
-repo = 'yuttie/inkstained-vim'
-# " colorscheme : 'inkstained'
-# " lightline   : 'inkstained'
-
-[[plugins]] # カラースキーマ
-repo = 'kamykn/dark-theme.vim'
-# " colorscheme : 'darktheme'
-
-[[plugins]] # カラースキーマ
-repo = 'lucasprag/simpleblack'
-# " colorscheme : 'simpleblack'
-
-[[plugins]] # カラースキーマ
-repo = 'Rigellute/shades-of-purple.vim'
-# " colorscheme : 'shades_of_purple'
-# " lightline   : 'shades_of_purple'
-
-[[plugins]] # カラースキーマ
-repo = 'kjssad/quantum.vim'
-# " colorscheme : 'quantum'
-# " lightline   : 'quantum'
-
-[[plugins]] # カラースキーマ
-# repo = 'nightsense/snow'
-repo = 'tsuyoshicho/snow'
-# " colorscheme : 'snow'
-# " lightline   : 'snow_light'
-# " lightline   : 'snow_dark'
-
-[[plugins]] # カラースキーマ
-repo = 'yuttie/hydrangea-vim'
-# " colorscheme : 'hydrangea'
-# " lightline   : 'hydrangea'
-
-[[plugins]] # カラースキーマ
-repo = 'Rigellute/rigel'
-hook_add = '''
-  " colorscheme : 'rigel'
-  " lightline   : 'rigel' and let g:rigel_lightline = 1
-  let g:rigel_lightline = 1
-'''
-
-[[plugins]] # カラースキーマ
-repo = 'aereal/vim-colors-japanesque'
-
-[[plugins]] # カラースキーマ
-repo = 'davidosomething/vim-colors-meh'
-
-[[plugins]] # カラースキーマ
-repo = 'rhysd/vim-color-spring-night'
-
-[[plugins]] # カラースキーマ
-repo = 'sainnhe/vim-color-forest-night'
-# " colorscheme : 'forest-night'
-# " lightline   : 'forest_night'
-
-# [[plugins]] # カラースキーマ
-# repo = 'https://raw.githubusercontent.com/jan-warchol/selenized/master/vim/selenized.vim'
-# name = 'selenized'
-# type = 'raw'
-# script_type = 'colors'
-
-[[plugins]] # カラースキーマ
-repo = 'KKPMW/moonshine-vim'
-
-[[plugins]] # カラースキーマ
-repo = 'jeetsukumaran/vim-nefertiti'
-
-[[plugins]] # カラースキーマ
-repo = 'Haron-Prime/Antares'
-
-[[plugins]] # カラースキーマ
-repo = 'AlessandroYorba/Alduin'
-
-[[plugins]] # カラースキーマ
-repo = 'freeo/vim-kalisi'
-
-[[plugins]] # カラースキーマ
-repo = 'reedes/vim-colors-pencil'
-
-[[plugins]] # カラースキーマ
-repo = 'jacoborus/tender.vim'
-
-[[plugins]] # カラースキーマ
-repo = 'romainl/Apprentice'
-
-[[plugins]] # カラースキーマ
-repo = 'nanotech/jellybeans.vim'
-
-[[plugins]] # カラースキーマ
-repo = 'w0ng/vim-hybrid'
-
-[[plugins]] # カラースキーマ
-repo = 'chriskempson/tomorrow-theme'
-
-[[plugins]] # カラースキーマ
-repo = 'tomasr/molokai'
-
-[[plugins]] # カラースキーマ
-repo = 'sjl/badwolf'
-
-[[plugins]] # カラースキーマ
-repo = 'cormacrelf/vim-colors-github'
-hook_add = '''
-  " colorscheme : 'github'
-  " lightline   : 'github'
-  " airline     : 'github'
-
-  " use a slightly darker background, like GitHub inline code blocks
-  let g:github_colors_soft = 1
-
-  " more blocky diff markers in signcolumn (e.g. GitGutter)
-  let g:github_colors_block_diffmark = 1
-'''
-
-[[plugins]] # カラースキーマ
-repo = 'kaicataldo/material.vim'
-hook_add = '''
-  " colorscheme : 'material'
-  " lightline   : 'material_vim'
-
-  " let g:material_terminal_italics = 1
-
-  " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
-  let g:material_theme_style = 'ocean'
-'''
-
 [[plugins]]
 repo = 'mopp/sky-color-clock.vim'
 depends = ['vim-pass']
@@ -2847,6 +2628,10 @@ hook_post_source = '''
   " highlight                      gui=underlined term=underlined cterm=underlined
   " highlight SignifySignDeleteFirstLine
   " highlight link SignifySignDeleteFirstLine SignifySignDelete
+
+  nnoremap <Leader>hp :SignifyHunkDiff<cr>
+  " nnoremap <Leader>hs :<cr>    " staging
+  nnoremap <Leader>hu :SignifyHunkUndo<cr>
 '''
 
 [[plugins]]
@@ -3343,7 +3128,7 @@ hook_add = '''
 repo = 'itchyny/vim-cursorword'
 
 [[plugins]]
-repo = 'mattn/sonictemplate-vim'
+repo = 'mattn/vim-sonictemplate'
 
 [[plugins]]
 repo = 'andymass/vim-matchup'
@@ -4043,7 +3828,7 @@ hook_add = '''
 '''
 
 [[plugins]] # memo
-repo = 'mattn/gist-vim'
+repo = 'mattn/vim-gist'
 depends = ['vim-pass']
 hook_add = '''
   " let g:gist_token = '<token>'

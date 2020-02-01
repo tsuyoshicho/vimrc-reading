@@ -102,13 +102,15 @@ if dein#load_state(g:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
   let s:rc_dir    = expand($HOME . '/.vim/rc')
-  let s:toml      = s:rc_dir . '/dein.toml'
-  let s:lazy_toml = s:rc_dir . '/dein_lazy.toml'
+  let s:dein_toml        = s:rc_dir . '/dein.toml'
+  let s:dein_lazy_toml   = s:rc_dir . '/dein_lazy.toml'
+  let s:colorscheme_toml = s:rc_dir . '/colorscheme.toml'
 
-  call dein#begin(g:dein.dir.plugins, [$MYVIMRC, s:toml, s:lazy_toml])
+  call dein#begin(g:dein.dir.plugins, [$MYVIMRC, s:dein_toml, s:dein_lazy_toml, s:colorscheme_toml])
   " TOML を読み込み、キャッシュしておく
-  call dein#load_toml(s:toml,      {'lazy': 0})
-  call dein#load_toml(s:lazy_toml, {'lazy': 1})
+  call dein#load_toml(s:dein_toml,        {'lazy': 0})
+  call dein#load_toml(s:dein_lazy_toml,   {'lazy': 1})
+  call dein#load_toml(s:colorscheme_toml, {'lazy': 0})
 
   " 設定終了
   call dein#end()
