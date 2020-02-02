@@ -153,6 +153,24 @@ hook_post_source = '''
   noremap <silent> <ScrollWheelUp>   :call comfortable_motion#flick(-40)<CR>
 '''
 
+# Filer
+[[plugins]]
+repo = 'lambdalisue/fern.vim'
+
+[[plugins]]
+repo = 'lambdalisue/fern-renderer-devicons.vim'
+depends = ['fern.vim', 'vim-devicons']
+hook_add = '''
+  let g:fern#renderer = 'devicons'
+'''
+
+[[plugins]]
+repo = 'lambdalisue/fern-comparator-lexical.vim'
+depends = ['fern.vim']
+hook_add = '''
+  let g:fern#comparator = 'lexical'
+'''
+
 [[plugins]]
 repo = 'justinmk/vim-dirvish'
 hook_add = '''
@@ -187,9 +205,6 @@ hook_post_source = '''
     call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
   endif
 '''
-
-[[plugins]]
-repo = 'lambdalisue/fern.vim'
 
 [[plugins]]
 repo = 'tsuyoshicho/vim-pass'
@@ -1170,16 +1185,6 @@ repo = 'mattn/vim-textobj-url'
 depends = ['vim-textobj-user']
 
 # 言語別
-# C/C++
-# a;, i;
-# [[plugins]]
-# repo = 'libclang-vim/vim-textobj-clang'
-# depends = ['vim-textobj-user', 'libclang-vim']
-# hook_add = '''
-#   " let g:textobj_clang_more_mappings = 1
-#   " more setting and off a;
-# '''
-
 # multiに入れない系
 # word の中の単語を選択
 # a<prefix>w, i<prefix>w
@@ -1358,8 +1363,7 @@ hook_post_source = '''
         \ {'r': ['Restart', 'Restart']},
         \ {'u': ['Plugin update', 'Dein update']},
         \ {'l': ['CtrlP Launcher', 'CtrlPLauncher']},
-        \ {'L': ['Clap Launcher', 'Clap launcher']},
-        \ {'t': ['Twitter', 'FriendsTwitter']},
+        \ {'f': ['LeaderF file search', 'Leaderf file']},
         \ {'m': ['Mastodon', 'Mastodon timeline']},
         \ {'o': ['Qiita', 'Qiita -l']},
         \ {'i': ['Calendar', 'Calendar -split=vertical -position=right']},
@@ -1928,6 +1932,48 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'machakann/asyncomplete-ezfilter.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  let g:asyncomplete_preprocessor =
+  \ [function('asyncomplete#preprocessor#ezfilter#filter')]
+
+  let g:asyncomplete#preprocessor#ezfilter#config = {}
+
+  " https://gist.github.com/mattn/d909c93784aa81d97b82c0896ef38ca8
+  " basic fuzzy match
+  function! s:fuzzy(lhs, rhs) abort
+    return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
+  endfunction
+
+  let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+  \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
+
+  " if has python3 advanced match
+  if has('python3')
+    " osa_filter is slow when running in vim script so only set if python3 is enabled
+    let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+    \ {ctx, items -> ctx.osa_filter(items, 1)}
+  endif
+'''
+
+[[plugins]]
+repo = 'machakann/asyncomplete-unicodesymbol.vim'
+depends = ['asyncomplete-ezfilter.vim']
+hook_source = '''
+  autocmd User asyncomplete_setup call asyncomplete#register_source(
+  \ asyncomplete#sources#unicodesymbol#get_source_options({
+  \   'name': 'unicodesymbol',
+  \   'whitelist': ['julia'],
+  \   'completor': function('asyncomplete#sources#unicodesymbol#completor'),
+  \ }))
+
+  let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
+  \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
+'''
+
+
+[[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
 depends = ['vim-lsp', 'asyncomplete.vim']
 
@@ -2227,15 +2273,6 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 'tacahiroy/ctrlp-funky'
-merged = 0
-depends = ['ctrlp.vim']
-hook_add = '''
-  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
-        \ + ['funky']
-'''
-
-[[plugins]]
 repo = 'ompugao/ctrlp-locate'
 merged = 0
 depends = ['ctrlp.vim']
@@ -2289,17 +2326,6 @@ depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
         \ + ['help']
-'''
-
-[[plugins]]
-# repo = 'gasparch/ctrlp-tagbar.vim'
-repo = 'tsuyoshicho/ctrlp-tagbar.vim'
-rev  = 'develop'
-merged = 0
-depends = ['ctrlp.vim', 'tagbar']
-hook_add = '''
-  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
-       \ + ['tagbar']
 '''
 
 [[plugins]]
@@ -2733,7 +2759,7 @@ depends = ['lightline.vim']
 # based on https://qiita.com/delphinus/items/af5809b587f2af0a9f7f
 [[plugins]]
 repo = 'delphinus/lightline-delphinus'
-depends = ['lightline.vim', 'lightline-buffer', 'vim-devicons', 'tagbar', 'iceberg', 'gruvbox', 'vim-anzu', 'vim-submode', 'lightline-lsp']
+depends = ['lightline.vim', 'lightline-buffer', 'vim-devicons', 'iceberg', 'gruvbox', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'vista.vim']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -2743,7 +2769,7 @@ hook_add = '''
 '''
 hook_post_source = '''
   " enable setting
-  let g:lightline_delphinus_tagbar_enable = 1
+  " let g:lightline_delphinus_tagbar_enable = 1
   let g:lightline_delphinus_gitgutter_enable = 1
 
   " custom setting
@@ -2755,41 +2781,6 @@ hook_post_source = '''
   " lightline support mode; disable showmode
   " set noshowmode
   " temp off
-
-  " テーマ
-  " lightline
-  " \ 'colorscheme': 'wombat',
-  " \ 'colorscheme': 'solarized',
-  " \ 'colorscheme': 'jellybeans' ,
-  " \ 'colorscheme': 'landscape ' ,
-  " lightline-delphinus
-  " \ 'colorscheme': 'solarized_improved',
-  " \ 'colorscheme': 'nord_improved',
-  " \ 'colorscheme': g:lightline_delphinus_colorscheme,
-  " iceberg
-  " \ 'colorscheme': 'iceberg',
-  " gruvbox
-  " \ 'colorscheme': 'gruvbox',
-
-  " powerline セパレーター
-  " \ 'separator': { 'left': '', 'right': '' },
-  " \ 'subseparator': { 'left': '', 'right': '' }
-  " or
-  " \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
-  " \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" }
-  " or
-  " \ 'separator': { 'left': nr2char(0xe0b0), 'right': nr2char(0xe0b2) },
-  " \ 'subseparator': { 'left': nr2char(0xe0b1), 'right': nr2char(0xe0b3) }
-
-  " vim-powerline セパレーター
-  " \ 'separator': {'left': '⮀', 'right': '⮂'},
-  " \ 'subseparator': {'left': '⮁', 'right': '⮃'}
-  " or
-  " \ 'separator': { 'left': "\u2b80", 'right': "\u2b82" },
-  " \ 'subseparator': { 'left': "\u2b81", 'right': "\u2b83" }
-  " or
-  " \ 'separator': { 'left': nr2char(0x2b80), 'right': nr2char(0x2b82) },
-  " \ 'subseparator': { 'left': nr2char(0x2b81), 'right': nr2char(0x2b83) }
 
   " " based on https://tmnm.tech/2017/10/11/vim-setting-with-cica/
   " " need vim-devicons
@@ -2825,15 +2816,13 @@ hook_post_source = '''
   "        \  }
   " endif
 
-  " ale
-  " \ [ 'filename', 'currenttag', 'ale_error', 'ale_warning', 'ale_ok' ]
   let g:lightline = extend(g:lightline , {
      \ 'active': {
      \   'left' : [
      \     [ 'mode', 'paste' ],
      \     [ 'fugitive', 'gitgutter' ],
      \     [ 'filepath' ],
-     \     [ 'filename', 'currenttag',  'lsp_status_error', 'lsp_status_warning', 'lsp_status_ok']
+     \     [ 'filename', 'method', 'lsp_status_error', 'lsp_status_warning', 'lsp_status_ok']
      \   ],
      \   'right': [
      \     [ 'sky_color_clock' ],
@@ -2858,6 +2847,7 @@ hook_post_source = '''
      \   'separator'       : nr2char(0xff9e8),
      \ },
      \ 'component_function': {
+     \   'method'       : 'NearestMethodOrFunction',
      \   'modified'     : 'lightline#delphinus#components#modified',
      \   'readonly'     : 'lightline#delphinus#components#readonly',
      \   'fugitive'     : 'lightline#delphinus#components#fugitive',
@@ -2887,9 +2877,6 @@ hook_post_source = '''
      \   'lsp_status_error'     : 'lightline#lsp#status_error',
      \   'lsp_status_warning'   : 'lightline#lsp#status_warning',
      \   'lsp_status_ok'        : 'lightline#lsp#status_ok',
-     \   'ale_error'     : 'lightline#delphinus#components#ale_error',
-     \   'ale_warning'   : 'lightline#delphinus#components#ale_warning',
-     \   'ale_ok'        : 'lightline#delphinus#components#ale_ok',
      \   'buffercurrent' : 'lightline#buffer#buffercurrent',
      \   'bufferbefore'  : 'lightline#buffer#bufferbefore',
      \   'bufferafter'   : 'lightline#buffer#bufferafter',
@@ -2898,9 +2885,6 @@ hook_post_source = '''
      \   'lsp_status_error'     : 'error',
      \   'lsp_status_warning'   : 'warning',
      \   'lsp_status_ok'        : 'ok',
-     \   'ale_error'     : 'error',
-     \   'ale_warning'   : 'warning',
-     \   'ale_ok'        : 'ok',
      \   'buffercurrent' : 'tabsel',
      \   'bufferbefore'  : 'raw',
      \   'bufferafter'   : 'raw',
@@ -3497,150 +3481,48 @@ repo = 'kkoomen/vim-doge'
 repo = 'PProvost/vim-ps1'
 
 [[plugins]]
-repo = 'majutsushi/tagbar'
+repo = 'liuchengxu/vista.vim'
+depends = ['vim-lsp', 'lightline.vim', 'fzf']
 hook_add = '''
-  " based on https://blog.scimpr.com/2018/04/12/vim%E3%81%A7%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%9E%E3%83%BC%E3%82%AF%E3%83%80%E3%82%A6%E3%83%B3%E3%82%92%E7%B7%A8%E9%9B%86%E3%81%99%E3%82%8B%E3%80%9Ctextlint%E3%80%81tagbar/
-  " let g:tagbar_ctags_bin = ''
-  let g:tagbar_width = 35 "デフォルトは40
+  " indent
+  let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
 
-  " universal-ctags is 1
-  let uctags_use = 1
+  " default ctags
+  let g:vista_default_executive = 'ctags'
 
-  if !uctags_use
-    " asciidoc support:need .ctags option
-    let g:tagbar_type_asciidoc = {
-          \ 'ctagstype' : 'asciidoc',
-          \ 'kinds' : [
-          \   'h:table of contents',
-          \   'a:anchors:1',
-          \   't:titles:1',
-          \   'n:includes:1',
-          \   'i:images:1',
-          \   'I:inline images:1'
-          \ ],
-          \ 'sort' : 0
-          \}
-  else
-    let g:tagbar_type_asciidoc = {
-          \ 'ctagstype' : 'asciidoc',
-          \ 'kinds' : [
-          \   's:sections',
-          \   'S:level 2 sections',
-          \   't:level 3 sections',
-          \   'T:level 4 sections',
-          \   'u:level 5 sections',
-          \   'a:anchors'
-          \ ],
-          \ 'sort' : 0
-          \}
-  endif
+  " lsp enable
+  let g:vista_executive_for = {
+  \ 'cpp'      : 'vim_lsp',
+  \ 'sh'       : 'vim_lsp',
+  \ 'vim'      : 'vim_lsp',
+  \ 'python'   : 'vim_lsp',
+  \ 'markdown' : 'toc',
+  \ }
 
-  if !uctags_use
-    " markdown support:need .ctags option
-    let g:tagbar_type_markdown = {
-          \ 'ctagstype' : 'markdown',
-          \ 'kinds' : [
-          \   'h:Heading_L1',
-          \   'i:Heading_L2',
-          \   'k:Heading_L3'
-          \ ],
-          \ 'sort' : 0
-          \}
-  else
-    let g:tagbar_type_markdown = {
-          \ 'ctagstype' : 'markdown',
-          \ 'kinds' : [
-          \   'c:chapsters',
-          \   's:sections',
-          \   'S:subsections',
-          \   't:subsubsections',
-          \   'T:level 4 subsections',
-          \   'u:level 5 subsections',
-          \   'r:regex'
-          \ ],
-          \ 'sort' : 0
-          \}
-  endif
+  " Ensure you have installed some decent font to show these pretty symbols, then you can enable icon for the kind.
+  let g:vista#renderer#enable_icon = 1
 
-  if !uctags_use
-    " javascript support:need .ctags option
-    " https://github.com/romainl/ctags-patterns-for-javascript
-    let g:tagbar_type_javascript = {
-          \ 'ctagstype': 'javascript',
-          \ 'kinds': [
-          \ 'A:arrays',
-          \ 'P:properties',
-          \ 'T:tags',
-          \ 'O:objects',
-          \ 'G:generator functions',
-          \ 'F:functions',
-          \ 'C:constructors/classes',
-          \ 'M:methods',
-          \ 'V:variables',
-          \ 'I:imports',
-          \ 'E:exports',
-          \ 'S:styled components'
-          \ ]
-          \}
-  else
-    " defalut defined
-    " override
-    let g:tagbar_type_javascript = {
-          \ 'ctagstype': 'javascript',
-          \ 'kinds': [
-          \    'f:functions',
-          \    'c:classes',
-          \    'm:methods',
-          \    'p:properties',
-          \    'C:constants',
-          \    'v:global variables',
-          \    'g:generators',
-          \    'G:getters',
-          \    'S:setters'
-          \ ]
-          \}
-  endif
+  " The default icons can't be suitable for all the filetypes, you can extend it as you wish.
+  let g:vista#renderer#icons = {
+  \   "function": nr2char(0xf0ad),
+  \   "variable": nr2char(0xf0ae),
+  \  }
+  "\   "function": nr2char(0xf0ad),  " 0xf0ad 
+  "\   "variable": nr2char(0xf0ae),  " 0xf0ae 
+  "\   "function": nr2char(0xf794),  " 0xf794 󿞔
+  "\   "variable": nr2char(0xf71b),  " 0xf71b 󿜛
 
-  if !uctags_use
-    " typescript support:need .ctags option
-    " https://github.com/jb55/typescript-ctags
-    let g:tagbar_type_typescript = {
-          \ 'ctagstype': 'typescript',
-          \ 'kinds': [
-          \   'c:classes',
-          \   'n:modules',
-          \   'f:functions',
-          \   'v:variables',
-          \   'v:varlambdas',
-          \   'm:members',
-          \   'i:interfaces',
-          \   'e:enums',
-          \ ]
-          \}
-  else
-    let g:tagbar_type_typescript = {
-          \ 'ctagstype': 'typescript',
-          \ 'kinds': [
-          \   'f:functions',
-          \   'c:classes',
-          \   'i:interfaces',
-          \   'g:enums',
-          \   'e:enumerators (values inside an enumeration)',
-          \   'm:methods',
-          \   'n:namespaces',
-          \   'z:function parameters inside function definitions [off]',
-          \   'p:properties',
-          \   'v:variables',
-          \   'l:local variables [off]',
-          \   'C:constants',
-          \   'G:generators',
-          \   'a:aliases'
-          \ ]
-          \}
-  endif
+  function! NearestMethodOrFunction() abort
+    return get(b:, 'vista_nearest_method_or_function', '')
+  endfunction
+  augroup vimrc_init-vista
+    autocmd!
+    autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter * call vista#RunForNearestMethodOrFunction()
+    autocmd User lsp_server_init * call vista#RunForNearestMethodOrFunction()
+  augroup END
 '''
 hook_post_source = '''
-  nmap <silent> <F8> :TagbarToggle<CR>
+  nmap <silent> <F8> :Vista!!<CR>
 '''
 
 # [[plugins]] # Chrome/Firefox GhostText Extention

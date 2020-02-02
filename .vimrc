@@ -581,6 +581,9 @@ set switchbuf=split
 " Tab数拡張
 set tabpagemax=99
 
+" 境界
+" set fillchars="vert:|,fold: ,diff:・"
+
 " }}}
 
 " Cursor Pos. {{{

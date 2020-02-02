@@ -8,6 +8,13 @@ on_if= '(has("win32") || has("win64")) && has("gui_running")'
 repo = 'edkolev/promptline.vim'
 on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
 
+# g:asyncomplete_preprocessor 強制上書きなので、当座は使わない
+# [[plugins]] # cargoが必要
+# repo = 'tsufeki/asyncomplete-fuzzy-match'
+# depends = ['asyncomplete.vim']
+# on_if= 'executable("cargo")'
+# build = 'cargo build --release'
+
 [[plugins]] # cmigemoが必要
 repo = 'haya14busa/vim-migemo'
 on_if= 'executable("cmigemo")'
@@ -297,32 +304,125 @@ hook_add = '''
   " let g:seiya_auto_enable=1
 '''
 
-# Clap
-[[plugins]]
-repo = 'liuchengxu/vim-clap'
-on_event = ['VimEnter']
+# # Clap
+# [[plugins]]
+# repo = 'liuchengxu/vim-clap'
+# on_event = ['VimEnter']
+# on_if= '(executable("cargo") && has("python3"))'
+# build = ':Clap install-binary'
+#
+# [[plugins]]
+# repo = 'tamago324/vim-clap-help'
+# on_source = ['vim-clap']
+#
+# [[plugins]]
+# repo = 'hokorobi/vim-clap-filelist'
+# on_source = ['vim-clap']
+# hook_add = '''
+#   " let g:clap_filelist_file = expand($XDG_CACHE_HOME . '/' . 'mrulist')
+#   " based on https://qiita.com/hokorobi/items/615277a0ea8ab7c9c4c3
+#   if !empty(get(g:, 'ctrlp_cache_dir', ''))
+#     let g:clap_filelist_file = g:ctrlp_cache_dir . '/mru/cache.txt'
+#   endif
+# '''
+#
+# [[plugins]]
+# repo = 'hokorobi/vim-clap-launcher'
+# on_source = ['vim-clap']
+# hook_add = '''
+#   let g:clap_launcher_file = expand($HOME . '/.vim/' . 'launcher')
+# '''
 
+# LeaderF
 [[plugins]]
-repo = 'tamago324/vim-clap-help'
-on_source = ['vim-clap']
-
-[[plugins]]
-repo = 'hokorobi/vim-clap-filelist'
-on_source = ['vim-clap']
-hook_add = '''
-  " let g:clap_filelist_file = expand($XDG_CACHE_HOME . '/' . 'mrulist')
-  " based on https://qiita.com/hokorobi/items/615277a0ea8ab7c9c4c3
-  if !empty(get(g:, 'ctrlp_cache_dir', ''))
-    let g:clap_filelist_file = g:ctrlp_cache_dir . '/mru/cache.txt'
+repo = 'Yggdroot/LeaderF'
+on_if = 'has("python3")'
+depends = ['vim-findroot']
+hook_post_update = '''
+  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+  if s:is_windows
+    let cmd = 'install.bat'
+  else
+    let cmd = 'install.sh'
   endif
+  let g:dein#plugin.build = cmd
+'''
+hook_add = '''
+  if (has('popupwin') || exists('*popup_create') || has('nvim-0.4.2'))
+    let g:Lf_WindowPosition = 'popup'
+    let g:Lf_PreviewInPopup = 1
+  endif
+
+  let g:Lf_ReverseOrder = 1
+
+  " root marker use findroot value
+  let g:Lf_RootMarkers = g:findroot_patterns
+
+  " search cache strategy like ctrlp
+  let g:Lf_UseCache = 1
+  let g:Lf_CacheDirectory = expand($HOME) . '/.cache/ctrlp'
+
+  if executable('pt')
+    let g:Lf_DefaultExternalTool = 'pt'
+     let g:Lf_ExternalCommand = 'pt --nocolor --nogroup -S -l -g "%s"'
+  elseif executable('ag')
+    let g:Lf_DefaultExternalTool = 'ag'
+    let g:Lf_ExternalCommand  = 'ag -a --nocolor --nogroup -S -l -g "%s"'
+  else
+    let g:Lf_DefaultExternalTool = ''
+  endif
+
+  if !empty(g:Lf_DefaultExternalTool)
+    let g:Lf_UseCache = 0
+  endif
+
+  let g:Lf_WorkingDirectoryMode = 'Ac'
+
+  " color
+  let g:Lf_StlColorscheme   = 'gruvbox_material'
+  let g:Lf_PopupColorscheme = 'gruvbox_material'
+
+  " separator
+  " like lightline (powerline arrow)
+  let g:Lf_StlSeparator = { 'left': nr2char(0xe0b0), 'right': nr2char(0xe0b2) }
+
+  " size
+  " let g:Lf_PopupWidth
+  " let g:Lf_PopupHeight
+  " let g:Lf_PreviewPopupWidth
+
+  let g:Lf_PopupWidth  = max([(&columns * 3)/4, 20])
+  let g:Lf_PopupHeight = max([(&lines   * 3)/4, 15])
+  autocmd MyAutoGroup VimResized * let g:Lf_PopupWidth  = max([(&columns * 3)/4, 20])
+  autocmd MyAutoGroup VimResized * let g:Lf_PopupHeight = max([(&lines   * 3)/4, 15])
+
+  " mapping
+  let g:Lf_ShortcutF = '<Leader>F'
+  let g:Lf_ShortcutB = '<Leader>B'
+'''
+hook_post_source = '''
+  " keymap
 '''
 
 [[plugins]]
-repo = 'hokorobi/vim-clap-launcher'
-on_source = ['vim-clap']
-hook_add = '''
-  let g:clap_launcher_file = expand($HOME . '/.vim/' . 'launcher')
-'''
+repo = 'markwu/LeaderF-prosessions'
+on_source = ['LeaderF']
+
+[[plugins]]
+repo = 'tamago324/LeaderF-bookmark'
+on_source = ['LeaderF']
+
+[[plugins]]
+repo = 'hilarryxu/LeaderF-funky'
+on_source = ['LeaderF']
+
+[[plugins]]
+repo = 'Yggdroot/LeaderF-marks'
+on_source = ['LeaderF']
+
+# [[plugins]]
+# repo = 'xltan/LeaderF-tjump'
+# on_source = ['LeaderF']
 
 # Edit operation
 
@@ -526,10 +626,6 @@ repo = 'iwataka/vim-markdown-ex'
 # no depends : use default markdown styler or other
 on_ft = ['markdown']
 
-[[plugins]]
-repo = 'Scuilion/markdown-drawer'
-on_ft = ['markdown']
-
 # [[plugins]]
 # repo = 'jxnblk/vim-mdx-js'
 # on_ft = ['markdown', 'mdx']
@@ -654,7 +750,6 @@ hook_add = '''
 [[plugins]]
 repo = 'amiorin/vim-textile'
 on_ft = ['textile']
-
 
 [[plugins]]
 repo = 'neoclide/vim-jsx-improve'
