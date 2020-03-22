@@ -12,6 +12,7 @@ scriptencoding utf-8
 " set nocompatible
 " but setup below
 if &compatible
+  " vint: next-line -ProhibitSetNoCompatible
   set nocompatible
 endif
 
@@ -43,13 +44,51 @@ set tags=
 " based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
 " based on https://whileimautomaton.net/2007/04/19221500
 " mapleader (<Leader>) (default is \)
-let mapleader = ","
-let maplocalleader  = ";"
+let mapleader = ','
+let maplocalleader  = ';'
 " use \ as , instead
 nnoremap <Subleader> <Nop>
 map \ <Subleader>
 " f,tでの移動の逆にする機能が設定されているので、保持はする
 nnoremap <Subleader>, ,
+nnoremap <Subleader>; ;
+
+" user setting
+let g:user = {}
+let g:user.name     = 'Tsuyoshi CHO'
+let g:user.email    = 'Tsuyoshi.CHO@Gmail.com'
+let g:user.devemail = 'Tsuyoshi.CHO+develop@Gmail.com'
+
+let g:user.git = {}
+let g:user.git.name  = g:user.name
+let g:user.git.email = g:user.email
+
+let g:user.rootmarker = {}
+let g:user.rootmarker.dirs = [
+  \  'RCS',
+  \  'SCCS',
+  \  'CVS',
+  \  '.git',
+  \  '.svn',
+  \  '.hg',
+  \  '.bzr',
+  \  '_darcs',
+  \  '.venv',
+  \]
+let g:user.rootmarker.files = [
+  \  'Rakefile',
+  \  'package.json',
+  \  'pom.xml',
+  \  'project.clj',
+  \  'Pipfile',
+  \  'compile_commands.json',
+  \  '.git'
+  \]
+" .git file use in separate .git/ dir or worktree
+let g:user.rootmarker.fileglob = [
+  \  '*.csproj',
+  \  '*.sln',
+  \]
 
 if s:is_cygwin
   " Git for Windows(MSYS2)にも対応のため、Windowsは手動で強制再設定
@@ -58,9 +97,19 @@ if s:is_cygwin
   let $GNUPGHOME = expand($HOME . '/.gnupg')
 
   " * $XDG_ はパスがWindows表記であるとして、再設定する
-  let $XDG_CACHE_HOME = expand($HOME . '/.cache')
+  let $XDG_CACHE_HOME  = expand($HOME . '/.cache')
   let $XDG_CONFIG_HOME = expand($HOME . '/.config')
+  let $XDG_DATA_HOME   = expand($HOME . '/.local/share')
 endif
+
+let g:user.dir = {}
+let g:user.dir.vim         = expand($HOME . '/.vim')
+let g:user.dir.cache_home  = empty($XDG_CACHE_HOME)  ? expand($HOME . '/.cache')       : expand($XDG_CACHE_HOME)
+let g:user.dir.config_home = empty($XDG_CONFIG_HOME) ? expand($HOME . '/.config')      : expand($XDG_CONFIG_HOME)
+let g:user.dir.data_home   = empty($XDG_DATA_HOME)   ? expand($HOME . '/.local/share') : expand($XDG_DATA_HOME)
+
+let g:user.dir.tools = expand('c:/tools')
+let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
 
 " plugin
 " dein 設定前の設定
@@ -77,12 +126,11 @@ endif
 " http://qiita.com/hanaclover/items/f45250b55e2298c4ac5a
 
 let g:dein = {}
-let g:dein.dir = {}
+let g:dein.dir  = {}
+let g:dein.file = {}
 
 " プラグインが実際にインストールされるディレクトリ
-let s:cache_home = empty($XDG_CACHE_HOME) ? expand($HOME . '/.cache') : expand($XDG_CACHE_HOME)
-
-let g:dein.dir.plugins = expand(s:cache_home . '/dein')
+let g:dein.dir.plugins = expand(g:user.dir.cache_home . '/dein')
 " 問題がある時用固定パス
 " let g:dein.dir.plugins = expand('~/.cache/dein')
 
@@ -94,27 +142,34 @@ if &runtimepath !~# '/dein.vim'
   if !isdirectory(g:dein.dir.install)
     call system('git clone https://github.com/Shougo/dein.vim ' . g:dein.dir.install)
   endif
-  let &runtimepath = g:dein.dir.install . "," . &runtimepath
+  let &runtimepath = g:dein.dir.install . ',' . &runtimepath
 endif
 
 " 設定開始
+let g:dein.dir.rc                = expand(g:user.dir.vim . '/rc')
+let g:dein.file.dein_toml        = g:dein.dir.rc . '/dein.toml'
+let g:dein.file.dein_lazy_toml   = g:dein.dir.rc . '/dein_lazy.toml'
+let g:dein.file.colorscheme_toml = g:dein.dir.rc . '/colorscheme.toml'
 if dein#load_state(g:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
-  let s:rc_dir    = expand($HOME . '/.vim/rc')
-  let s:dein_toml        = s:rc_dir . '/dein.toml'
-  let s:dein_lazy_toml   = s:rc_dir . '/dein_lazy.toml'
-  let s:colorscheme_toml = s:rc_dir . '/colorscheme.toml'
 
-  call dein#begin(g:dein.dir.plugins, [$MYVIMRC, s:dein_toml, s:dein_lazy_toml, s:colorscheme_toml])
+  call dein#begin(g:dein.dir.plugins, [
+  \  $MYVIMRC,
+  \  g:dein.file.dein_toml,
+  \  g:dein.file.dein_lazy_toml,
+  \  g:dein.file.colorscheme_toml,
+  \])
+
   " TOML を読み込み、キャッシュしておく
-  call dein#load_toml(s:dein_toml,        {'lazy': 0})
-  call dein#load_toml(s:dein_lazy_toml,   {'lazy': 1})
-  call dein#load_toml(s:colorscheme_toml, {'lazy': 0})
+  call dein#load_toml(g:dein.file.dein_toml,        {'lazy': 0})
+  call dein#load_toml(g:dein.file.dein_lazy_toml,   {'lazy': 1})
+  call dein#load_toml(g:dein.file.colorscheme_toml, {'lazy': 0})
 
   " 設定終了
   call dein#end()
   call dein#save_state()
+
 endif
 
 " call source
@@ -132,8 +187,8 @@ endif
 " runtime path setup
 "  at last
 "   add ~/.vim
-set runtimepath+=$HOME/.vim
-set runtimepath+=$HOME/.vim/after
+let &runtimepath =  &runtimepath . ',' . g:user.dir.vim
+let &runtimepath =  &runtimepath . ',' . g:user.dir.vim . '/after'
 
 filetype plugin indent on
 
@@ -163,6 +218,10 @@ set tagcase=followscs
 " inc/dec operation
 " 0123を10進扱いする、bin/hexは生かす
 set nrformats-=octal
+
+" 行連結で変なことをさせない
+" from https://github.com/cohama/.vim/blob/master/init.vim
+set nojoinspaces
 " }}}
 
 " Conceal. {{{
@@ -232,6 +291,7 @@ else
   set iminsert=0
   set imsearch=-1
 endif
+unlet s:skk
 
 "バックスペースキーで行頭を削除する
 set backspace=indent,eol,start
@@ -255,6 +315,7 @@ if has('path_extra')
 endif
 execute 'set tags+=./tags' . s:home
 execute 'set tags+=./TAGS' . s:home
+unlet s:home
 
 if has('path_extra')
   set tags+=./**2/tags
@@ -266,25 +327,26 @@ set tags+=TAGS
 
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if dein#tap('ctrlp.vim')
+" if dein#is_sourced('ctrlp.vim')
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
 " タグの戻りを[に割り当て / ESC 同等なのでつらい
-nnoremap <C-[> :pop<CR>
+" <leader>esc とする
+nnoremap <silent> <Leader><C-[> :pop<CR>
 " }}}
 
 " History {{{
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  set undodir=$HOME/.vim/undo
+  let &undodir = g:user.dir.vim . '/undo'
   set undofile
   " set undolevels=1000 " default
 endif
 " set viewoptions=cursor,folds
 
-" set history=2048
+set history=2000
 
 " mru 200,register 50lines,10KBytes hlsearch disable viminfo file:$HOME/.vim/info
 set viminfo='200,<50,s10,h,rA:,rB:,n$HOME/.vim/info
@@ -296,15 +358,17 @@ set confirm
 
 " バックアップファイルを作らない
 set nobackup
-set backupdir=$HOME/.vim/backup// " // use fullpath
+let &backupdir = g:user.dir.vim . '/backup//'  " // use fullpath
 
 " backupは上書き時だけつくって、成功で削除
-set writebackup
+" from https://github.com/cohama/.vim/blob/master/init.vim
+" on だと guard が複数回実行されてしまう問題がある
+set nowritebackup
 
 " スワップファイルを作らない -> 作るがROで対応
 " -> thinca さんのIFを移植(ROでコマンドでRecover/Delete)
 " set noswapfile
-set directory=$HOME/.vim/swap// " // use fullpath
+let &directory = g:user.dir.vim . '/swap//'  " // use fullpath
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 " autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
 
@@ -350,9 +414,20 @@ endfunction
 
 " 編集中のファイルが変更されたら自動で読み直す
 set autoread
-" based on https://vim-jp.org/vim-users-jp/2011/03/12/Hack-206.html
-" window move to autoread
-autocmd MyAutoGroup WinEnter * nested checktime
+
+augroup MyAutoGroup
+  " based on https://vim-jp.org/vim-users-jp/2011/03/12/Hack-206.html
+  " window move to autoread
+  autocmd WinEnter * nested checktime
+
+  " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
+  " Run checktime in buffers, but avoiding the "Command Line" (q:) window
+  autocmd CursorHold * nested if getcmdwintype() == '' | checktime | endif
+
+  " set nopaste をできるだけ維持
+  " from https://github.com/cohama/.vim/blob/master/init.vim
+  autocmd InsertLeave * set nopaste
+augroup END
 
 " バッファが編集中でもその他のファイルを開けるように
 " based on https://qiita.com/qtamaki/items/4da4ead3f2f9a525591a
@@ -372,17 +447,17 @@ set hlsearch
 " nnoremap <silent> <C-l> <C-l>:nohlsearch<CR>
 " based on https://postd.cc/vim-galore-4/
 nnoremap <silent> <C-L> :nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
-if dein#tap('vim-quickhl')
+if dein#is_sourced('vim-quickhl')
   nnoremap <silent> <Leader><C-L> :QuickhlManualReset<CR>:nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
 else
   nnoremap <silent> <Leader><C-L> :nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
 endif
 
-" 検索文字列が小文字の場合は大文字小文字を区別なく検索する
-set ignorecase
-
 " 検索文字列入力時に順次対象文字列にヒットさせる
 set incsearch
+
+" 検索文字列が小文字の場合は大文字小文字を区別なく検索する
+set ignorecase
 
 " 検索文字列に大文字が含まれている場合は区別して検索する
 set smartcase
@@ -445,8 +520,8 @@ function! s:relativenumber_toggle(mode) abort
   endif
 endfunction
 augroup MyAutoGroup
-  autocmd InsertEnter * nested call <SID>relativenumber_toggle('enter')
-  autocmd InsertLeave * nested call <SID>relativenumber_toggle('leave')
+  autocmd InsertEnter * nested call s:relativenumber_toggle('enter')
+  autocmd InsertLeave * nested call s:relativenumber_toggle('leave')
 augroup END
 
 " 入力中のコマンドをステータスに表示す
@@ -494,6 +569,12 @@ endif
 " カレントディレクトリをファイルの位置に自動移動
 " use plugin
 " set autochdir
+
+" based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
+" リサイズしたらウィンドウの境界整理
+augroup MyAutoGroup
+  autocmd VimResized * nested :wincmd =
+augroup END
 
 " http://qiita.com/jnchito/items/5141b3b01bced9f7f48f
 " http://inari.hatenablog.com/entry/2014/05/05/231307
@@ -558,8 +639,7 @@ set synmaxcol=512
 " }}}
 
 " View. {{{
-" let &viewdir = expand($HOME . '/.vim/view')
-set viewdir=$HOME/.vim/view
+let &viewdir = g:user.dir.vim . '/view'
 " " from muramount/conf_files
 " " ファイル全般に設定
 " " augroup General
@@ -589,12 +669,29 @@ set tabpagemax=99
 " Cursor Pos. {{{
 " from :help last-position-jump
 autocmd MyAutoGroup BufReadPost * nested
-      \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
-      \ |   exe "normal! g`\""
-      \ | endif
-" }}}
+  \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
+  \ |   exe "normal! g`\""
+  \ | endif
 " }}}
 
+" Cursor Style. {{{
+" from https://github.com/mnishz/dotfiles/blob/0673fc0ecb85501787cc0c002303456e068f3374/.vimrc#L55-L63
+if &term =~# 'xterm'
+  " インサートモードでのカーソル切り替え
+  let &t_ti = &t_ti . "\e[1 q"
+  let &t_SI = &t_SI . "\e[5 q"
+  let &t_EI = &t_EI . "\e[1 q"
+  let &t_te = &t_te . "\e[0 q"
+endif
+" }}}
+
+" File Potition. {{{
+" augroup MyAutoGroup
+"   autocmd BufEnter,BufReadPost * echo 'buffer pwd:' getcwd(0,0)
+" augroup END
+" }}}
+
+" }}}
 
 " ##############################################################移動系############################################################## {{{
 " Command/Find Window. {{{
@@ -621,11 +718,14 @@ autocmd MyAutoGroup VimResized * nested let &cmdwinheight = min([(&lines/4), 10]
 " based on https://qiita.com/monaqa/items/e22e6f72308652fc81e2
 augroup MyAutoGroup
   " 行数を非表示
-  autocmd CmdwinEnter [:\/\?=] nested setlocal nonumber norelativenumber
   " signcolumn を非表示
-  autocmd CmdwinEnter [:\/\?=] nested setlocal signcolumn=no
+  " foldcolumn 0
+  autocmd CmdwinEnter [:\/\?=] nested
+    \   setlocal nonumber norelativenumber
+    \ | setlocal signcolumn=no
+    \ | setlocal foldcolumn=0
   " q で終了
-  autocmd CmdwinEnter [:\/\?=] nested nnoremap <buffer> q <C-w>c
+  " in mapping
 augroup END
 " }}}
 
@@ -731,6 +831,11 @@ if has('patch-8.1.1882')
   set completeopt+=popup
 endif
 
+" ファイルパスの@を利用可能にする
+set isfname+=@-@
+" = は使われないはずなので除外
+set isfname-==
+
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set pumheight=10
 set pumwidth=20
@@ -741,9 +846,9 @@ set wildignorecase
 " 辞書
 " see http://nanasi.jp/articles/howto/config/dictionary.html
 
-let s:dictfile = expand($HOME . '/.vim/dict/look/words', ':p')
+let s:dictfile = expand(g:user.dir.vim . '/dict/look/words', ':p')
 if s:is_windows
-  let s:dictfile = expand('c:/tools/dictionary/look/words', ':p')
+  let s:dictfile = expand(g:user.dir.dictionary . '/look/words', ':p')
 endif
 if filereadable(s:dictfile)
   let &dictionary = s:dictfile
@@ -753,15 +858,15 @@ endif
 set spell
 set complete+=kspell
 set spelllang=en_us,cjk
-let &spellfile = expand($HOME . '/.vim/dict/spell.' . &encoding . '.add')
+let &spellfile = expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')
 let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 autocmd MyAutoGroup VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
-let s:thesaurus  = expand($HOME . '/.vim/dict/mthesaur.txt', ':p')
+let s:thesaurus  = expand(g:user.dir.vim . '/dict/mthesaur.txt', ':p')
 if s:is_windows
-  let s:thesaurus = expand('c:/tools/dictionary/mthesaur.txt', ':p')
+  let s:thesaurus = expand(g:user.dir.dictionary . '/mthesaur.txt', ':p')
 endif
 if filereadable(s:thesaurus)
   let &thesaurus = s:thesaurus
@@ -812,28 +917,28 @@ endfunction " }}}
 
 inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 
-function! s:popup_select(default) abort
-  if dein#tap('asyncomplete.vim')
+function! PopupSelect(default) abort
+  if dein#is_sourced('asyncomplete.vim')
     return asyncomplete#close_popup()
   else
     return a:default
   endif
 endfunction
 
-function! s:popup_cancel(default) abort
-  if dein#tap('asyncomplete.vim')
+function! PopupCancel(default) abort
+  if dein#is_sourced('asyncomplete.vim')
     return asyncomplete#cancel_popup()
   else
     return a:default
   endif
 endfunction
 
-inoremap <expr> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr> <CR>         pumvisible() ? <SID>popup_select("\<C-y>") : "\<CR>"
-inoremap <expr> <Space>      pumvisible() ? <SID>popup_cancel("\<C-e>") : "\<Space>"
-inoremap <expr> <C-y>        pumvisible() ? <SID>popup_select("\<C-y>") : "\<C-y>"
-inoremap <expr> <C-e>        pumvisible() ? <SID>popup_cancel("\<C-e>") : "\<C-e>"
+inoremap <expr><silent> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr><silent> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr><silent> <CR>         pumvisible() ? PopupSelect("\<C-y>") : "\<CR>"
+inoremap <expr><silent> <Space>      pumvisible() ? PopupCancel("\<C-e>") : "\<Space>"
+inoremap <expr><silent> <C-y>        pumvisible() ? PopupSelect("\<C-y>") : "\<C-y>"
+inoremap <expr><silent> <C-e>        pumvisible() ? PopupCancel("\<C-e>") : "\<C-e>"
 
 " }}}
 
@@ -866,12 +971,14 @@ endif
 
 " see https://qiita.com/miyanokomiya/items/03d19bca87d4b2f176c4
 " current file path to register and display
-function! ClipText(data)
+function! s:clip_text(data)
   let @0=a:data
   let @"=a:data
-  let @*=a:data
+  if has('clipboard')
+    let @*=a:data
+  endif
 endfunction
-nnoremap <C-g> :call ClipText(fnamemodify(expand('%'), ':p'))<CR><C-g>
+nnoremap <C-g> :call <SID>clip_text(fnamemodify(expand('%'), ':p'))<CR><C-g>
 
 " }}}
 
@@ -886,13 +993,13 @@ let s:saved_t_Co=&t_Co
 " 256色モード at console
 if !has('gui_running')
   set t_Co=16
-  if stridx($TERM, "xterm-256color") >= 0
+  if stridx($TERM, 'xterm-256color') >= 0
     " xterm 256が定義ずみの場合
     set t_Co=256
     if has('termguicolors')
       set termguicolors
     endif
-  elseif (s:is_windows && ($ConEmuANSI == 'ON'))
+  elseif (s:is_windows && ($ConEmuANSI ==? 'ON'))
     " xterm 256が定義されてないがWindowsでConEmuで256有効の場合
     " http://e8l.hatenablog.com/entry/2016/03/16/230018
     " http://yanor.net/wiki/?Windows-%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%2FConEmu%2FANSI%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%2FVim%E3%81%AE256%E8%89%B2%E5%AF%BE%E5%BF%9C
@@ -900,8 +1007,11 @@ if !has('gui_running')
     " ConEmu Vim Support color
     set term=xterm
     set t_Co=256
-    let &t_AB="\e[48;5;%dm"
-    let &t_AF="\e[38;5;%dm"
+    " let &t_AB="\e[48;5;%dm"
+    " let &t_AF="\e[38;5;%dm"
+    if has('termguicolors')
+      set termguicolors
+    endif
 
     " https://conemu.github.io/en/VimXterm.html#Vim-scrolling-using-mouse-Wheel
     " with mouse
@@ -949,6 +1059,13 @@ augroup MyAutoGroup
   " autocmd ColorScheme * nested highlight Comment ctermfg=103
   " autocmd ColorScheme * nested highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
 
+  " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
+
+  " Highlight VCS conflict markers
+  " match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
+  " autocmd BufRead,BufNewFile * nested syntax match MyConflictMarker #^\(<\|=\|>\)\{7\}\([^=].\+\)\?$# |
+  "\                                   highlight link MyConflictMarker Todo
+  " experimental
 augroup END
 
 " 'cursorlineopt' setting in autocmd
@@ -968,6 +1085,39 @@ augroup MyAutoGroup
   " FileType vim force overwrite
   autocmd FileType vim setlocal keywordprg=:help
 augroup END
+
+augroup MyAutoGroup
+  " 行数を非表示
+  " signcolumn を非表示
+  " foldcolumn 2
+  autocmd FileType
+    \ help nested if &l:buftype ==# 'help'
+    \ |               setlocal nonumber norelativenumber
+    \ |               setlocal signcolumn=no
+    \ |               setlocal foldcolumn=2
+    \ |            endif
+  " q で終了
+  " in mapping
+augroup END
+
+" }}}
+
+" Quickfix/Location. {{{
+
+augroup MyAutoGroup
+  " 行数は絶対行
+  " signcolumn を非表示
+  " foldcolumn 0
+  " numberwidth 2
+  autocmd FileType
+    \ qf nested setlocal number norelativenumber
+    \ |         setlocal signcolumn=no
+    \ |         setlocal foldcolumn=0
+    \ |         setlocal numberwidth=2
+  " q で終了
+  " in plugin?
+augroup END
+
 " }}}
 
 " Grep. {{{
@@ -976,7 +1126,7 @@ if executable('jvgrep')
   set grepprg=jvgrep\ --no-color\ -inCRrI
   set grepformat=%f:%l:%c:%m
 elseif executable('pt')
-  set grepprg=pt\ --nocolor\ --nogroup\ --column\ -e\ -S
+  set grepprg=pt\ --nocolor\ --nogroup\ --column\ --output-encode\ euc\ -e\ -S
   set grepformat=%f:%l:%c:%m
 elseif executable('ag')
   set grepprg=ag\ -a\ --vimgrep\ -S
@@ -1001,10 +1151,11 @@ augroup END
 " from http://www.kawaz.jp/pukiwiki/?vim#cb691f26
 
 " 文字コードの自動認識
-if &encoding !=# 'utf-8'
-  set encoding=japan
-  set fileencoding=japan
-endif
+" if &encoding !=# 'utf-8'
+"   " vint: next-line -ProhibitEncodingOptionAfterScriptEncoding
+"   set encoding=japan
+"   set fileencoding=japan
+" endif
 if has('iconv')
   let s:enc_euc = 'euc-jp'
   let s:enc_jis = 'iso-2022-jp'
@@ -1118,7 +1269,7 @@ endfor
 map <silent> [Tab]c :tablast <bar> tabnew<CR>
 " tc 新しいタブを一番右に作る
 
-if dein#tap('vim-startify')
+if dein#is_sourced('vim-startify')
   map <silent> [Tab]h :tablast <bar> tabnew <bar> Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
@@ -1131,9 +1282,9 @@ map <silent> [Tab]p :tabprevious<CR>
 " tp 前のタブ
 
 "矢印キーでは表示行単位で行移動する
-nnoremap <UP> gk
+nnoremap <UP>   gk
 nnoremap <DOWN> gj
-vnoremap <UP> gk
+vnoremap <UP>   gk
 vnoremap <DOWN> gj
 
 " ctrlで行固定移動
@@ -1166,6 +1317,16 @@ vnoremap S "_S
 " setup in cutlass(future)
 " s use easymotion
 
+" " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
+" " QuickFix navigation
+" nnoremap ]q :cnext<CR>
+" nnoremap [q :cprevious<CR>
+"
+" " Location list navigation
+" nnoremap ]l :lnext<CR>
+" nnoremap [l :lprevious<CR>
+" same mapping in unimpaired
+
 " based on http://deris.hatenablog.jp/entry/2013/05/02/192415
 " 誤操作すると困るキーを無効化する
 
@@ -1187,6 +1348,12 @@ nnoremap <S-Tab> <<
 vnoremap <Tab>   >>
 vnoremap <S-Tab> <<
 
+" based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
+" Move visual block
+" vnoremap mJ :m '>+1<CR>gv=gv
+" vnoremap mK :m '<-2<CR>gv=gv
+" vim-move / vim-submode cover this move
+
 " コマンドラインで単語移動
 " based skanehira/dotfiles
 cnoremap <c-b> <S-Left>
@@ -1204,7 +1371,8 @@ cnoremap <c-n>  <down>
 cnoremap <c-p>  <up>
 
 " 念のため、pasteモードのトグルの設定はする
-set pastetoggle=<F12>
+" set pastetoggle=<F12>
+" use goyo plugin
 
 " prev setting:xxx see yyy
 " let mapleader = ","
@@ -1224,6 +1392,8 @@ set pastetoggle=<F12>
 " help and other readonly popup window : q is close
 autocmd MyAutoGroup FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
 autocmd MyAutoGroup FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
+" command window
+autocmd MyAutoGroup CmdwinEnter [:\/\?=] nested nnoremap <buffer> q <C-w>c
 
 " autocmd MyAutoGroup FileType qf nnoremap <buffer> q <C-w>c
 
@@ -1275,7 +1445,7 @@ let g:netrw_liststyle = 3
 " let g:netrw_sizestyle="H"
 
 " 日付フォーマットを yyyy/mm/dd(曜日) hh:mm:ss で表示する
-let g:netrw_timefmt="%Y/%m/%d(%a) %H:%M:%S"
+let g:netrw_timefmt='%Y/%m/%d(%a) %H:%M:%S'
 
 " previewを右に(alto=1で下右に)
 let g:netrw_preview = 1
@@ -1334,15 +1504,30 @@ endfunction " }}}
 "   let b:SyntaxEchoStatus = a:status
 " endfunction " }}}
 
+" util not work yet
+function! s:buffer_num() abort " {{{
+  let bufmax = bufnr('$')
+  let buflist = filter(range(1,bufmax), {i,v -> bufexists(v)})
+  let bufnum = len(buflist)
+
+  return bufnum
+endfunction " }}}
+
+function! s:tab_num() abort " {{{
+  return tabpagenr('$')
+endfunction " }}}
+
 function! s:ExpandAllBufferToTab() abort " {{{
-  silent tabonly
-  silent wincmd o
+  let save_hidden = &hidden
+  set hidden
+  silent tabonly!
+  silent only!
   bufdo tab split
-  " タブが1つじゃなければ、多重オープンされているバッファを処理する必要がある
-  " if 0
-  "   tablast  " 最初の1つは最後にいっているので、それを選択
-  "   tabclose " close
-  " endif
+
+  " remove last if 2 or more tabs(first buffer dup)
+  silent tabclose! $
+
+  let &hidden = save_hidden
 endfunction " }}}
 
 " see http://koturn.hatenablog.com/entry/2018/02/13/000000
@@ -1358,7 +1543,7 @@ function! s:create_winid2bufnr_dict() abort " {{{
 endfunction " }}}
 
 function! s:show_tab_info() abort " {{{
-  echo "====== Tab Page Info ======"
+  echo '====== Tab Page Info ======'
   let current_tnr = tabpagenr()
   let winid2bufnr_dict = s:create_winid2bufnr_dict()
   for tnr in range(1, tabpagenr('$'))
@@ -1370,9 +1555,41 @@ function! s:show_tab_info() abort " {{{
     endfor
   endfor
 endfunction " }}}
+
+" from https://github.com/cohama/.vim/blob/master/init.vim
+" 現在のバッファが空っぽならば :drop それ以外なら :tab drop になるコマンド
+function! SmartDrop(tabedit_args) abort " {{{
+
+  if expand('%') == '' && !&modified
+    let drop_cmd = 'drop '
+  else
+    let drop_cmd = 'tab drop '
+  endif
+  silent execute drop_cmd . a:tabedit_args
+endfunction " }}}
+
 " }}}
 
 " command {{{
+
+" from https://github.com/cohama/.vim/blob/master/init.vim
+" フォーマット変えて開き直す系 {{{
+command! Utf8  edit ++enc=utf-8 %
+command! Cp932 edit ++enc=cp932 %
+command! Unix  edit ++ff=unix   %
+command! Dos   edit ++ff=dos    %
+
+command! AsUtf8 set fenc=utf-8 | w
+" 追加
+command! AsDos  set ff=dos     | w
+command! AsUnix set ff=unix    | w
+" }}}
+
+" from https://github.com/cohama/.vim/blob/master/init.vim
+" 現在のバッファが空っぽならば :drop それ以外なら :tab drop になるコマンド {{{
+command! -nargs=* SmartDrop call SmartDrop(<q-args>)
+" }}}
+
 " command! SyntaxEchoEnable  :call <SID>SetSyntaxEchoStatus(1)
 " command! SyntaxEchoDisable :call <SID>SetSyntaxEchoStatus(0)
 command! SyntaxEcho        call <SID>EchoSyntax(1)
@@ -1399,13 +1616,14 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 " local setting {{{
 " load non init vimrc setting in .vim/rc/
 function! s:vimrc_load_noninit_setting(loc)
-  let files = glob(expand(escape(a:loc, ' ')) . '*.vim', 1, 1)
+  let path = expand(escape(a:loc, ' '), 'p')
+  let files = glob(path . '/*.vim', 1, 1)
   for i in reverse(filter(files, 'filereadable(v:val)'))
     source `=i`
   endfor
 endfunction
 
-call s:vimrc_load_noninit_setting($HOME . '/.vim/rc/')
+call s:vimrc_load_noninit_setting(g:dein.dir.rc)
 " }}}
 
 " testing {{{

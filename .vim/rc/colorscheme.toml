@@ -89,7 +89,6 @@ hook_add = '''
   "
 '''
 
-
 [[plugins]] # カラースキーム
 # http://blog-sk.com/vim/vim-transparent/
 repo = 'cocopon/iceberg.vim'
@@ -361,3 +360,91 @@ merged = 0
 # " lightline   : '<none>'
 # " airline     : '<none>'
 
+[[plugins]] # カラースキーム
+repo = 'bluz71/vim-moonfly-colors'
+# " colorscheme : 'moonfly'
+# " lightline   : 'moonfly'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーム
+repo = 'jonathanfilip/vim-lucius'
+# " colorscheme : 'lucius'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーム
+repo = 'KabbAmine/yowish.vim'
+# " colorscheme : 'yowish'
+# " lightline   : 'yowish'
+# " airline     : 'yowish'
+# " airline     : 'yowishU'
+
+[[plugins]] # カラースキーム
+repo = 'phanviet/vim-monokai-pro'
+# " colorscheme : 'monokai_pro'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーム
+repo = 'agude/vim-eldar'
+hook_add = '''
+  " colorscheme : 'eldar'
+  " lightline   : '<none>'
+  " airline     : '<none>'
+
+  " tuning
+  " if has('gui_runnning')
+  "   let g:eldar_red     = "#ff0000"
+  "   let g:eldar_yellow  = "#ffff00"
+  "   let g:eldar_green   = "#00ff00"
+  "   let g:eldar_cyan    = "#00ffff"
+  "   let g:eldar_blue    = "#0000ff"
+  "   let g:eldar_magenta = "#ff00ff"
+  "   " GUI
+  "   let g:eldar_text        = "#D3D3D3"
+  "   let g:eldar_background  = "#2B2B2B"
+  " else
+  "   " CLI
+  "   let g:eldar_term_text        = "White"
+  "   let g:eldar_term_background  = "Black"
+  " endif
+'''
+
+[[plugins]] # カラースキーム
+repo = 'tyrannicaltoucan/vim-deep-space'
+# " colorscheme : 'deep-space'
+# " lightline   : 'deepspace'
+# " airline     : 'deep_space'
+
+
+[[plugins]] # カラースキーム
+repo = 'rakr/vim-two-firewatch'
+# " colorscheme : 'two-firewatch'
+# " lightline   : 'twofirewatch'
+# " airline     : 'twofirewatch'
+
+[[plugins]] # カラースキーム
+repo = 'rakr/vim-one'
+# " colorscheme : 'one'
+# " lightline   : '<none>'
+# " airline     : 'one'
+
+[[plugins]] # カラースキーム
+repo = 'NLKNguyen/papercolor-theme'
+# " colorscheme : 'PaperColor'
+# " lightline   : 'PaperColor'
+# " airline     : 'papercolor'
+
+[[plugins]] # カラースキーム
+repo = 'tlhr/anderson.vim'
+# " colorscheme : 'anderson'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+[[plugins]] # カラースキーム
+repo = 'mhinz/vim-janah'
+# " colorscheme : 'janah'
+# " lightline   : '<none>'
+# " airline     : '<none>'
+
+# EOF

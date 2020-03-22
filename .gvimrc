@@ -88,7 +88,7 @@ endif
 " set iminsert=0
 " set imsearch=-1
 
-" Vitsual bell status update. (bell and visutal bell need not opt eixsts
+" Visual bell status update. (bell and visual bell need not opt exists
 " belloff)
 if exists('&belloff')
   set noerrorbells
