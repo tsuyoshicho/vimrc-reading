@@ -275,6 +275,9 @@ hook_post_source = '''
   cnoremap <expr> <CR>    ambicmd#expand("\<CR>")
 '''
 
+# [[plugins]]
+# repo = 'tyru/vim-altercmd'
+
 [[plugins]]
 repo = 'blueyed/vim-diminactive'
 hook_add = '''
@@ -2000,7 +2003,7 @@ hook_add = '''
 '''
 hook_post_source = '''
   " from https://mattn.kaoriya.net/software/vim/20191231213507.htm
-  command! LspDebugEnable  let lsp_log_verbose=1 | let lsp_log_file=expand('~/lsp.log')
+  command! LspDebugEnable  let lsp_log_verbose=1 | let lsp_log_file=expand($HOME . '/lsp.log')
   command! LspDebugDisable let lsp_log_verbose=0 | unlet lsp_log_file
 '''
 
@@ -2030,11 +2033,8 @@ depends = ['vim-lsp', 'vital.vim']
 hook_add = '''
   " install path
   " ~/.local/share/vim-lsp-settings/
-  let g:lsp_settings_servers_dir  = expand(g:user.dir.data_home . '/vim-lsp-settings')
+  let g:lsp_settings_servers_dir = expand(g:user.dir.data_home . '/vim-lsp-settings')
   call mkdir(g:lsp_settings_servers_dir, 'p')
-
-  " config
-  let g:lsp_settings_filetype_python = ['pyls-ms']
 '''
 hook_post_source = '''
   let List     = g:V.import('Data.List')
@@ -2042,6 +2042,31 @@ hook_post_source = '''
   let g:lsp_settings_root_markers = List.concat([
     \ List.map(g:user.rootmarker.dirs, { v ->  v . '/' }),
     \ g:user.rootmarker.files])
+
+  " config
+  " system-wide / per lsp server
+  " CPU num
+  let cpunum = 2 " heuristic
+  if exists('$NUMBER_OF_PROCESSORS')
+    let cpunum = $NUMBER_OF_PROCESSORS
+  elseif executable('nproc')
+    let cpunum = systemlist('nproc --all')[0]
+  endif
+
+  " affect high-priority vim-lsp-settings installed clangd
+  let clangd_path = g:lsp_settings_servers_dir . '/clangd/clangd'
+  if !executable(clangd_path)
+    let clangd_path = lsp_settings#exec_path('clangd')
+  endif
+  " global / per lsp server
+  let g:lsp_settings = {
+    \  'clangd': {
+    \    'cmd': [ clangd_path, '--background-index', '-j=' . cpunum ],
+    \  },
+    \ }
+
+  " per filetype
+  let g:lsp_settings_filetype_python = ['pyls-ms']
 '''
 
 [[plugins]]
@@ -2082,6 +2107,10 @@ hook_add = '''
 
   " completeopt manual set
   let g:asyncomplete_auto_completeopt = 0
+
+  " debug
+  command! AsyncompleteDebugEnable  let g:asyncomplete_log_file = expand($HOME . '/asyncomplete.log')
+  command! AsyncompleteDebugDisable unlet g:asyncomplete_log_file
 '''
 hook_post_source = '''
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
@@ -2125,45 +2154,87 @@ hook_source = '''
 repo = 'machakann/asyncomplete-unicodesymbol.vim'
 depends = ['asyncomplete.vim', 'asyncomplete-ezfilter.vim']
 hook_source = '''
-  autocmd User asyncomplete_setup call asyncomplete#register_source(
-  \ asyncomplete#sources#unicodesymbol#get_source_options({
-  \   'name': 'unicodesymbol',
-  \   'whitelist': ['julia'],
-  \   'completor': function('asyncomplete#sources#unicodesymbol#completor'),
-  \ }))
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#unicodesymbol#get_source_options({
+      \     'name': 'unicodesymbol',
+      \     'whitelist': ['julia'],
+      \     'completor': function('asyncomplete#sources#unicodesymbol#completor'),
+      \   }))
 
-  let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
-  \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
+    let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
+      \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
+  endif
+'''
+
+[[plugins]]
+# repo = 'yuki-ycino/asyncomplete-dictionary'
+repo = 'tsuyoshicho/asyncomplete-dictionary'
+rev  = 'develop'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#dictionary#get_source_options({
+      \     'name': 'dictionary',
+      \     'whitelist': ['*'],
+      \     'completor': function('asyncomplete#sources#dictionary#completor')
+      \   }))
+  endif
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
 depends = ['vim-lsp', 'asyncomplete.vim']
+hook_source = '''
+  " debug
+  if 0
+    autocmd User lsp_setup             echomsg "lsp_setup             execute"
+    autocmd User lsp_register_server   echomsg "lsp_register_server   execute"
+    autocmd User lsp_unregister_server echomsg "lsp_unregister_server execute"
+    autocmd User lsp_server_init       echomsg "lsp_server_init       execute"
+    autocmd User lsp_server_exit       echomsg "lsp_server_exit       execute"
+    autocmd User lsp_complete_done     echomsg "lsp_complete_done     execute"
+    autocmd User lsp_float_opened      echomsg "lsp_float_opened      execute"
+    autocmd User lsp_float_closed      echomsg "lsp_float_closed      execute"
+    autocmd User lsp_buffer_enabled    echomsg "lsp_buffer_enabled    execute"
+  endif
+'''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-omni.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#omni#get_source_options({
-   \ 'name': 'omni',
-   \ 'whitelist': ['*'],
-   \ 'completor': function('asyncomplete#sources#omni#completor')
-   \  }))
+  if 0
+    " temp NG
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#omni#get_source_options({
+      \     'name': 'omni',
+      \     'whitelist': ['*'],
+      \     'completor': function('asyncomplete#sources#omni#completor')
+      \   }))
+  endif
 '''
 
 [[plugins]]
 repo = 'high-moctane/asyncomplete-nextword.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  let $NEXTWORD_DATA_PATH = expand(g:user.dir.dictionary . '/nextword')
-  if executable('nextword')
-    autocmd User asyncomplete_setup call
-      \  asyncomplete#register_source(asyncomplete#sources#nextword#get_source_options({
-      \   'name': 'nextword',
-      \   'whitelist': ['*'],
-      \   'args': ['-n', '300', '-g'],
-      \   'completor': function('asyncomplete#sources#nextword#completor')
-      \   }))
+  if 0
+    let $NEXTWORD_DATA_PATH = expand(g:user.dir.dictionary . '/nextword')
+    if executable('nextword')
+      autocmd User asyncomplete_setup call
+        \ asyncomplete#register_source(
+        \   asyncomplete#sources#nextword#get_source_options({
+        \     'name': 'nextword',
+        \     'whitelist': ['*'],
+        \     'args': ['-n', '300', '-g'],
+        \     'completor': function('asyncomplete#sources#nextword#completor')
+        \   }))
+    endif
   endif
 '''
 
@@ -2171,13 +2242,16 @@ hook_source = '''
 repo = 'gonzoooooo/asyncomplete-look.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if executable('look')
-    autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(asyncomplete#sources#look#get_source_options({
-      \  'name': 'look',
-      \  'whitelist': ['*'],
-      \  'completor': function('asyncomplete#sources#look#completor'),
-      \  }))
+  if 0
+    if executable('look')
+      autocmd User asyncomplete_setup call
+        \ asyncomplete#register_source(
+        \   asyncomplete#sources#look#get_source_options({
+        \     'name': 'look',
+        \     'whitelist': ['*'],
+        \     'completor': function('asyncomplete#sources#look#completor'),
+        \   }))
+    endif
   endif
 '''
 
@@ -2185,37 +2259,68 @@ hook_source = '''
 repo = 'prabirshrestha/asyncomplete-file.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
-  \ 'name': 'file',
-  \ 'whitelist': ['*'],
-  \ 'priority': 10,
-  \ 'completor': function('asyncomplete#sources#file#completor')
-  \ }))
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#file#get_source_options({
+      \     'name': 'file',
+      \     'whitelist': ['*'],
+      \     'priority': 10,
+      \     'completor': function('asyncomplete#sources#file#completor')
+      \   }))
+  endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-buffer.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#buffer#get_source_options({
+      \     'name': 'buffer',
+      \     'whitelist': ['*'],
+      \     'blacklist': ['go','python'],
+      \     'completor': function('asyncomplete#sources#buffer#completor'),
+      \     'config': {
+      \        'max_buffer_size': 700000,
+      \      },
+      \ }))
+  endif
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-tags.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#tags#get_source_options({
-    \ 'name': 'tags',
-    \ 'whitelist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
-    \ 'completor': function('asyncomplete#sources#tags#completor'),
-    \ 'config': {
-    \    'max_file_size': 350000000,
-    \  },
-    \ }))
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#tags#get_source_options({
+      \     'name': 'tags',
+      \     'whitelist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
+      \     'completor': function('asyncomplete#sources#tags#completor'),
+      \     'config': {
+      \       'max_file_size': 350000000,
+      \     },
+      \   }))
+  endif
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-emoji.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#emoji#get_source_options({
-  \ 'name': 'emoji',
-  \ 'whitelist': ['*'],
-  \ 'completor': function('asyncomplete#sources#emoji#completor'),
-  \ }))
+  if 0
+    autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#emoji#get_source_options({
+      \     'name': 'emoji',
+      \     'whitelist': ['*'],
+      \     'completor': function('asyncomplete#sources#emoji#completor'),
+      \   }))
+  endif
 '''
 
 # [[plugins]] # completion <C-X><C-U> (user completion)
@@ -2778,7 +2883,6 @@ repo = 'mopp/sky-color-clock.vim'
 depends = ['vim-pass']
 hook_add = '''
   " Configure variables.
-  " let g:sky_color_clock#latitude
   " let g:sky_color_clock#color_stops
   let g:sky_color_clock#datetime_format = '%m/%d(%a) %H:%M'
   let g:sky_color_clock#enable_emoji_icon = 1
@@ -2790,8 +2894,8 @@ hook_add = '''
             \ [313, '#dc143c']
             \ ]
 
-  " Tokyo     https://openweathermap.org/city/1850147
-  let g:sky_color_clock#openweathermap_city_id = "1850147"
+  let g:sky_color_clock#latitude               = g:user.location.latitude
+  let g:sky_color_clock#openweathermap_city_id = g:user.location.cityid
 '''
 
 # Git
@@ -3172,7 +3276,7 @@ hook_add = '''
   if has('gui_running')
     let g:nd_themes = [
       \ ['sunrise+0',   'gruvbox-material', 'light', 'gruvbox_material'],
-      \ ['sunset+0',    'iceberg',          'dark',  'iceberg'],
+      \ ['sunset+0',    'forest-night',     'dark',  'forest_night'],
       \]
 
   else
@@ -3323,7 +3427,8 @@ hook_add = '''
   " let g:indentLine_char       = nr2char(0xe621)
 
   " no conceal for edit
-  let g:indentLine_fileTypeExclude = ['help','json']
+  let g:indentLine_fileTypeExclude = ['startify', 'json']
+  let g:indentLine_bufTypeExclude  = ['help', 'terminal']
 
   " conceallevel/concealcursor set in vimrc
   let g:indentLine_setConceal = 0
@@ -3459,7 +3564,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@enduml',
         \   'at': '\%(^\s*#.*\)\@<!@startuml\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enduml',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3468,7 +3573,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@endgantt',
         \   'at': '\%(^\s*#.*\)\@<!@startgantt\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endgantt',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3477,7 +3582,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@endditaa',
         \   'at': '\%(^\s*#.*\)\@<!@startditaa\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endditaa',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3486,7 +3591,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@enddot',
         \   'at': '\%(^\s*#.*\)\@<!@startdot\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enddot',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3495,7 +3600,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@endsalt',
         \   'at': '\%(^\s*#.*\)\@<!@startsalt\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endsalt',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3504,7 +3609,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@endwbs',
         \   'at': '\%(^\s*#.*\)\@<!@startwbs\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endwbs',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \ {
@@ -3513,7 +3618,7 @@ hook_post_source = '''
         \   'input_after': '<CR>' . '@endmindmap',
         \   'at': '\%(^\s*#.*\)\@<!@startmindmap\>.*\%#',
         \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endmindmap',
-        \   'filetype': 'plantuml',
+        \   'filetype': ['plantuml'],
         \   'syntax': [],
         \ },
         \]
@@ -3539,25 +3644,52 @@ hook_post_source = '''
   " vimspec
   " from https://github.com/cohama/.vim/blob/master/dein.toml
   call lexima#add_rule({'char': '<CR>', 'at': '^\s*\%(Describe\|Context\|It\|Before\|After\)\s\+.*\%#',
-  \                                                           'input_after': '<CR>End', 'filetype': ['vimspec']})
+  \   'input_after': '<CR>End', 'filetype': ['vimspec']})
+
+  " vim, vimspec
+  " from https://github.com/cohama/.vim/blob/master/dein.toml
+  " custom
+  " ignore stype ["String", "Comment"]
+  " vimspec support
+  " [] support
+  call lexima#add_rule({'at': '{\%#}', 'char': '<CR>', 'input': '<CR><Bslash> ',
+    \ 'input_after': '<CR><Bslash> ', 'filetype': ['vim', 'vimspec']})
+  call lexima#add_rule({'at': '\[\%#\]', 'char': '<CR>', 'input': '<CR><Bslash> ',
+    \ 'input_after': '<CR><Bslash> ', 'filetype': ['vim', 'vimspec']})
+  call lexima#add_rule({'at': '\\\s.*\%#$', 'char': '<CR>', 'input': '<CR><Bslash> ',
+    \                                 'filetype': ['vim', 'vimspec']})
+
+  " http://secret-garden.hatenablog.com/entry/2015/05/21/194914
+  " http://secret-garden.hatenablog.com/entry/2015/05/06/211712
 
   " keymapping
   " see https://qiita.com/yami_beta/items/26995a5c382bd83ac38f
   inoremap <C-l> <C-r>=lexima#insmode#leave(1, '<LT>C-G>U<LT>RIGHT>')<CR>
 
-  " popup support CR(If completion popup is exists, decision completion)
-  " add_rules overwrite CR mapping
-  " inoremap <expr><silent> <CR> lexima#expand('<CR>', 'i')
-  " inoremap <expr><silent> <CR> pumvisible() ? PopupSelect("\<C-y>") : lexima#expand('<CR>', 'i')
-  execute printf("inoremap <expr><silent> %s pumvisible() ? PopupSelect(\"\\<C-y>\") : lexima#expand(%s, 'i')",
-  \ '<CR>',
-  \ string(lexima#string#to_mappable('<CR>'))
-  \ )
+  " popup support CR/space(If completion popup is exists, decision completion)
+  " add_rules overwrite CR/space mapping
+
+  " move to vimrc
 '''
 
 # [[plugins]]
 # repo = 'deathlyfrantic/lexima-template-rules'
 # depends = ['lexima.vim']
+
+# 上手く動かない
+# [[plugins]]
+# repo = 'dkarter/bullets.vim'
+# hook_add = '''
+#   " key map conflict
+#   " let g:bullets_set_mappings = 0
+#   let g:bullets_mapping_leader = '<C-:>'
+#
+#   let g:bullets_enable_in_empty_buffers = 1
+#   " let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+# '''
+
+[[plugins]]
+repo = 'justinmk/vim-gtfo'
 
 [[plugins]]
 repo = 'rhysd/clever-f.vim'
@@ -3845,6 +3977,8 @@ hook_add = '''
   \ 'markdown' : 'toc',
   \ }
 
+  let g:vista_update_on_text_changed = 1
+
   " Ensure you have installed some decent font to show these pretty symbols, then you can enable icon for the kind.
   let g:vista#renderer#enable_icon = 1
 
@@ -3864,7 +3998,7 @@ hook_add = '''
   augroup vimrc_init-vista
     autocmd!
     autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter * call vista#RunForNearestMethodOrFunction()
-    autocmd User lsp_server_init * call vista#RunForNearestMethodOrFunction()
+    autocmd User lsp_server_init call vista#RunForNearestMethodOrFunction()
   augroup END
 '''
 hook_post_source = '''

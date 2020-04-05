@@ -18,11 +18,13 @@ on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
 [[plugins]]
 repo = 'powerman/vim-plugin-AnsiEsc'
 on_cmd = ['AnsiEsc']
+depends = ['vital.vim']
 hook_add = '''
   let g:no_ansiesc_menu = 1
   let g:no_cecutil_maps = 1
   " based on https://qiita.com/1000k/items/6d4953d2dd52fdd86556
   command! AnsiEscStripCode %s/\e\[[0-9;]*m//g
+  " command! AnsiEscStripCode %s/^.*$/\=g:V.import('Data.String').remove_ansi_sequences(\0)/g
 '''
 
 [[plugins]]
@@ -282,21 +284,24 @@ hook_add = '''
       \  'active'   : 90,
       \  'inactive' : 60
       \ }
+  let g:transparency_ctermbg_none = 1
 '''
 hook_post_source = '''
-  " nmap --- <Plug>(TransparencyOn)
-  " nmap --- <Plug>(TransparencyOff)
-  nmap <F4> <Plug>(TransparencyToggle)
+  if g:transparency_activate
+    " nmap --- <Plug>(TransparencyOn)
+    " nmap --- <Plug>(TransparencyOff)
+    nmap <F4> <Plug>(TransparencyToggle)
+  endif
 
   " based on https://sy-base.com/myrobotics/vim/vim-transparent/
   " terminal mode; it has transparent function and enabled
   if !has('gui_running')
     augroup vimrc_init-transparency
       autocmd!
-      autocmd Colorscheme * highlight Normal ctermbg=none
-      autocmd Colorscheme * highlight NonText ctermbg=none
-      autocmd Colorscheme * highlight LineNr ctermbg=none
-      autocmd Colorscheme * highlight Folded ctermbg=none
+      autocmd Colorscheme * highlight Normal      ctermbg=none
+      autocmd Colorscheme * highlight NonText     ctermbg=none
+      autocmd Colorscheme * highlight LineNr      ctermbg=none
+      autocmd Colorscheme * highlight Folded      ctermbg=none
       autocmd Colorscheme * highlight EndOfBuffer ctermbg=none
     augroup END
   endif
@@ -626,12 +631,13 @@ repo = 'tweekmonster/helpful.vim'
 on_cmd = ['HelpfulVersion']
 
 # per filetypes
-[[plugins]]
-repo = 'rhysd/vim-clang-format'
-on_if= 'executable("clang-format")'
-hook_add = '''
-  let g:clang_format#auto_formatexpr = 1
-'''
+# C/C++ use clnagd / lsp for lsp client
+# [[plugins]]
+# repo = 'rhysd/vim-clang-format'
+# on_if= 'executable("clang-format")'
+# hook_add = '''
+#   let g:clang_format#auto_formatexpr = 1
+# '''
 
 [[plugins]]
 repo = 'justinmk/vim-syntax-extra'
@@ -681,6 +687,14 @@ hook_add = '''
 repo = 'iwataka/vim-markdown-ex'
 # no depends : use default markdown styler or other
 on_ft = ['markdown']
+
+[[plugins]]
+repo = 'mzlogin/vim-markdown-toc'
+on_ft = ['markdown']
+hook_add = '''
+  let g:vmt_auto_update_on_save = 1
+  let g:vmt_dont_insert_fence = 1
+'''
 
 # [[plugins]]
 # repo = 'jxnblk/vim-mdx-js'
@@ -894,6 +908,11 @@ on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'jav
 [[plugins]]
 repo = 'cakebaker/scss-syntax.vim'
 on_ft = ['scss']
+
+[[plugins]]
+repo = 'relastle/vim-nayvy'
+on_ft = ['python']
+# work require pyflakes,fzf(fzf vim plugin)
 
 [[plugins]]
 repo = 'udalov/kotlin-vim'

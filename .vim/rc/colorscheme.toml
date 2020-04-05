@@ -1,13 +1,248 @@
 # colorscheme
+# repo a-z sorted
 
 [[plugins]] # カラースキーム
-# https://teratail.com/questions/37382
+repo = 'AlessandroYorba/Alduin'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'alduin'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'AlessandroYorba/Arcadia'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'arcadia'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " " Dark Grey Background
+  " let g:arcadia_Sunset = 1
+  " " Even Darker Grey Background
+  " let g:arcadia_Twilight = 1
+  " " Almost Black Background
+  " let g:arcadia_Midnight = 1
+  " " Black Background
+  " let g:arcadia_Pitch = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'AlessandroYorba/Breve'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'breve'
+  let scheme['background'] = 'light'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'AlessandroYorba/Despacio'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'despacio'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " " Dark Grey Background
+  " let g:despacio_Sunset = 1
+  " " Even Darker Grey Background
+  " let g:despacio_Twilight = 1
+  " " Almost Black Background
+  " let g:despacio_Midnight = 1
+  " " Black Background
+  " let g:despacio_Pitch = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'AlessandroYorba/Sierra'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'sierra'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " " Dark Grey Background
+  " let g:sierra_Sunset = 1
+  " " Even Darker Grey Background
+  " let g:sierra_Twilight = 1
+  " " Almost Black Background
+  " let g:sierra_Midnight = 1
+  " " Black Background
+  " let g:sierra_Pitch = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'Haron-Prime/Antares'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'antares'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'KKPMW/moonshine-vim'
+hook_add = '''
+  for name in ['moonshine', 'moonshine_lowcontrast', 'moonshine_minimal']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = name
+    let scheme['background'] = 'dark'
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'KabbAmine/yowish.vim'
+hook_add = '''
+  for airline in ['yowish', 'yowishU']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'yowish'
+    let scheme['lightline']  = 'yowish'
+    let scheme['airline']    =  airline
+    let scheme['background'] = 'dark'
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'NLKNguyen/papercolor-theme'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'PaperColor'
+    let scheme['lightline']  = 'PaperColor'
+    let scheme['airline']    = 'papercolor'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  endfor
+
+  let g:PaperColor_Theme_Options = {
+    \   'theme': {
+    \     'default': {
+    \       'transparent_background': 1
+    \     }
+    \   },
+    \   'language': {
+    \     'python': {
+    \       'highlight_builtins' : 1
+    \     },
+    \     'cpp': {
+    \       'highlight_standard_library': 1
+    \     },
+    \     'c': {
+    \       'highlight_builtins' : 1
+    \     }
+    \   }
+    \ }
+'''
+
+[[plugins]] # カラースキーム
+repo = 'Rigellute/rigel'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'rigel'
+  let scheme['lightline']  = 'rigel'
+  let scheme['airline']    = 'rigel'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  let g:rigel_lightline = 1
+  let g:rigel_airline = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'Rigellute/shades-of-purple.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'shades_of_purple'
+  let scheme['lightline']  = 'shades_of_purple'
+  let scheme['airline']    = 'shades_of_purple'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['termguicolors', 'gui']
+
+  let g:shades_of_purple_airline = 1
+  let g:shades_of_purple_lightline = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'aereal/vim-colors-japanesque'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'japanesque'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'agude/vim-eldar'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'eldar'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+
+  " tuning
+  " if has('gui_runnning')
+  "   let g:eldar_red     = "#ff0000"
+  "   let g:eldar_yellow  = "#ffff00"
+  "   let g:eldar_green   = "#00ff00"
+  "   let g:eldar_cyan    = "#00ffff"
+  "   let g:eldar_blue    = "#0000ff"
+  "   let g:eldar_magenta = "#ff00ff"
+  "   " GUI
+  "   let g:eldar_text        = "#D3D3D3"
+  "   let g:eldar_background  = "#2B2B2B"
+  " else
+  "   " CLI
+  "   let g:eldar_term_text        = "White"
+  "   let g:eldar_term_background  = "Black"
+  " endif
+'''
+
+[[plugins]] # カラースキーム
 repo = 'altercation/vim-colors-solarized'
 hook_add = '''
-  " colorscheme : 'solarized'
-  " lightline   : 'solarized'      " built-in
-  " lightline   : 'solarized_dark' " built-in
-  " airline     : '<none>'
+  " https://teratail.com/questions/37382
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'solarized'
+    let scheme['lightline']  = 'solarized' " built-in
+    if bg ==? 'dark'
+      let scheme['lightline']  = 'solarized_dark' " built-in
+    endif
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 
   " if has('gui_running')
   "   set background=light
@@ -53,15 +288,362 @@ hook_post_source = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'arzg/vim-colors-xcode'
+hook_add = '''
+  for bg in ['light', 'dark']
+    for name in ['xcode' . bg, 'xcode' . bg .'hc']
+      let scheme = deepcopy(g:user.template.colorscheme)
+      call add(g:user.colorscheme, scheme)
+
+      let scheme['name']       = name
+      let scheme['background'] = bg
+      let scheme['mode']       = ['termguicolors', 'gui']
+    endfor
+  endfor
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'xcodewwdc'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['termguicolors', 'gui']
+
+  " light
+  let g:xcodelight_green_comments    = 1 " default: 0
+  let g:xcodelight_dim_punctuation   = 1 " default: 0
+  let g:xcodelight_emph_types        = 0 " default: 1
+  let g:xcodelight_emph_funcs        = 1 " default: 0
+  let g:xcodelight_emph_idents       = 1 " default: 0
+  let g:xcodelight_match_paren_style = 1 " default: 0
+
+  " lighthc
+  let g:xcodelighthc_green_comments    = 1 " default: 0
+  let g:xcodelighthc_dim_punctuation   = 1 " default: 0
+  let g:xcodelighthc_emph_types        = 0 " default: 1
+  let g:xcodelighthc_emph_funcs        = 1 " default: 0
+  let g:xcodelighthc_emph_idents       = 1 " default: 0
+  let g:xcodelighthc_match_paren_style = 1 " default: 0
+
+  " dark
+  let g:xcodedark_green_comments    = 1 " default: 0
+  let g:xcodedark_dim_punctuation   = 1 " default: 0
+  let g:xcodedark_emph_types        = 0 " default: 1
+  let g:xcodedark_emph_funcs        = 1 " default: 0
+  let g:xcodedark_emph_idents       = 1 " default: 0
+  let g:xcodedark_match_paren_style = 1 " default: 0
+
+  " darkhc
+  let g:xcodedarkhc_green_comments    = 1 " default: 0
+  let g:xcodedarkhc_dim_punctuation   = 1 " default: 0
+  let g:xcodedarkhc_emph_types        = 0 " default: 1
+  let g:xcodedarkhc_emph_funcs        = 1 " default: 0
+  let g:xcodedarkhc_emph_idents       = 1 " default: 0
+  let g:xcodedarkhc_match_paren_style = 1 " default: 0
+
+  " wwdc
+  let g:xcodewwdc_dim_punctuation   = 1 " default: 0
+  let g:xcodewwdc_emph_types        = 0 " default: 1
+  let g:xcodewwdc_emph_funcs        = 1 " default: 0
+  let g:xcodewwdc_emph_idents       = 1 " default: 0
+  let g:xcodewwdc_match_paren_style = 1 " default: 0
+'''
+
+[[plugins]] # カラースキーム
+repo = 'arzg/vim-substrata'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'substrata'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'bluz71/vim-moonfly-colors'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'moonfly'
+  let scheme['lightline']  = 'moonfly'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  " 16 need
+  " let g:moonflyTerminalColors = 0
+'''
+
+[[plugins]] # カラースキーム
+repo = 'challenger-deep-theme/vim'
+name = 'challenger-deep-theme'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'challenger_deep'
+  let scheme['lightline']  = 'challenger_deep'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'chriskempson/vim-tomorrow-theme'
+hook_add = '''
+  for [name, lightline] in [
+      \ ['Tomorrow'                , 'Tomorrow'               ] ,
+      \ ['Tomorrow-Night'          , 'Tomorrow_Night'         ] ,
+      \ ['Tomorrow-Night-Blue'     , 'Tomorrow_Night_Blue'    ] ,
+      \ ['Tomorrow-Night-Bright'   , 'Tomorrow_Night_Bright'  ] ,
+      \ ['Tomorrow-Night-Eighties' , 'Tomorrow_Night_Eighties'] ,
+      \]
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = name
+    let scheme['lightline']  = lightline " all built-in in lightline
+    let scheme['background'] = 'dark'
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'cocopon/iceberg.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'iceberg'
+  let scheme['lightline']  = 'iceberg'
+  let scheme['airline']    = 'iceberg'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'cormacrelf/vim-colors-github'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'github'
+    let scheme['lightline']  = 'github'
+    let scheme['airline']    = 'github'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+
+  " use a slightly darker background, like GitHub inline code blocks
+  let g:github_colors_soft = 1
+
+  " more blocky diff markers in signcolumn (e.g. GitGutter)
+  let g:github_colors_block_diffmark = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'creasty/candle.vim'
+name = 'candle-colorscheme'
+merged = 0
+hook_add = '''
+  " https://github.com/creasty/candle-theme
+  " name conflict https://github.com/hrsh7th/vim-candle
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'candle'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'davidosomething/vim-colors-meh'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'meh'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'freeo/vim-kalisi'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'kalisi'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/gruvbox-material'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'gruvbox-material'
+    let scheme['lightline']  = 'gruvbox_material'
+    let scheme['airline']    = 'gruvbox_material'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+
+  " let g:gruvbox_material_background             = 'medium'
+  " let g:gruvbox_material_palette                = 'material'
+  " let g:gruvbox_material_transparent_background =  0
+  " let g:gruvbox_material_cursor_line_contrast   = 'lower'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'icymind/NeoSolarized'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'NeoSolarized'
+    let scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
+    let scheme['background'] = bg
+    let scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+
+  " Default value is "normal", Setting this option to "high" or "low" does use the
+  " same Solarized palette but simply shifts some values up or down in order to
+  " expand or compress the tonal range displayed.
+  " let g:neosolarized_contrast = "normal"
+
+  " Special characters such as trailing whitespace, tabs, newlines, when displayed
+  " using ":set list" can be set to one of three levels depending on your needs.
+  " Default value is "normal". Provide "high" and "low" options.
+  " let g:neosolarized_visibility = "normal"
+
+  " I make vertSplitBar a transparent background color. If you like the origin
+  " solarized vertSplitBar style more, set this value to 0.
+  " let g:neosolarized_vertSplitBgTrans = 1
+
+  " If you wish to enable/disable NeoSolarized from displaying bold, underlined
+  " or italicized" typefaces, simply assign 1 or 0 to the appropriate variable.
+  " Default values:
+  " let g:neosolarized_bold = 1
+  " let g:neosolarized_underline = 1
+  " let g:neosolarized_italic = 0
+
+  " Used to enable/disable "bold as bright" in Neovim terminal. If colors of bold
+  " text output by commands like `ls` aren't what you expect, you might want to
+  " try disabling this option. Default value:
+  " let g:neosolarized_termBoldAsBright = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'jacoborus/tender.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'tender'
+  let scheme['lightline']  = 'tender'
+  let scheme['airline']    = 'tender'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'jeetsukumaran/vim-nefertiti'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'nefertiti'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'jonathanfilip/vim-lucius'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'lucius'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+
+  " let g:lucius_contrast     = 'normal'
+  " let g:lucius_contrast_bg  = 'normal'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'kaicataldo/material.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'material'
+  " let scheme['lightline']  = 'material'    " built-in lightline
+  let scheme['lightline']  = 'material_vim' " bundle
+  let scheme['airline']    = 'material'
+  let scheme['background'] = 'dark' " ligher is only 'light' background
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " let g:material_terminal_italics = 1
+
+  " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
+  let g:material_theme_style = 'ocean'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'kamykn/dark-theme.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'darktheme'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'kjssad/quantum.vim'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'quantum'
+    let scheme['lightline']  = 'quantum'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+'''
+
+
+[[plugins]] # カラースキーム
 # https://teratail.com/questions/37382
 repo = 'lifepillar/vim-solarized8'
 hook_add = '''
-  " colorscheme : 'solarized8_high'
-  " colorscheme : 'solarized8'
-  " colorscheme : 'solarized8_low'
-  " colorscheme : 'solarized8_flat'
-  " lightline   : 'solarized_improved' " built-in in lightline-delphinus
-  " airline     : ''
+  for name in [
+      \ 'solarized8_high',
+      \ 'solarized8',
+      \ 'solarized8_low',
+      \ 'solarized8_flat',
+      \]
+    for bg in ['light', 'dark']
+
+      let scheme = deepcopy(g:user.template.colorscheme)
+      call add(g:user.colorscheme, scheme)
+
+      let scheme['name']       = name
+      let scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
+      let scheme['background'] = bg
+      let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    endfor
+  endfor
 
   " if has('gui_running')
   "   set background=light
@@ -90,361 +672,337 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
-# http://blog-sk.com/vim/vim-transparent/
-repo = 'cocopon/iceberg.vim'
-# " colorscheme : 'iceberg'
-# " lightline   : 'iceberg'
-# " airline     : 'iceberg'
-
-[[plugins]] # カラースキーム
-# https://tmg0525.hatenadiary.jp/entry/2017/09/02/080541
-repo = 'morhetz/gruvbox'
-# " colorscheme : 'gruvbox'
-# " lightline   : 'gruvbox'
-# " airline     : 'gruvbox'
-
-[[plugins]] # カラースキーム
-repo = 'gruvbox-material/vim'
-name = 'gruvbox-material'
-# " colorscheme : 'gruvbox-material'
-# " lightline   : 'gruvbox_material'
-# " airline     : 'gruvbox_material'
-
-[[plugins]] # カラースキーム
-repo = 'yuttie/inkstained-vim'
-# " colorscheme : 'inkstained'
-# " lightline   : 'inkstained'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'kamykn/dark-theme.vim'
-# " colorscheme : 'darktheme'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
 repo = 'lucasprag/simpleblack'
-# " colorscheme : 'simpleblack'
-# " lightline   : 'simpleblack' " built-in
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'Rigellute/shades-of-purple.vim'
-# " colorscheme : 'shades_of_purple'
-# " lightline   : 'shades_of_purple'
-# " airline     : 'shades_of_purple'
-
-[[plugins]] # カラースキーム
-repo = 'kjssad/quantum.vim'
-# " colorscheme : 'quantum'
-# " lightline   : 'quantum'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-# repo = 'nightsense/snow'
-repo = 'tsuyoshicho/snow'
-# " colorscheme : 'snow'
-# " lightline   : 'snow_light'
-# " lightline   : 'snow_dark'
-# " airline     : 'snow_light'
-# " airline     : 'snow_dark'
-
-[[plugins]] # カラースキーム
-repo = 'yuttie/hydrangea-vim'
-# " colorscheme : 'hydrangea'
-# " lightline   : 'hydrangea'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'Rigellute/rigel'
 hook_add = '''
-  " colorscheme : 'rigel'
-  " lightline   : 'rigel' " and let g:rigel_lightline = 1
-  " airline     : 'rigel' " and let g:rigel_airline = 1
-  let g:rigel_lightline = 1
-  let g:rigel_airline = 1
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'simpleblack'
+  let scheme['lightline']  = 'simpleblack' " built-in
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
-repo = 'aereal/vim-colors-japanesque'
-# " colorscheme : 'japanesque'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'davidosomething/vim-colors-meh'
-# " colorscheme : 'meh'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'rhysd/vim-color-spring-night'
-# " colorscheme : 'spring-night'
-# " lightline   : '<none>'
-# " airline     : 'vim-color-spring-night'
-
-[[plugins]] # カラースキーム
-repo = 'sainnhe/vim-color-forest-night'
-# " colorscheme : 'forest-night'
-# " lightline   : 'forest_night'
-# " lightline   : 'forest_night'
-# " airline     : 'forest_night'
-
-# [[plugins]] # カラースキーム
-# repo = 'https://raw.githubusercontent.com/jan-warchol/selenized/master/vim/selenized.vim'
-# name = 'selenized'
-# type = 'raw'
-# script_type = 'colors'
-# " colorscheme : 'selenized'
-# " lightline   : 'selenized_dark' " built-in
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'KKPMW/moonshine-vim'
-# " colorscheme : 'moonshine'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'jeetsukumaran/vim-nefertiti'
-# " colorscheme : 'nefertiti'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'Haron-Prime/Antares'
-# " colorscheme : 'antares'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'AlessandroYorba/Alduin'
-# " colorscheme : 'alduin'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'freeo/vim-kalisi'
-# " colorscheme : 'kalisi'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'reedes/vim-colors-pencil'
-# " colorscheme : 'pencil'
-# " lightline   : '<none>'
-# " airline     : 'pencil'
-
-[[plugins]] # カラースキーム
-repo = 'jacoborus/tender.vim'
-# " colorscheme : 'tender'
-# " lightline   : 'tender'
-# " airline     : ''
-
-[[plugins]] # カラースキーム
-repo = 'romainl/Apprentice'
-# " colorscheme : 'apprentice'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'nanotech/jellybeans.vim'
-# " colorscheme : 'jellybeans'
-# " lightline   : 'jellybeans' " built-in
-# " airline     : ''
-
-[[plugins]] # カラースキーム
-repo = 'w0ng/vim-hybrid'
-# " colorscheme : 'hybrid'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'chriskempson/vim-tomorrow-theme'
-# https://github.com/chriskempson/tomorrow-theme
-# " colorscheme : 'Tomorrow'
-# " colorscheme : 'Tomorrow-Night'
-# " colorscheme : 'Tomorrow-Night-Blue'
-# " colorscheme : 'Tomorrow-Night-Bright'
-# " colorscheme : 'Tomorrow-Night-Eighties'
-# " lightline   : 'Tomorrow'                " built-in
-# " lightline   : 'Tomorrow_Night'          " built-in
-# " lightline   : 'Tomorrow_Night_Blue'     " built-in
-# " lightline   : 'Tomorrow_Night_Bright'   " built-in
-# " lightline   : 'Tomorrow_Night_Eighties' " built-in
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'tomasr/molokai'
-# " colorscheme : 'molokai'
-# " lightline   : 'molokai' " built-in
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'sjl/badwolf'
-# " colorscheme : 'badwolf'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'cormacrelf/vim-colors-github'
+repo = 'machakann/vim-colorscheme-reki'
 hook_add = '''
-  " colorscheme : 'github'
-  " lightline   : 'github'
-  " airline     : 'github'
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
 
-  " use a slightly darker background, like GitHub inline code blocks
-  let g:github_colors_soft = 1
-
-  " more blocky diff markers in signcolumn (e.g. GitGutter)
-  let g:github_colors_block_diffmark = 1
-'''
-
-[[plugins]] # カラースキーム
-repo = 'kaicataldo/material.vim'
-hook_add = '''
-  " colorscheme : 'material'
-  " lightline   : 'material'    " built-in
-  " lightline   : 'material_vim'
-  " airline     : '<none>'
-
-  " let g:material_terminal_italics = 1
-
-  " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
-  let g:material_theme_style = 'ocean'
+    let scheme['name']       = 'reki'
+    let scheme['lightline']  = ''
+    let scheme['airline']    = ''
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'machakann/vim-colorscheme-snowtrek'
-# " colorscheme : 'snowtrek'
-# " lightline   : '<none>'
-# " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'arzg/vim-colors-xcode'
 hook_add = '''
-  " colorscheme : 'xcodelight'
-  " lightline   : '<none>'
-  " airline     : '<none>'
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
 
-  " light
-  " let g:xcodelight_green_comments = 0 " default: 0
-  " let g:xcodelight_emph_types     = 1 " default: 1
-  " let g:xcodelight_emph_funcs     = 0 " default: 0
-  " let g:xcodelight_emph_idents    = 0 " default: 0
-
-  " colorscheme : 'xcodedark'
-  " lightline   : '<none>'
-  " airline     : '<none>'
-
-  " dark
-  " let g:xcodedark_green_comments = 0 " default: 0
-  " let g:xcodedark_emph_types     = 1 " default: 1
-  " let g:xcodedark_emph_funcs     = 0 " default: 0
-  " let g:xcodedark_emph_idents    = 0 " default: 0
+  let scheme['name']       = 'snowtrek'
+  let scheme['background'] = 'light'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
-repo = 'yasukotelin/shirotelin'
-# " colorscheme : 'shirotelin'
+repo = 'machakann/vim-colorscheme-tatami'
+# " colorscheme : 'tatami'
 # " lightline   : '<none>'
 # " airline     : '<none>'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = ''
+  let scheme['lightline']  = ''
+  let scheme['airline']    = ''
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-# https://github.com/creasty/candle-theme
-# name conflict https://github.com/hrsh7th/vim-candle
-repo = 'creasty/candle.vim'
-name = 'candle-colorscheme'
-merged = 0
-# " colorscheme : 'candle'
-# " lightline   : '<none>'
-# " airline     : '<none>'
+repo = 'mhinz/vim-janah'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'janah'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-repo = 'bluz71/vim-moonfly-colors'
-# " colorscheme : 'moonfly'
-# " lightline   : 'moonfly'
-# " airline     : '<none>'
+repo = 'morhetz/gruvbox'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'gruvbox'
+    let scheme['lightline']  = 'gruvbox'
+    let scheme['airline']    = 'gruvbox'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
 
 [[plugins]] # カラースキーム
-repo = 'jonathanfilip/vim-lucius'
-# " colorscheme : 'lucius'
-# " lightline   : '<none>'
-# " airline     : '<none>'
+repo = 'nanotech/jellybeans.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'jellybeans'
+  let scheme['lightline']  = 'jellybeans' " built-in
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-repo = 'KabbAmine/yowish.vim'
-# " colorscheme : 'yowish'
-# " lightline   : 'yowish'
-# " airline     : 'yowish'
-# " airline     : 'yowishU'
+# repo = 'nightsense/snow'
+repo = 'tsuyoshicho/snow'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'snow'
+    let scheme['lightline']  = 'snow_' . bg
+    let scheme['airline']    = 'snow_' . bg
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'noahfrederick/vim-noctu'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'noctu'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
 repo = 'phanviet/vim-monokai-pro'
-# " colorscheme : 'monokai_pro'
-# " lightline   : '<none>'
-# " airline     : '<none>'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'monokai_pro'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-repo = 'agude/vim-eldar'
+repo = 'rakr/vim-one'
 hook_add = '''
-  " colorscheme : 'eldar'
-  " lightline   : '<none>'
-  " airline     : '<none>'
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
 
-  " tuning
-  " if has('gui_runnning')
-  "   let g:eldar_red     = "#ff0000"
-  "   let g:eldar_yellow  = "#ffff00"
-  "   let g:eldar_green   = "#00ff00"
-  "   let g:eldar_cyan    = "#00ffff"
-  "   let g:eldar_blue    = "#0000ff"
-  "   let g:eldar_magenta = "#ff00ff"
-  "   " GUI
-  "   let g:eldar_text        = "#D3D3D3"
-  "   let g:eldar_background  = "#2B2B2B"
-  " else
-  "   " CLI
-  "   let g:eldar_term_text        = "White"
-  "   let g:eldar_term_background  = "Black"
-  " endif
+    let scheme['name']       = 'one'
+    let scheme['lightline']  = 'one' " built-in
+    let scheme['airline']    = 'one'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'rakr/vim-two-firewatch'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'two-firewatch'
+    let scheme['lightline']  = 'twofirewatch'
+    let scheme['airline']    = 'twofirewatch'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'reedes/vim-colors-pencil'
+hook_add = '''
+  for bg in ['light', 'dark']
+    let scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, scheme)
+
+    let scheme['name']       = 'pencil'
+    let scheme['airline']    = 'pencil'
+    let scheme['background'] = bg
+    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'rhysd/vim-color-spring-night'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'spring-night'
+  let scheme['airline']    = 'spring-night'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'romainl/Apprentice'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'apprentice'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/vim-color-forest-night'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'forest-night'
+  let scheme['lightline']  = 'forest_night'
+  let scheme['airline']    = 'forest_night'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sjl/badwolf'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'badwolf'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'tlhr/anderson.vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'anderson'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'tomasr/molokai'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'molokai'
+  let scheme['lightline']  = 'molokai' " built-in
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'tyrannicaltoucan/vim-deep-space'
-# " colorscheme : 'deep-space'
-# " lightline   : 'deepspace'
-# " airline     : 'deep_space'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
 
-
-[[plugins]] # カラースキーム
-repo = 'rakr/vim-two-firewatch'
-# " colorscheme : 'two-firewatch'
-# " lightline   : 'twofirewatch'
-# " airline     : 'twofirewatch'
-
-[[plugins]] # カラースキーム
-repo = 'rakr/vim-one'
-# " colorscheme : 'one'
-# " lightline   : '<none>'
-# " airline     : 'one'
+  let scheme['name']       = 'deep-space'
+  let scheme['lightline']  = 'deepspace'
+  let scheme['airline']    = 'deep_space'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-repo = 'NLKNguyen/papercolor-theme'
-# " colorscheme : 'PaperColor'
-# " lightline   : 'PaperColor'
-# " airline     : 'papercolor'
+repo = 'w0ng/vim-hybrid'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'hybrid'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
 [[plugins]] # カラースキーム
-repo = 'tlhr/anderson.vim'
-# " colorscheme : 'anderson'
-# " lightline   : '<none>'
+repo = 'wadackel/vim-dogrun'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'dogrun'
+  let scheme['lightline']  = 'dogrun'
+  let scheme['clap']       = 'dogrun'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'yasukotelin/shirotelin'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'shirotelin'
+  let scheme['lightline']  = ''
+  let scheme['airline']    = ''
+  let scheme['background'] = 'light'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'yuttie/hydrangea-vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'hydrangea'
+  let scheme['lightline']  = 'hydrangea'
+  let scheme['background'] = 'dark'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'yuttie/inkstained-vim'
+hook_add = '''
+  let scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, scheme)
+
+  let scheme['name']       = 'inkstained'
+  let scheme['lightline']  = 'inkstained'
+  let scheme['background'] = 'light'
+  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+# [[plugins]] # カラースキーム
+# repo = 'https://github.com/jan-warchol/selenized'
+# " in subdir editors/vim
+# " colorscheme : 'selenized'
+# " lightline   : 'selenized_dark' " built-in
 # " airline     : '<none>'
-
-[[plugins]] # カラースキーム
-repo = 'mhinz/vim-janah'
-# " colorscheme : 'janah'
-# " lightline   : '<none>'
-# " airline     : '<none>'
+# hook_add = '''
+#   let scheme = deepcopy(g:user.template.colorscheme)
+#   call add(g:user.colorscheme, scheme)
+#
+#   let scheme['name']       = 'selenized' " bw?
+#   let scheme['lightline']  = 'selenized_dark' " built-in
+#   let scheme['background'] = 'dark'      " light?
+#   let scheme['mode']       = ['256', 'termguicolors', 'gui']
+# '''
 
 # EOF

@@ -53,11 +53,35 @@ map \ <Subleader>
 nnoremap <Subleader>, ,
 nnoremap <Subleader>; ;
 
-" user setting
+" user setting {{{
 let g:user = {}
 let g:user.name     = 'Tsuyoshi CHO'
 let g:user.email    = 'Tsuyoshi.CHO@Gmail.com'
 let g:user.devemail = 'Tsuyoshi.CHO+develop@Gmail.com'
+
+let g:user.template = {}
+let g:user.template.colorscheme = {
+  \ 'name'       : '',
+  \ 'background' : '',
+  \ 'lightline'  : '',
+  \ 'airline'    : '',
+  \ 'clap'       : '',
+  \ 'mode'       : [],
+  \ }
+let g:user.template['colorscheme_mode'] = ['16', '256', 'termguicolors', 'gui']
+
+let g:user.location = {}
+let g:user.location.tz        = 'Asia/Tokyo'
+let g:user.location.timeshift = 0
+let g:user.location.latitude  = 35
+let g:user.location.longitude = 140
+let g:user.location.city      = 'Tokyo'
+let g:user.location.cityid    = '1850147'
+
+" Tokyo      https://openweathermap.org/city/1850147
+" Hadano     https://openweathermap.org/city/1863431
+" Sagamihara https://openweathermap.org/city/1853295
+" Shinagawa  https://openweathermap.org/city/1850144
 
 let g:user.git = {}
 let g:user.git.name  = g:user.name
@@ -108,8 +132,16 @@ let g:user.dir.cache_home  = empty($XDG_CACHE_HOME)  ? expand($HOME . '/.cache')
 let g:user.dir.config_home = empty($XDG_CONFIG_HOME) ? expand($HOME . '/.config')      : expand($XDG_CONFIG_HOME)
 let g:user.dir.data_home   = empty($XDG_DATA_HOME)   ? expand($HOME . '/.local/share') : expand($XDG_DATA_HOME)
 
-let g:user.dir.tools = expand('c:/tools')
+if s:is_windows
+  let g:user.dir.tools = expand('c:/tools')
+else
+  let g:user.dir.tools = expand($HOME . '/tools')
+endif
 let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
+
+let g:user.colorscheme = []
+
+" }}}
 
 " plugin
 " dein 設定前の設定
@@ -381,7 +413,7 @@ augroup MyAutoGroup
   autocmd SwapExists * call s:on_SwapExists()
 augroup END
 
-function! s:on_SwapExists() abort
+function! s:on_SwapExists() abort " {{{
   if !filereadable(expand('<afile>'))
     let v:swapchoice = 'd'
     return
@@ -391,26 +423,26 @@ function! s:on_SwapExists() abort
   if v:swapchoice !=# 'd'
     let b:swapfile_exists = 1
   endif
-endfunction
+endfunction " }}}
 
 command! SwapfileRecovery call s:swapfile_recovery()
 command! SwapfileDelete call s:swapfile_delete()
 
-function! s:swapfile_recovery() abort
+function! s:swapfile_recovery() abort " {{{
   if get(b:, 'swapfile_exists', 0)
     let b:swapfile_choice = 'r'
     unlet b:swapfile_exists
     edit
   endif
-endfunction
+endfunction " }}}
 
-function! s:swapfile_delete() abort
+function! s:swapfile_delete() abort " {{{
   if get(b:, 'swapfile_exists', 0)
     let b:swapfile_choice = 'd'
     unlet b:swapfile_exists
     edit
   endif
-endfunction
+endfunction " }}}
 
 " 編集中のファイルが変更されたら自動で読み直す
 set autoread
@@ -434,6 +466,18 @@ augroup END
 set hidden
 
 " }}}
+
+" Fileformat. {{{
+
+" Fixed encoding/format
+augroup MyAutoGroup
+  " temp off
+  " toml spec. : utf-8 only
+  " autocmd BufRead *.toml nested setlocal fileencoding=utf-8
+augroup END
+
+" }}}
+
 " }}}
 
 " ##############################################################検索系############################################################## {{{
@@ -506,22 +550,26 @@ set number
 set relativenumber
 nnoremap <silent> <F3> :<C-u>setlocal relativenumber!<CR>
 
-function! s:relativenumber_toggle(mode) abort
-  let enter = a:mode ==? 'enter'
+function! s:relativenumber_toggle(mode) abort " {{{
+  let recovery = a:mode ==? 'recovery'
 
-  if enter
-    let b:relativenumber = &l:relativenumber " backup
-    setlocal norelativenumber
+  if recovery
+    " if backup value is relativenumber is active, re-active
+    let &l:relativenumber    = get(w:,'relativenumber', 1)
+    unlet! w:relativenumber
   else
-    if get(b:,'relativenumber', 1)
-      " if backup value is relativenumber is active, re-active
+    let w:relativenumber = &l:relativenumber " backup
+    let onoff = a:mode ==? 'on'
+    if onoff
       setlocal relativenumber
+    else
+      setlocal norelativenumber
     endif
   endif
-endfunction
+endfunction " }}}
 augroup MyAutoGroup
-  autocmd InsertEnter * nested call s:relativenumber_toggle('enter')
-  autocmd InsertLeave * nested call s:relativenumber_toggle('leave')
+  autocmd WinLeave,InsertEnter * nested call s:relativenumber_toggle('off')
+  autocmd WinEnter,InsertLeave * nested call s:relativenumber_toggle('recovery')
 augroup END
 
 " 入力中のコマンドをステータスに表示す
@@ -712,8 +760,7 @@ set nostartofline
 " Command/Find Window. {{{
 
 " cmdwinheight default 7
-let &cmdwinheight = min([(&lines/4), 10])
-autocmd MyAutoGroup VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
+autocmd MyAutoGroup VimEnter,VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
 
 " based on https://qiita.com/monaqa/items/e22e6f72308652fc81e2
 augroup MyAutoGroup
@@ -859,8 +906,7 @@ set spell
 set complete+=kspell
 set spelllang=en_us,cjk
 let &spellfile = expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')
-let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
-autocmd MyAutoGroup VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
+autocmd MyAutoGroup VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
@@ -917,28 +963,55 @@ endfunction " }}}
 
 inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 
-function! PopupSelect(default) abort
+function! s:popup_select(rawchar, ...) abort " {{{
+  let result = ''
   if dein#is_sourced('asyncomplete.vim')
-    return asyncomplete#close_popup()
+    let result = result . asyncomplete#close_popup()
+    if a:0
+      let result = result . a:1
+    endif
   else
-    return a:default
+    let result = result . a:rawchar
   endif
-endfunction
+  return result
+endfunction " }}}
 
-function! PopupCancel(default) abort
+function! s:popup_cancel(rawchar, ...) abort " {{{
+  let result = ''
   if dein#is_sourced('asyncomplete.vim')
-    return asyncomplete#cancel_popup()
+    let result = result . asyncomplete#cancel_popup()
+    if a:0
+      let result = result . a:1
+    endif
   else
-    return a:default
+    let result = result . a:rawchar
   endif
-endfunction
+  return result
+endfunction " }}}
 
-inoremap <expr><silent> <Tab>        pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr><silent> <S-Tab>      pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr><silent> <CR>         pumvisible() ? PopupSelect("\<C-y>") : "\<CR>"
-inoremap <expr><silent> <Space>      pumvisible() ? PopupCancel("\<C-e>") : "\<Space>"
-inoremap <expr><silent> <C-y>        pumvisible() ? PopupSelect("\<C-y>") : "\<C-y>"
-inoremap <expr><silent> <C-e>        pumvisible() ? PopupCancel("\<C-e>") : "\<C-e>"
+function! s:insert_char(rawchar, charname) abort " {{{
+  let result = ''
+  if dein#is_sourced('lexima.vim')
+    let result = result . lexima#expand(a:charname, 'i')
+  else
+    let result = result . a:rawchar
+  endif
+  return result
+endfunction " }}}
+
+function! s:imap_setup() abort " {{{
+  inoremap <expr><silent> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+  inoremap <expr><silent> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+  inoremap <expr><silent> <CR>
+    \ pumvisible() ? <SID>popup_select("\<C-y>"            ) : <SID>insert_char("\<CR>",    '<' . 'CR'    . '>')
+  inoremap <expr><silent> <Space>
+    \ pumvisible() ? <SID>popup_cancel("\<C-e>", "\<Space>") : <SID>insert_char("\<Space>", '<' . 'Space' . '>')
+  inoremap <expr><silent> <C-y>
+    \ pumvisible() ? <SID>popup_select("\<C-y>"            ) : "\<C-y>"
+  inoremap <expr><silent> <C-e>
+    \ pumvisible() ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
+endfunction " }}}
+autocmd MyAutoGroup VimEnter * nested call s:imap_setup()
 
 " }}}
 
@@ -971,13 +1044,13 @@ endif
 
 " see https://qiita.com/miyanokomiya/items/03d19bca87d4b2f176c4
 " current file path to register and display
-function! s:clip_text(data)
+function! s:clip_text(data) abort " {{{
   let @0=a:data
   let @"=a:data
   if has('clipboard')
     let @*=a:data
   endif
-endfunction
+endfunction " }}}
 nnoremap <C-g> :call <SID>clip_text(fnamemodify(expand('%'), ':p'))<CR><C-g>
 
 " }}}
@@ -1172,7 +1245,9 @@ if has('iconv')
   if &encoding ==# 'utf-8'
     let s:fileencodings_default = &fileencodings
     let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
-    let &fileencodings = &fileencodings .','. s:fileencodings_default
+    " let &fileencodings = &fileencodings .','. s:fileencodings_default
+    " 今はUTF-8が基本なので調整
+    let &fileencodings = 'ucs-bom,utf-8,' . &fileencodings . ',default,latin1'
     unlet s:fileencodings_default
   else
     let &fileencodings = &fileencodings .','. s:enc_jis
@@ -1261,8 +1336,8 @@ else
   nmap    <Space>t [Tab]
 endif
 " Tab jump
-for n in range(1, 9)
-  execute 'nnoremap <silent> [Tab]'.n ':<C-u>tabnext'.n.'<CR>'
+for s:n in range(1, 9)
+  execute 'nnoremap <silent> [Tab]' . s:n  ':<C-u>tabnext'. s:n .'<CR>'
 endfor
 " t1 で1番左のタブ、t2 で1番左から2番目のタブにジャンプ
 
@@ -1598,12 +1673,12 @@ command! BufferToTab       call <SID>ExpandAllBufferToTab()
 command! -bar TabInfo      call <SID>show_tab_info()
 
 " see https://github.com/rinx/dotfiles/blob/master/vimrc
-function! s:toggle_option(optname) abort
+function! s:toggle_option(optname) abort " {{{
   execute 'set ' . a:optname . '!'
   echo ''
   redraw
   execute 'set ' . a:optname . '?'
-endfunction
+endfunction " }}}
 command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>)
 " }}}
 
@@ -1615,13 +1690,13 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 
 " local setting {{{
 " load non init vimrc setting in .vim/rc/
-function! s:vimrc_load_noninit_setting(loc)
+function! s:vimrc_load_noninit_setting(loc) abort " {{{
   let path = expand(escape(a:loc, ' '), 'p')
   let files = glob(path . '/*.vim', 1, 1)
   for i in reverse(filter(files, 'filereadable(v:val)'))
     source `=i`
   endfor
-endfunction
+endfunction " }}}
 
 call s:vimrc_load_noninit_setting(g:dein.dir.rc)
 " }}}
@@ -1632,13 +1707,13 @@ call s:vimrc_load_noninit_setting(g:dein.dir.rc)
 " let &runtimepath =  &runtimepath . ',' . expand('')
 "
 " " test function and command
-" function! s:testrun() abort
+" function! s:testrun() abort " {{{
 "   echo 'test not set'
 "   " or test write to below
 "   " echo 'test run'
 "   " let s:V = vital#of('vital')
 "   " echo "test result:"
-" endfunction
+" endfunction " }}}
 "
 " command! TestRun call <SID>testrun()
 " }}}
