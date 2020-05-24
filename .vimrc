@@ -44,8 +44,8 @@ set tags=
 " based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
 " based on https://whileimautomaton.net/2007/04/19221500
 " mapleader (<Leader>) (default is \)
-let mapleader = ','
-let maplocalleader  = ';'
+let g:mapleader = ','
+let g:maplocalleader  = ';'
 " use \ as , instead
 nnoremap <Subleader> <Nop>
 map \ <Subleader>
@@ -141,6 +141,18 @@ let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
 
 let g:user.colorscheme = []
 
+let g:user.system = {}
+let g:user.system.windows = s:is_windows ? v:true : v:false
+let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
+unlet s:is_windows s:is_cygwin
+
+let g:user.system.cpunum = 2 " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  let g:user.system.cpunum = $NUMBER_OF_PROCESSORS
+elseif executable('nproc')
+  let g:user.system.cpunum = systemlist('nproc --all')[0]
+endif
+
 " }}}
 
 " plugin
@@ -179,24 +191,28 @@ endif
 
 " 設定開始
 let g:dein.dir.rc                = expand(g:user.dir.vim . '/rc')
+let g:dein.file.colorscheme_toml = g:dein.dir.rc . '/colorscheme.toml'
 let g:dein.file.dein_toml        = g:dein.dir.rc . '/dein.toml'
 let g:dein.file.dein_lazy_toml   = g:dein.dir.rc . '/dein_lazy.toml'
-let g:dein.file.colorscheme_toml = g:dein.dir.rc . '/colorscheme.toml'
+
+" setting for dein
+let g:dein#install_max_processes = g:user.system.cpunum
+
 if dein#load_state(g:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
 
   call dein#begin(g:dein.dir.plugins, [
   \  $MYVIMRC,
+  \  g:dein.file.colorscheme_toml,
   \  g:dein.file.dein_toml,
   \  g:dein.file.dein_lazy_toml,
-  \  g:dein.file.colorscheme_toml,
   \])
 
   " TOML を読み込み、キャッシュしておく
+  call dein#load_toml(g:dein.file.colorscheme_toml, {'lazy': 0})
   call dein#load_toml(g:dein.file.dein_toml,        {'lazy': 0})
   call dein#load_toml(g:dein.file.dein_lazy_toml,   {'lazy': 1})
-  call dein#load_toml(g:dein.file.colorscheme_toml, {'lazy': 0})
 
   " 設定終了
   call dein#end()
@@ -304,11 +320,7 @@ set smarttab
 set shiftround
 
 " vim script pre-escape continue line indent
-" in runtime : default shiftwidth() * 3
-" see:
-" http://rbtnn.hateblo.jp/entry/2014/11/30/174749
-" https://twitter.com/_tyru_/status/1206884044509569026
-let g:vim_indent_cont = 0
+" to indent/vim
 
 let s:skk = 0
 if s:skk
@@ -410,7 +422,7 @@ let &directory = g:user.dir.vim . '/swap//'  " // use fullpath
 " augroup vimrc-swapfile
 "   autocmd!
 augroup MyAutoGroup
-  autocmd SwapExists * call s:on_SwapExists()
+  autocmd SwapExists * nested call s:on_SwapExists()
 augroup END
 
 function! s:on_SwapExists() abort " {{{
@@ -458,7 +470,7 @@ augroup MyAutoGroup
 
   " set nopaste をできるだけ維持
   " from https://github.com/cohama/.vim/blob/master/init.vim
-  autocmd InsertLeave * set nopaste
+  autocmd InsertLeave * nested set nopaste
 augroup END
 
 " バッファが編集中でもその他のファイルを開けるように
@@ -490,11 +502,11 @@ set hlsearch
 " Ctrl-L で検索ハイライトを消す
 " nnoremap <silent> <C-l> <C-l>:nohlsearch<CR>
 " based on https://postd.cc/vim-galore-4/
-nnoremap <silent> <C-L> :nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
+nnoremap <silent> <C-L> :<C-u>nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
 if dein#is_sourced('vim-quickhl')
-  nnoremap <silent> <Leader><C-L> :QuickhlManualReset<CR>:nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
+  nnoremap <silent> <Leader><C-L> :<C-u>QuickhlManualReset<CR>:nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
 else
-  nnoremap <silent> <Leader><C-L> :nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
+  nnoremap <silent> <Leader><C-L> :<C-u>nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
 endif
 
 " 検索文字列入力時に順次対象文字列にヒットさせる
@@ -694,8 +706,8 @@ let &viewdir = g:user.dir.vim . '/view'
 " "  autocmd!
 " augroup MyAutoGroup
 "  " 設定の保存と復元
-"  autocmd BufWinLeave * silent mkview
-"  autocmd BufWinEnter * silent loadview
+"  autocmd BufWinLeave * nested silent mkview
+"  autocmd BufWinEnter * nested silent loadview
 " augroup END
 
 " based on http://blog.serverkurabe.com/vim-split-window
@@ -703,8 +715,13 @@ let &viewdir = g:user.dir.vim . '/view'
 set splitbelow
 " 新しいウィンドウを右に開く
 " set splitright
-"
-set switchbuf=split
+
+" 基本はタブで開いて、他のタブにあっても既存を使う
+set switchbuf=usetab,newtab
+if dein#is_sourced('QFEnter')
+  " QFEnterプラグインがあるなら、その設定を優先
+  set switchbuf=
+endif
 
 " Tab数拡張
 set tabpagemax=99
@@ -789,11 +806,11 @@ augroup END
 " augroup foldmethod-expr
 "   autocmd!
 augroup MyAutoGroup
-  autocmd InsertEnter * if &l:foldmethod ==# 'expr'
+  autocmd InsertEnter * nested if &l:foldmethod ==# 'expr'
   \                   |   let b:foldinfo = [&l:foldmethod, &l:foldexpr]
   \                   |   setlocal foldmethod=manual foldexpr=0
   \                   | endif
-  autocmd InsertLeave * if exists('b:foldinfo')
+  autocmd InsertLeave * nested if exists('b:foldinfo')
   \                   |   let [&l:foldmethod, &l:foldexpr] = b:foldinfo
   \                   | endif
 augroup END
@@ -802,7 +819,7 @@ augroup END
 " }}}
 
 " Terminal/Shell. {{{
-" if (1 == s:is_windows) && (0 == s:is_cygwin)
+" if (1 == g:user.system.windows) && (0 == g:user.system.cygwin)
 "   let path_prefix='C:\tools\nyagos'
 "   let exec_name='nyagos.exe'
 "
@@ -894,7 +911,7 @@ set wildignorecase
 " see http://nanasi.jp/articles/howto/config/dictionary.html
 
 let s:dictfile = expand(g:user.dir.vim . '/dict/look/words', ':p')
-if s:is_windows
+if g:user.system.windows
   let s:dictfile = expand(g:user.dir.dictionary . '/look/words', ':p')
 endif
 if filereadable(s:dictfile)
@@ -911,7 +928,7 @@ let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
 let s:thesaurus  = expand(g:user.dir.vim . '/dict/mthesaur.txt', ':p')
-if s:is_windows
+if g:user.system.windows
   let s:thesaurus = expand(g:user.dir.dictionary . '/mthesaur.txt', ':p')
 endif
 if filereadable(s:thesaurus)
@@ -1029,7 +1046,7 @@ autocmd MyAutoGroup VimEnter * nested call s:imap_setup()
 " and http://pocke.hatenablog.com/entry/2014/10/26/145646
 if has('clipboard') && (has('gui') || has('xterm_clipboard'))
   set clipboard&
-  if s:is_windows
+  if g:user.system.windows
     set clipboard^=unnamed
   elseif has('gui_runnning')
     " x window system あり
@@ -1072,7 +1089,7 @@ if !has('gui_running')
     if has('termguicolors')
       set termguicolors
     endif
-  elseif (s:is_windows && ($ConEmuANSI ==? 'ON'))
+  elseif (g:user.system.windows && ($ConEmuANSI ==? 'ON'))
     " xterm 256が定義されてないがWindowsでConEmuで256有効の場合
     " http://e8l.hatenablog.com/entry/2016/03/16/230018
     " http://yanor.net/wiki/?Windows-%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%2FConEmu%2FANSI%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%2FVim%E3%81%AE256%E8%89%B2%E5%AF%BE%E5%BF%9C
@@ -1120,7 +1137,7 @@ augroup MyAutoGroup
   " autocmd ColorScheme * nested highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
 
   " based on https://thinca.hatenablog.com/entry/20160214/1455415240
-  " autocmd ColorScheme * highlight ZenSpace ctermbg=Red guibg=Red
+  " autocmd ColorScheme * nested highlight ZenSpace ctermbg=Red guibg=Red
 
   " based on http://secret-garden.hatenablog.com/entry/2016/08/16/000149
   autocmd ColorScheme * nested highlight link EndOfBuffer Ignore
@@ -1156,7 +1173,7 @@ augroup END
 set keywordprg=:help
 augroup MyAutoGroup
   " FileType vim force overwrite
-  autocmd FileType vim setlocal keywordprg=:help
+  autocmd FileType vim nested setlocal keywordprg=:help
 augroup END
 
 augroup MyAutoGroup
@@ -1165,12 +1182,22 @@ augroup MyAutoGroup
   " foldcolumn 2
   autocmd FileType
     \ help nested if &l:buftype ==# 'help'
-    \ |               setlocal nonumber norelativenumber
-    \ |               setlocal signcolumn=no
-    \ |               setlocal foldcolumn=2
-    \ |            endif
+    \ |             setlocal nonumber norelativenumber
+    \ |             setlocal signcolumn=no
+    \ |             setlocal foldcolumn=2
+    \ |           endif
   " q で終了
   " in mapping
+augroup END
+
+" from kuuote's vimrc
+" helpのタグ移動を楽にするやつ
+augroup MyAutoGroup
+  autocmd FileType
+    \ help nested if &l:buftype ==# 'help'
+    \ |             nnoremap <buffer> <CR> <C-]>
+    \ |             nnoremap <buffer> <BS> <C-T>
+    \ |           endif
 augroup END
 
 " }}}
@@ -1213,7 +1240,8 @@ augroup MyAutoGroup
   " based on
   " https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
   " https://kaworu.jpn.org/kaworu/2008-06-07-1.php
-   autocmd QuickFixCmdPost make,grep,grepadd,vimgrep nested cwindow
+   " autocmd QuickFixCmdPost * nested cwindow
+   autocmd QuickFixCmdPost make,grep,grepadd,vimgrep,helpgrep nested cwindow
 augroup END
 
 " }}}
@@ -1277,7 +1305,7 @@ if has('autocmd')
   autocmd MyAutoGroup BufReadPost * nested call AU_ReCheck_FENC()
 endif
 " 改行コードの自動認識
-if s:is_windows
+if g:user.system.windows
   set fileformats=dos,unix,mac
 else
   set fileformats=unix,dos,mac
@@ -1370,6 +1398,16 @@ nnoremap <C-k> <C-y>k
 nnoremap <space>w :w<CR>
 nnoremap <space>q :q<CR>
 
+" o/O use Add last return
+nnoremap o A<CR>
+" O use original, many pattern are OK
+" nnoremap O
+"
+" from https://github.com/yukiycino-dotfiles/dotfiles/blob/master/.vimrc
+" " Automatically indent with i and A
+" nnoremap <expr> i len(getline('.')) ? "i" : "cc"
+" nnoremap <expr> A len(getline('.')) ? "A" : "cc"
+
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
@@ -1402,6 +1440,9 @@ vnoremap S "_S
 " nnoremap [l :lprevious<CR>
 " same mapping in unimpaired
 
+" mapping esc at insert mode
+inoremap <C-g> <ESC>
+
 " based on http://deris.hatenablog.jp/entry/2013/05/02/192415
 " 誤操作すると困るキーを無効化する
 
@@ -1422,6 +1463,9 @@ nnoremap <Tab>   >>
 nnoremap <S-Tab> <<
 vnoremap <Tab>   >>
 vnoremap <S-Tab> <<
+
+" Switch between the last two files
+" nnoremap <tab><tab> <c-^>
 
 " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 " Move visual block
@@ -1468,9 +1512,14 @@ cnoremap <c-p>  <up>
 autocmd MyAutoGroup FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
 autocmd MyAutoGroup FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
 " command window
-autocmd MyAutoGroup CmdwinEnter [:\/\?=] nested nnoremap <buffer> q <C-w>c
+" selective like CmdwinEnter [:\/\?=]
+autocmd MyAutoGroup CmdwinEnter * nested nnoremap <buffer> q <C-w>c
 
-" autocmd MyAutoGroup FileType qf nnoremap <buffer> q <C-w>c
+" autocmd MyAutoGroup FileType qf nested nnoremap <buffer> q <C-w>c
+
+" cmdwin other setting
+" remap cr (plugin cr mapping clear)
+autocmd MyAutoGroup CmdwinEnter * nested nnoremap <buffer> <CR> <CR>
 
 " tc/tn/tb/tx/t1-9 TAB setting
 " }}}
@@ -1488,21 +1537,34 @@ autocmd MyAutoGroup CmdwinEnter [:\/\?=] nested nnoremap <buffer> q <C-w>c
 " let g:loaded_matchparen = 1
 " }}}
 
-" syntax buildin plugin {{{
-" ft-posix-synax
+" syntax/ftplugin/indent and other buildin plugin {{{
+" syntax/sh.vim
 let g:is_posix = 1
 
-" ft-python-syntax
-let python_highlight_all = 1
+" syntax/python.vim
+let g:python_highlight_all = 1
 
-" doxygen-syntax
+" syntax/synload.vim
+" syntax/doxygen.vim
 let g:load_doxygen_syntax = 1
 let g:doxygen_enhanced_color = 1
 " doxygenErrorComment
 " doxygenLinkError
 
-" ft-yaml-syntax
+" syntax/yaml.vim
 let g:yaml_schema = 'json'
+
+" indent/vim.vim
+" in runtime : default shiftwidth() * 3
+" see:
+" http://rbtnn.hateblo.jp/entry/2014/11/30/174749
+" https://twitter.com/_tyru_/status/1206884044509569026
+let g:vim_indent_cont = 0
+
+" plugin/zipPlugin.vim
+" Zip plugin settings
+" Only accept *.zip. The plugin causes too many troubles.
+let g:zipPlugin_ext = '*.zip'
 " }}}
 
 " netrw {{{
@@ -1684,7 +1746,7 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 
 " autocmd {{{
 " augroup MyAutoGroup
-"   autocmd CursorMoved call <SID>EchoSyntax(get(b:, 'SyntaxEchoStatus', 0))
+"   autocmd CursorMoved * nested call <SID>EchoSyntax(get(b:, 'SyntaxEchoStatus', 0))
 " augroup END
 " }}}
 

@@ -1,12 +1,7 @@
 # Core & Util
 [[plugins]]
-repo = 'mattn/vimtweak'
-on_if= '(has("win32") || has("win64")) && has("gui_running")'
-# later as historical ==|| has('win16') || has('win95')==
-
-[[plugins]]
 repo = 'edkolev/promptline.vim'
-on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
+on_cmd = ['PromptlineSnapshot']
 
 # g:asyncomplete_preprocessor 強制上書きなので、当座は使わない
 # [[plugins]] # cargoが必要
@@ -14,6 +9,10 @@ on_if= '!((has("win32") || has("win64")) && has("gui_running"))'
 # depends = ['asyncomplete.vim']
 # on_if= 'executable("cargo")'
 # build = 'cargo build --release'
+
+[[plugins]]
+repo = 'tyru/notify-changed.vim'
+on_cmd = ['NotifyChanged']
 
 [[plugins]]
 repo = 'powerman/vim-plugin-AnsiEsc'
@@ -36,31 +35,30 @@ repo = 'haya14busa/vim-migemo'
 on_if= 'executable("cmigemo")'
 depends = ['vital.vim']
 hook_post_source = '''
-  let Filepath = g:V.import('System.Filepath')
+  let s:Filepath = g:V.import('System.Filepath')
 
-  " dict
+  " s:dict
   let g:migemodict = ''
 
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows
-    let dict = fnamemodify(
-          \ Filepath.realpath(
-          \   g:user.dir.dictionary . '/Migemo/' . &encoding . '/migemo-dict'
+  if g:user.system.windows
+    let s:dict = fnamemodify(
+          \ s:Filepath.realpath(
+          \   g:user.dir.dictionary . '/Migemo/' . &encoding . '/migemo-s:dict'
           \ ),
           \ ':p')
-    if filereadable(dict)
-      let g:migemodict = dict
+    if filereadable(s:dict)
+      let g:migemodict = s:dict
     endif
   endif
 
   if empty(g:migemodict)
-    let dict = fnamemodify(
-          \ Filepath.realpath(
-          \   g:user.dir.vim . '/dict/' . &encoding . '/migemo-dict'
+    let s:dict = fnamemodify(
+          \ s:Filepath.realpath(
+          \   g:user.dir.vim . '/s:dict/' . &encoding . '/migemo-s:dict'
           \ ),
           \ ':p')
-    if filereadable(dict)
-      let g:migemodict = dict
+    if filereadable(s:dict)
+      let g:migemodict = s:dict
     endif
   endif
 '''
@@ -111,8 +109,13 @@ hook_add = '''
   "   \    },
   "   \ ]
 
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows
+  " buffer setting
+  autocmd MyAutoGroup FileType
+    \ eblook nested setlocal nonumber norelativenumber
+    \ |             setlocal signcolumn=no
+    \ |             setlocal foldcolumn=0
+
+  if g:user.system.windows
     " Windows環境用のコード
     let g:eblookenc='cp932'
     let g:eblook_dictlist1 = [
@@ -274,39 +277,6 @@ on_if= '!has("patch-8.0.0210")'
 # repo = 'mattn/vim-nyancat'
 # on_if= '!(has("win32") || has("win64") || has("win32unix")) && !has("gui_running")'
 
-# 'vimtweak' depends windows only
-[[plugins]]
-repo = 'tsuyoshicho/transparency.vim'
-# depends = ['vimtweak']
-on_if= 'has("gui_running")'
-hook_add = '''
-  let g:transparency_config = {
-      \  'active'   : 90,
-      \  'inactive' : 60
-      \ }
-  let g:transparency_ctermbg_none = 1
-'''
-hook_post_source = '''
-  if g:transparency_activate
-    " nmap --- <Plug>(TransparencyOn)
-    " nmap --- <Plug>(TransparencyOff)
-    nmap <F4> <Plug>(TransparencyToggle)
-  endif
-
-  " based on https://sy-base.com/myrobotics/vim/vim-transparent/
-  " terminal mode; it has transparent function and enabled
-  if !has('gui_running')
-    augroup vimrc_init-transparency
-      autocmd!
-      autocmd Colorscheme * highlight Normal      ctermbg=none
-      autocmd Colorscheme * highlight NonText     ctermbg=none
-      autocmd Colorscheme * highlight LineNr      ctermbg=none
-      autocmd Colorscheme * highlight Folded      ctermbg=none
-      autocmd Colorscheme * highlight EndOfBuffer ctermbg=none
-    augroup END
-  endif
-'''
-
 [[plugins]]
 repo = 'edkolev/tmuxline.vim'
 # statusline,airline,lightline
@@ -358,13 +328,12 @@ repo = 'Yggdroot/LeaderF'
 on_if = 'has("python3")'
 depends = ['vital.vim']
 hook_post_update = '''
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows
-    let cmd = 'install.bat'
+  if g:user.system.windows
+    let s:cmd = 'install.bat'
   else
-    let cmd = 'install.sh'
+    let s:cmd = 'install.sh'
   endif
-  let g:dein#plugin.build = cmd
+  let g:dein#plugin.build = s:cmd
 '''
 hook_add = '''
   if (has('popupwin') || exists('*popup_create') || has('nvim-0.4.2'))
@@ -420,10 +389,10 @@ hook_add = '''
   let g:Lf_ShortcutB = '<Leader>B'
 '''
 hook_post_source = '''
-  let List     = g:V.import('Data.List')
+  let s:List     = g:V.import('Data.List')
 
   " root marker use findroot value
-  let g:Lf_RootMarkers = List.concat([
+  let g:Lf_RootMarkers = s:List.concat([
     \ g:user.rootmarker.dirs,
     \ g:user.rootmarker.files])
 
@@ -455,6 +424,10 @@ on_source = ['LeaderF']
 
 [[plugins]]
 repo = 'Yggdroot/LeaderF-marks'
+on_source = ['LeaderF']
+
+[[plugins]]
+repo = 'Yggdroot/LeaderF-changes'
 on_source = ['LeaderF']
 
 # [[plugins]]
@@ -516,9 +489,9 @@ hook_add = '''
   if has('path_extra')
     let s:home = ';$HOME'
   endif
-  for dir in g:auto_ctags_directory_list
-    if dir !=? '.'
-      execute 'set tags+=./' . dir . '/tags' . s:home
+  for s:dir in g:auto_ctags_directory_list
+    if s:dir !=? '.'
+      execute 'set tags+=./' . s:dir . '/tags' . s:home
     endif
   endfor
 
@@ -596,7 +569,7 @@ on_cmd = ['Restart']
 repo = 'Asheq/close-buffers.vim'
 on_cmd = ['Bdelete', 'Bwipeout']
 hook_add = '''
-  nnoremap <silent> Q     :Bdelete menu<CR>
+  nnoremap <silent> Q     :<C-u>Bdelete menu<CR>
 '''
 
 [[plugins]]
@@ -689,11 +662,17 @@ repo = 'iwataka/vim-markdown-ex'
 on_ft = ['markdown']
 
 [[plugins]]
-repo = 'mzlogin/vim-markdown-toc'
-on_ft = ['markdown']
+# repo = 'mzlogin/vim-markdown-toc'
+repo = 'tsuyoshicho/vim-markdown-toc'
+rev  = 'pr-merged'
+on_ft = ['markdown','mdx']
 hook_add = '''
   let g:vmt_auto_update_on_save = 1
-  let g:vmt_dont_insert_fence = 1
+  " let g:vmt_dont_insert_fence = 0
+  let g:vmt_include_headings_before = 1
+  let g:vmt_cycle_list_item_markers = 1
+  let g:vmt_fence_text         = 'start of TOC'
+  let g:vmt_fence_closing_text = 'end   of TOC'
 '''
 
 # [[plugins]]
@@ -751,8 +730,7 @@ on_ft = ['review']
 repo = 'aklt/plantuml-syntax'
 on_ft = ['plantuml']
 hook_add = '''
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows && executable('plantumlc.exe')
+  if g:user.system.windows && executable('plantumlc.exe')
     let g:plantuml_executable_script = 'plantumlc.exe'
   endif
 '''
@@ -764,8 +742,7 @@ rev  = 'feature/aggressive'
 depends = ['plantuml-syntax']
 on_ft = ['plantuml']
 hook_add = '''
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows && executable('plantumlc.exe')
+  if g:user.system.windows && executable('plantumlc.exe')
     let s:bin_path = fnamemodify(system('where plantumlc.exe'), ":p")
     let s:lib_path = fnamemodify(s:bin_path, ":p:h") . '/../lib/plantuml/tools/plantuml.jar'
 
@@ -794,8 +771,7 @@ depends = ['open-browser.vim']
 on_ft = ['plantuml']
 on_if= 'executable("dot") && executable("java")'
 hook_add = '''
-  let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-  if s:is_windows && executable('plantumlc.exe')
+  if g:user.system.windows && executable('plantumlc.exe')
     let s:bin_path = exepath('plantumlc.exe')
     let s:lib_path = fnamemodify(s:bin_path, ":p:h:h") . '/lib/plantuml/tools/plantuml.jar'
 

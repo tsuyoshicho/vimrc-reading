@@ -1,26 +1,27 @@
 # colorscheme
-# repo a-z sorted
+# repo a-z(username) sorted.
+# but support plugin(only lightline/airline) are stored to original below.
 
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Alduin'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'alduin'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'alduin'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Arcadia'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'arcadia'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'arcadia'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   " " Dark Grey Background
   " let g:arcadia_Sunset = 1
@@ -35,23 +36,23 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Breve'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'breve'
-  let scheme['background'] = 'light'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'breve'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Despacio'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'despacio'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'despacio'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   " " Dark Grey Background
   " let g:despacio_Sunset = 1
@@ -66,12 +67,12 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Sierra'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'sierra'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'sierra'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   " " Dark Grey Background
   " let g:sierra_Sunset = 1
@@ -86,24 +87,24 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'Haron-Prime/Antares'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'antares'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'antares'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'KKPMW/moonshine-vim'
 hook_add = '''
-  for name in ['moonshine', 'moonshine_lowcontrast', 'moonshine_minimal']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:name in ['moonshine', 'moonshine_lowcontrast', 'moonshine_minimal']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = name
-    let scheme['background'] = 'dark'
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = s:name
+    let s:scheme['background'] = 'dark'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
@@ -111,29 +112,29 @@ hook_add = '''
 repo = 'KabbAmine/yowish.vim'
 hook_add = '''
   for airline in ['yowish', 'yowishU']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'yowish'
-    let scheme['lightline']  = 'yowish'
-    let scheme['airline']    =  airline
-    let scheme['background'] = 'dark'
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'yowish'
+    let s:scheme['lightline']  = 'yowish'
+    let s:scheme['airline']    =  airline
+    let s:scheme['background'] = 'dark'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'NLKNguyen/papercolor-theme'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'PaperColor'
-    let scheme['lightline']  = 'PaperColor'
-    let scheme['airline']    = 'papercolor'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'PaperColor'
+    let s:scheme['lightline']  = 'PaperColor'
+    let s:scheme['airline']    = 'papercolor'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
   endfor
 
   let g:PaperColor_Theme_Options = {
@@ -159,14 +160,14 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'Rigellute/rigel'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'rigel'
-  let scheme['lightline']  = 'rigel'
-  let scheme['airline']    = 'rigel'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'rigel'
+  let s:scheme['lightline']  = 'rigel'
+  let s:scheme['airline']    = 'rigel'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   let g:rigel_lightline = 1
   let g:rigel_airline = 1
@@ -175,39 +176,50 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'Rigellute/shades-of-purple.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'shades_of_purple'
-  let scheme['lightline']  = 'shades_of_purple'
-  let scheme['airline']    = 'shades_of_purple'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['termguicolors', 'gui']
+  let s:scheme['name']       = 'shades_of_purple'
+  let s:scheme['lightline']  = 'shades_of_purple'
+  let s:scheme['airline']    = 'shades_of_purple'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
 
   let g:shades_of_purple_airline = 1
   let g:shades_of_purple_lightline = 1
 '''
 
 [[plugins]] # カラースキーム
+repo = 'TroyFletcher/vim-colors-synthwave'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'synthwave'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'aereal/vim-colors-japanesque'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'japanesque'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'japanesque'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'agude/vim-eldar'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'eldar'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'eldar'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
 
   " tuning
   " if has('gui_runnning')
@@ -228,20 +240,31 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'ajgrf/parchment'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'parchment'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'altercation/vim-colors-solarized'
 hook_add = '''
   " https://teratail.com/questions/37382
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'solarized'
-    let scheme['lightline']  = 'solarized' " built-in
-    if bg ==? 'dark'
-      let scheme['lightline']  = 'solarized_dark' " built-in
+    let s:scheme['name']       = 'solarized'
+    let s:scheme['lightline']  = 'solarized' " built-in
+    if s:bg ==? 'dark'
+      let s:scheme['lightline']  = 'solarized_dark' " built-in
     endif
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 
   " if has('gui_running')
@@ -290,22 +313,22 @@ hook_post_source = '''
 [[plugins]] # カラースキーム
 repo = 'arzg/vim-colors-xcode'
 hook_add = '''
-  for bg in ['light', 'dark']
-    for name in ['xcode' . bg, 'xcode' . bg .'hc']
-      let scheme = deepcopy(g:user.template.colorscheme)
-      call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    for s:name in ['xcode' . s:bg, 'xcode' . s:bg .'hc']
+      let s:scheme = deepcopy(g:user.template.colorscheme)
+      call add(g:user.colorscheme, s:scheme)
 
-      let scheme['name']       = name
-      let scheme['background'] = bg
-      let scheme['mode']       = ['termguicolors', 'gui']
+      let s:scheme['name']       = s:name
+      let s:scheme['background'] = s:bg
+      let s:scheme['mode']       = ['termguicolors', 'gui']
     endfor
   endfor
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'xcodewwdc'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['termguicolors', 'gui']
+  let s:scheme['name']       = 'xcodewwdc'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
 
   " light
   let g:xcodelight_green_comments    = 1 " default: 0
@@ -350,87 +373,128 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'arzg/vim-substrata'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'substrata'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['termguicolors', 'gui']
+  let s:scheme['name']       = 'substrata'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'bluz71/vim-moonfly-colors'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'moonfly'
-  let scheme['lightline']  = 'moonfly'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'moonfly'
+  let s:scheme['lightline']  = 'moonfly'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
   " 16 need
   " let g:moonflyTerminalColors = 0
+'''
+
+[[plugins]] # カラースキーム
+repo = 'caksoylar/vim-mysticaltutor'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'mysticaltutor'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'challenger-deep-theme/vim'
 name = 'challenger-deep-theme'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'challenger_deep'
-  let scheme['lightline']  = 'challenger_deep'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'challenger_deep'
+  let s:scheme['lightline']  = 'challenger_deep'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'chriskempson/vim-tomorrow-theme'
 hook_add = '''
-  for [name, lightline] in [
+  for [s:name, s:lightline] in [
       \ ['Tomorrow'                , 'Tomorrow'               ] ,
       \ ['Tomorrow-Night'          , 'Tomorrow_Night'         ] ,
       \ ['Tomorrow-Night-Blue'     , 'Tomorrow_Night_Blue'    ] ,
       \ ['Tomorrow-Night-Bright'   , 'Tomorrow_Night_Bright'  ] ,
       \ ['Tomorrow-Night-Eighties' , 'Tomorrow_Night_Eighties'] ,
       \]
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = name
-    let scheme['lightline']  = lightline " all built-in in lightline
-    let scheme['background'] = 'dark'
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = s:name
+    let s:scheme['lightline']  = s:lightline " all built-in in lightline
+    let s:scheme['background'] = 'dark'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'chuling/vim-equinusocio-material'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'equinusocio_material'
+  let s:scheme['lightline']  = 'equinusocio_material'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+
+  " if you prefer the default one, comment out this line
+  let g:equinusocio_material_darker = 1
+
+  " make vertsplit invisible
+  let g:equinusocio_material_hide_vertsplit = 1
 '''
 
 [[plugins]] # カラースキーム
 repo = 'cocopon/iceberg.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'iceberg'
-  let scheme['lightline']  = 'iceberg'
-  let scheme['airline']    = 'iceberg'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'iceberg'
+  let s:scheme['lightline']  = 'iceberg'
+  let s:scheme['airline']    = 'iceberg'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム (iceberg support & variant)
+repo = 'gkeep/iceberg-dark'
+depends = ['iceberg.vim']
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'iceberg'
+  let s:scheme['lightline']  = 'icebergDark'
+  let s:scheme['airline']    = 'icebergDark'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'cormacrelf/vim-colors-github'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'github'
-    let scheme['lightline']  = 'github'
-    let scheme['airline']    = 'github'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
-  endfor
+  let s:scheme['name']       = 'github'
+  let s:scheme['lightline']  = 'github'
+  let s:scheme['airline']    = 'github'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   " use a slightly darker background, like GitHub inline code blocks
   let g:github_colors_soft = 1
@@ -446,69 +510,98 @@ merged = 0
 hook_add = '''
   " https://github.com/creasty/candle-theme
   " name conflict https://github.com/hrsh7th/vim-candle
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'candle'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'candle'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'davidosomething/vim-colors-meh'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'meh'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'meh'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'fcpg/vim-orbital'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'orbital'
+  let s:scheme['lightline']  = 'orbital'
+  let s:scheme['airline']    = 'orbital'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'franbach/miramare'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'miramare'
+  let s:scheme['airline']    = 'miramare'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+
+  let g:miramare_disable_italic_comment = 1
 '''
 
 [[plugins]] # カラースキーム
 repo = 'freeo/vim-kalisi'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'kalisi'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'kalisi'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
-repo = 'sainnhe/gruvbox-material'
+repo = 'habamax/vim-colors-defminus'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'gruvbox-material'
-    let scheme['lightline']  = 'gruvbox_material'
-    let scheme['airline']    = 'gruvbox_material'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['termguicolors', 'gui']
-  endfor
+  let s:scheme['name']       = 'defminus'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
 
-  " let g:gruvbox_material_background             = 'medium'
-  " let g:gruvbox_material_palette                = 'material'
-  " let g:gruvbox_material_transparent_background =  0
-  " let g:gruvbox_material_cursor_line_contrast   = 'lower'
+[[plugins]] # カラースキーム
+repo = 'habamax/vim-colors-defnoche'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'defnoche'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'icymind/NeoSolarized'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'NeoSolarized'
-    let scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
-    let scheme['background'] = bg
-    let scheme['mode']       = ['termguicolors', 'gui']
+    let s:scheme['name']       = 'NeoSolarized'
+    let s:scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
   endfor
 
   " Default value is "normal", Setting this option to "high" or "low" does use the
@@ -541,37 +634,62 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'jacoborus/tender.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'tender'
-  let scheme['lightline']  = 'tender'
-  let scheme['airline']    = 'tender'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['termguicolors', 'gui']
+  let s:scheme['name']       = 'tender'
+  let s:scheme['lightline']  = 'tender'
+  let s:scheme['airline']    = 'tender'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'jaredgorski/fogbell.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'fogbell'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'fogbell_light'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'fogbell_lite'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'jeetsukumaran/vim-nefertiti'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'nefertiti'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['termguicolors', 'gui']
+  let s:scheme['name']       = 'nefertiti'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'jonathanfilip/vim-lucius'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'lucius'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'lucius'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 
   " let g:lucius_contrast     = 'normal'
@@ -581,15 +699,15 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'kaicataldo/material.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'material'
-  " let scheme['lightline']  = 'material'    " built-in lightline
-  let scheme['lightline']  = 'material_vim' " bundle
-  let scheme['airline']    = 'material'
-  let scheme['background'] = 'dark' " ligher is only 'light' background
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'material'
+  " let s:scheme['lightline']  = 'material'    " built-in lightline
+  let s:scheme['lightline']  = 'material_vim' " bundle
+  let s:scheme['airline']    = 'material'
+  let s:scheme['background'] = 'dark' " ligher is only 'light' background
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 
   " let g:material_terminal_italics = 1
 
@@ -600,48 +718,47 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'kamykn/dark-theme.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'darktheme'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'darktheme'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'kjssad/quantum.vim'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'quantum'
-    let scheme['lightline']  = 'quantum'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['termguicolors', 'gui']
+    let s:scheme['name']       = 'quantum'
+    let s:scheme['lightline']  = 'quantum'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
   endfor
 '''
 
-
 [[plugins]] # カラースキーム
-# https://teratail.com/questions/37382
 repo = 'lifepillar/vim-solarized8'
 hook_add = '''
-  for name in [
+  " https://teratail.com/questions/37382
+  for s:name in [
       \ 'solarized8_high',
       \ 'solarized8',
       \ 'solarized8_low',
       \ 'solarized8_flat',
       \]
-    for bg in ['light', 'dark']
+    for s:bg in ['light', 'dark']
 
-      let scheme = deepcopy(g:user.template.colorscheme)
-      call add(g:user.colorscheme, scheme)
+      let s:scheme = deepcopy(g:user.template.colorscheme)
+      call add(g:user.colorscheme, s:scheme)
 
-      let scheme['name']       = name
-      let scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
-      let scheme['background'] = bg
-      let scheme['mode']       = ['256', 'termguicolors', 'gui']
+      let s:scheme['name']       = s:name
+      let s:scheme['lightline']  = 'solarized_improved' " built-in in lightline-delphinus
+      let s:scheme['background'] = s:bg
+      let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
     endfor
   endfor
 
@@ -672,41 +789,56 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'logico/typewriter-vim'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = s:bg ==? 'light' ? 'typewriter' : 'typewriter-night'
+    let s:scheme['lightline']  = 'typewriter_' . s:bg
+    let s:scheme['airline']    = 'typewriter'
+    let s:scheme['background'] = 'light'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
 repo = 'lucasprag/simpleblack'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'simpleblack'
-  let scheme['lightline']  = 'simpleblack' " built-in
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'simpleblack'
+  let s:scheme['lightline']  = 'simpleblack' " built-in
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'machakann/vim-colorscheme-reki'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'reki'
-    let scheme['lightline']  = ''
-    let scheme['airline']    = ''
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'reki'
+    let s:scheme['lightline']  = ''
+    let s:scheme['airline']    = ''
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'machakann/vim-colorscheme-snowtrek'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'snowtrek'
-  let scheme['background'] = 'light'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'snowtrek'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
@@ -715,278 +847,336 @@ repo = 'machakann/vim-colorscheme-tatami'
 # " lightline   : '<none>'
 # " airline     : '<none>'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = ''
-  let scheme['lightline']  = ''
-  let scheme['airline']    = ''
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = ''
+  let s:scheme['lightline']  = ''
+  let s:scheme['airline']    = ''
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'mhinz/vim-janah'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'janah'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'janah'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'morhetz/gruvbox'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'gruvbox'
-    let scheme['lightline']  = 'gruvbox'
-    let scheme['airline']    = 'gruvbox'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'gruvbox'
+    let s:scheme['lightline']  = 'gruvbox'
+    let s:scheme['airline']    = 'gruvbox'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'nanotech/jellybeans.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'jellybeans'
-  let scheme['lightline']  = 'jellybeans' " built-in
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'jellybeans'
+  let s:scheme['lightline']  = 'jellybeans' " built-in
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 # repo = 'nightsense/snow'
 repo = 'tsuyoshicho/snow'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'snow'
-    let scheme['lightline']  = 'snow_' . bg
-    let scheme['airline']    = 'snow_' . bg
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'snow'
+    let s:scheme['lightline']  = 'snow_' . s:bg
+    let s:scheme['airline']    = 'snow_' . s:bg
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'noahfrederick/vim-noctu'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'noctu'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'noctu'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'phanviet/vim-monokai-pro'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'monokai_pro'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'monokai_pro'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'rakr/vim-one'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'one'
-    let scheme['lightline']  = 'one' " built-in
-    let scheme['airline']    = 'one'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'one'
+    let s:scheme['lightline']  = 'one' " built-in
+    let s:scheme['airline']    = 'one'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'rakr/vim-two-firewatch'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'two-firewatch'
-    let scheme['lightline']  = 'twofirewatch'
-    let scheme['airline']    = 'twofirewatch'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'two-firewatch'
+    let s:scheme['lightline']  = 'twofirewatch'
+    let s:scheme['airline']    = 'twofirewatch'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'reedes/vim-colors-pencil'
 hook_add = '''
-  for bg in ['light', 'dark']
-    let scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-    let scheme['name']       = 'pencil'
-    let scheme['airline']    = 'pencil'
-    let scheme['background'] = bg
-    let scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'pencil'
+    let s:scheme['airline']    = 'pencil'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'rhysd/vim-color-spring-night'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'spring-night'
-  let scheme['airline']    = 'spring-night'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'spring-night'
+  let s:scheme['airline']    = 'spring-night'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'romainl/Apprentice'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'apprentice'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'apprentice'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'sainnhe/vim-color-forest-night'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'forest-night'
-  let scheme['lightline']  = 'forest_night'
-  let scheme['airline']    = 'forest_night'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'forest-night'
+  let s:scheme['lightline']  = 'forest_night'
+  let s:scheme['airline']    = 'forest_night'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/gruvbox-material'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'gruvbox-material'
+    let s:scheme['lightline']  = 'gruvbox_material'
+    let s:scheme['airline']    = 'gruvbox_material'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+
+  " let g:gruvbox_material_background             = 'medium'
+  " let g:gruvbox_material_palette                = 'material'
+  " let g:gruvbox_material_transparent_background =  0
+  " let g:gruvbox_material_cursor_line_contrast   = 'lower'
 '''
 
 [[plugins]] # カラースキーム
 repo = 'sjl/badwolf'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'badwolf'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'badwolf'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'srcery-colors/srcery-vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'srcery'
+  let s:scheme['lightline']  = 'srcery'
+  let s:scheme['airline']    = 'srcery'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'tlhr/anderson.vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'anderson'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'anderson'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'tomasr/molokai'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'molokai'
-  let scheme['lightline']  = 'molokai' " built-in
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'molokai'
+  let s:scheme['lightline']  = 'molokai' " built-in
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'toupeira/vim-desertink'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'desertink'
+  let s:scheme['airline']    = 'desertink'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'tyrannicaltoucan/vim-deep-space'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'deep-space'
-  let scheme['lightline']  = 'deepspace'
-  let scheme['airline']    = 'deep_space'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'deep-space'
+  let s:scheme['lightline']  = 'deepspace'
+  let s:scheme['airline']    = 'deep_space'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'w0ng/vim-hybrid'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'hybrid'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'hybrid'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'wadackel/vim-dogrun'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'dogrun'
-  let scheme['lightline']  = 'dogrun'
-  let scheme['clap']       = 'dogrun'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'dogrun'
+  let s:scheme['lightline']  = 'dogrun'
+  let s:scheme['clap']       = 'dogrun'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'yasukotelin/shirotelin'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'shirotelin'
-  let scheme['lightline']  = ''
-  let scheme['airline']    = ''
-  let scheme['background'] = 'light'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'shirotelin'
+  let s:scheme['lightline']  = ''
+  let s:scheme['airline']    = ''
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'yous/vim-open-color'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'open-color'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 '''
 
 [[plugins]] # カラースキーム
 repo = 'yuttie/hydrangea-vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'hydrangea'
-  let scheme['lightline']  = 'hydrangea'
-  let scheme['background'] = 'dark'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'hydrangea'
+  let s:scheme['lightline']  = 'hydrangea'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
 repo = 'yuttie/inkstained-vim'
 hook_add = '''
-  let scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, scheme)
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
 
-  let scheme['name']       = 'inkstained'
-  let scheme['lightline']  = 'inkstained'
-  let scheme['background'] = 'light'
-  let scheme['mode']       = ['256', 'termguicolors', 'gui']
+  let s:scheme['name']       = 'inkstained'
+  let s:scheme['lightline']  = 'inkstained'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 # [[plugins]] # カラースキーム
@@ -996,13 +1186,13 @@ hook_add = '''
 # " lightline   : 'selenized_dark' " built-in
 # " airline     : '<none>'
 # hook_add = '''
-#   let scheme = deepcopy(g:user.template.colorscheme)
-#   call add(g:user.colorscheme, scheme)
+#   let s:scheme = deepcopy(g:user.template.colorscheme)
+#   call add(g:user.colorscheme, s:scheme)
 #
-#   let scheme['name']       = 'selenized' " bw?
-#   let scheme['lightline']  = 'selenized_dark' " built-in
-#   let scheme['background'] = 'dark'      " light?
-#   let scheme['mode']       = ['256', 'termguicolors', 'gui']
+#   let s:scheme['name']       = 'selenized' " bw?
+#   let s:scheme['lightline']  = 'selenized_dark' " built-in
+#   let s:scheme['background'] = 'dark'      " light?
+#   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 # '''
 
 # EOF
