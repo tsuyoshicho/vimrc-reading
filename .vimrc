@@ -87,6 +87,8 @@ let g:user.git = {}
 let g:user.git.name  = g:user.name
 let g:user.git.email = g:user.email
 
+let g:user.plugin = {}
+
 let g:user.rootmarker = {}
 let g:user.rootmarker.dirs = [
   \  'RCS',
@@ -132,7 +134,32 @@ let g:user.dir.cache_home  = empty($XDG_CACHE_HOME)  ? expand($HOME . '/.cache')
 let g:user.dir.config_home = empty($XDG_CONFIG_HOME) ? expand($HOME . '/.config')      : expand($XDG_CONFIG_HOME)
 let g:user.dir.data_home   = empty($XDG_DATA_HOME)   ? expand($HOME . '/.local/share') : expand($XDG_DATA_HOME)
 
-if s:is_windows
+let g:user.system = {}
+let g:user.system.windows = s:is_windows ? v:true : v:false
+let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
+unlet s:is_windows s:is_cygwin
+let g:user.system.arch = 'x86_64' " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
+    let g:user.system.arch = 'x86_64'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
+    let g:user.system.arch = 'x86'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'ARM64'
+    let g:user.system.arch = 'arm64'
+  endif
+elseif executable('uname')
+  let s:unamem = systemlist('uname --machine')[0]
+  if s:unamem =~? 'x86_64'
+    let g:user.system.arch = 'x86_64'
+  elseif s:unamem =~? 'i686'
+    let g:user.system.arch = 'x86'
+  elseif s:unamem =~? 'aarch64'
+    let g:user.system.arch = 'arm64'
+  endif
+  unlet s:unamem
+endif
+
+if g:user.system.windows
   let g:user.dir.tools = expand('c:/tools')
 else
   let g:user.dir.tools = expand($HOME . '/tools')
@@ -141,16 +168,11 @@ let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
 
 let g:user.colorscheme = []
 
-let g:user.system = {}
-let g:user.system.windows = s:is_windows ? v:true : v:false
-let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
-unlet s:is_windows s:is_cygwin
-
 let g:user.system.cpunum = 2 " heuristic
 if exists('$NUMBER_OF_PROCESSORS')
-  let g:user.system.cpunum = $NUMBER_OF_PROCESSORS
+  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
 elseif executable('nproc')
-  let g:user.system.cpunum = systemlist('nproc --all')[0]
+  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
 endif
 
 " }}}
@@ -266,6 +288,10 @@ set tagcase=followscs
 " inc/dec operation
 " 0123を10進扱いする、bin/hexは生かす
 set nrformats-=octal
+if has('patch-8.2.0860')
+  " 符合なし
+  set nrformats+=unsigned
+endif
 
 " 行連結で変なことをさせない
 " from https://github.com/cohama/.vim/blob/master/init.vim
@@ -371,7 +397,7 @@ set tags+=TAGS
 
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if dein#is_sourced('ctrlp.vim')
+" if dein#tap('ctrlp.vim')
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
@@ -499,15 +525,33 @@ augroup END
 
 " 検索したときのハイライトをつける
 set hlsearch
+
+" No HiLight. {{{
 " Ctrl-L で検索ハイライトを消す
 " nnoremap <silent> <C-l> <C-l>:nohlsearch<CR>
 " based on https://postd.cc/vim-galore-4/
-nnoremap <silent> <C-L> :<C-u>nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
-if dein#is_sourced('vim-quickhl')
-  nnoremap <silent> <Leader><C-L> :<C-u>QuickhlManualReset<CR>:nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
-else
-  nnoremap <silent> <Leader><C-L> :<C-u>nohlsearch<CR>:diffupdate<CR>:syntax sync fromstart<CR>:redraw!<CR><C-L>
-endif
+
+function! s:nohl_plugin() abort
+  call s:plugin_status_update()
+  if g:user.plugin.quickhl
+    QuickhlManualReset
+  endif
+  if g:user.plugin.anzu
+    call anzu#clear_search_status()
+  endif
+endfunction
+
+function! s:nohl_update() abort
+  call s:plugin_status_update()
+  diffupdate
+  syntax sync fromstart
+  redraw!
+endfunction
+
+" nohlsearch は autocmd/user funcから呼べない(消えない)ため直にマッピングする
+nnoremap <silent> <C-L>         :<C-u>nohlsearch<CR>:call <SID>nohl_plugin()<CR>:call <SID>nohl_update()<CR><C-L>
+nnoremap <silent> <Leader><C-L> :<C-u>nohlsearch<CR>:call <SID>nohl_update()<CR><C-L>
+" }}}
 
 " 検索文字列入力時に順次対象文字列にヒットさせる
 set incsearch
@@ -527,6 +571,9 @@ set wrapscan
 " search with magic/very magic...
 " https://vim-jp.slack.com/archives/C03C4RC9F/p1553041020188200
 nnoremap /  /\v
+nnoremap g/ /
+" nnoremap * *N / use plugin
+" nnoremap g* g*N / use plugin
 
 " }}}
 " }}}
@@ -718,7 +765,7 @@ set splitbelow
 
 " 基本はタブで開いて、他のタブにあっても既存を使う
 set switchbuf=usetab,newtab
-if dein#is_sourced('QFEnter')
+if dein#tap('QFEnter')
   " QFEnterプラグインがあるなら、その設定を優先
   set switchbuf=
 endif
@@ -784,7 +831,8 @@ augroup MyAutoGroup
   " 行数を非表示
   " signcolumn を非表示
   " foldcolumn 0
-  autocmd CmdwinEnter [:\/\?=] nested
+" selective like CmdwinEnter [:\/\?=]
+  autocmd CmdwinEnter * nested
     \   setlocal nonumber norelativenumber
     \ | setlocal signcolumn=no
     \ | setlocal foldcolumn=0
@@ -982,7 +1030,8 @@ inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 
 function! s:popup_select(rawchar, ...) abort " {{{
   let result = ''
-  if dein#is_sourced('asyncomplete.vim')
+  call s:plugin_status_update()
+  if g:user.plugin.asyncomplete
     let result = result . asyncomplete#close_popup()
     if a:0
       let result = result . a:1
@@ -995,7 +1044,8 @@ endfunction " }}}
 
 function! s:popup_cancel(rawchar, ...) abort " {{{
   let result = ''
-  if dein#is_sourced('asyncomplete.vim')
+  call s:plugin_status_update()
+  if g:user.plugin.asyncomplete
     let result = result . asyncomplete#cancel_popup()
     if a:0
       let result = result . a:1
@@ -1008,7 +1058,8 @@ endfunction " }}}
 
 function! s:insert_char(rawchar, charname) abort " {{{
   let result = ''
-  if dein#is_sourced('lexima.vim')
+  call s:plugin_status_update()
+  if g:user.plugin.lexima
     let result = result . lexima#expand(a:charname, 'i')
   else
     let result = result . a:rawchar
@@ -1369,19 +1420,19 @@ for s:n in range(1, 9)
 endfor
 " t1 で1番左のタブ、t2 で1番左から2番目のタブにジャンプ
 
-map <silent> [Tab]c :tablast <bar> tabnew<CR>
+nnoremap <silent> [Tab]c :tablast \| tabnew<CR>
 " tc 新しいタブを一番右に作る
 
-if dein#is_sourced('vim-startify')
-  map <silent> [Tab]h :tablast <bar> tabnew <bar> Startify<CR>
+if dein#tap('vim-startify')
+  nnoremap <silent> [Tab]h :tablast \| tabnew \| Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
 
-map <silent> [Tab]x :tabclose<CR>
+nnoremap <silent> [Tab]x :tabclose<CR>
 " tx タブを閉じる
-map <silent> [Tab]n :tabnext<CR>
+nnoremap <silent> [Tab]n :tabnext<CR>
 " tn 次のタブ
-map <silent> [Tab]p :tabprevious<CR>
+nnoremap <silent> [Tab]p :tabprevious<CR>
 " tp 前のタブ
 
 "矢印キーでは表示行単位で行移動する
@@ -1461,8 +1512,8 @@ nnoremap U <C-R>
 " (shift)Tab でインデント
 nnoremap <Tab>   >>
 nnoremap <S-Tab> <<
-vnoremap <Tab>   >>
-vnoremap <S-Tab> <<
+vnoremap <Tab>   >gv
+vnoremap <S-Tab> <gv
 
 " Switch between the last two files
 " nnoremap <tab><tab> <c-^>
@@ -1631,6 +1682,21 @@ endif
 " プラグイン化を考えること
 
 " function {{{
+function! s:plugin_status_update() abort
+  let g:user.plugin['quickhl']      = dein#is_sourced('vim-quickhl')
+  let g:user.plugin['anzu']         = dein#is_sourced('vim-anzu')
+  let g:user.plugin['asyncomplete'] = dein#is_sourced('asyncomplete.vim')
+  let g:user.plugin['lexima']       = dein#is_sourced('lexima.vim')
+endfunction
+
+function! s:plugin_status_update_and_redefine() abort
+  call s:plugin_status_update()
+  function! s:plugin_status_update() abort
+  endfunction
+endfunction
+
+autocmd MyAutoGroup VimEnter * nested call s:plugin_status_update_and_redefine()
+
 function! s:EchoSyntax(status) abort " {{{
   if a:status
     redraw | echon synIDattr(synID(line('.'), col('.'), 0), 'name')

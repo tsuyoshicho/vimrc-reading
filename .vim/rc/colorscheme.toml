@@ -201,6 +201,19 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'arcticicestudio/nord-vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'nord'
+  let s:scheme['lightline']  = 'nord'
+  let s:scheme['airline']    = 'nord'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'aereal/vim-colors-japanesque'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -460,12 +473,26 @@ hook_add = '''
 [[plugins]] # カラースキーム
 repo = 'cocopon/iceberg.vim'
 hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'iceberg'
+    let s:scheme['lightline']  = 'iceberg'
+    let s:scheme['airline']    = 'iceberg'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'danilo-augusto/vim-afterglow'
+hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
   call add(g:user.colorscheme, s:scheme)
 
-  let s:scheme['name']       = 'iceberg'
-  let s:scheme['lightline']  = 'iceberg'
-  let s:scheme['airline']    = 'iceberg'
+  let s:scheme['name']       = 'afterglow'
+  let s:scheme['airline']    = 'afterglow'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''

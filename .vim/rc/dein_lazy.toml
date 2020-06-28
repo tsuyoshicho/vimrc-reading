@@ -118,143 +118,144 @@ hook_add = '''
   if g:user.system.windows
     " Windows環境用のコード
     let g:eblookenc='cp932'
-    let g:eblook_dictlist1 = [
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/ASCDATES',
-      \       'name'       : 'ascdates',
-      \       'title'      : 'パソコン用語辞典 (1998年版アスキー DATES手帳巻末)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/BIBLENAM',
-      \       'name'       : 'biblenam',
-      \       'title'      : 'HITCHCOCK,S BIBLE NAMES DICTIONARY',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/CG',
-      \       'name'       : 'cg',
-      \       'title'      : 'CG 用語辞典 Ver.1.50h (日本大学吉川研究室)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/DEVIL',
-      \       'name'       : 'devil',
-      \       'title'      : '惡魔の辭典 (Devil,s Dictionary)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/EBD',
-      \       'name'       : 'ebd',
-      \       'title'      : 'Easton,s 1897 Bible Dictionary',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/EDICT',
-      \       'name'       : 'edict',
-      \       'title'      : 'EDICT',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/EIJIRO',
-      \       'name'       : 'eijiro',
-      \       'title'      : '英辞郎 Ver.144.6',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/FLOWER',
-      \       'name'       : 'flower',
-      \       'title'      : '花の咲く草木名小事典 (K,s Bookshelf)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/GENE95',
-      \       'name'       : 'gene95',
-      \       'title'      : 'GENE95辞書',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/FOLDOC',
-      \       'name'       : 'foldoc',
-      \       'title'      : 'Free On-line Dictionary of Computing (FOLDOC)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/FUMEIKAI',
-      \       'name'       : 'fumeikai',
-      \       'title'      : '不明解略語辞典',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/JARGON',
-      \       'name'       : 'jargon',
-      \       'title'      : 'The Jargon File',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/LSD',
-      \       'name'       : 'lsd',
-      \       'title'      : 'ライフサイエンス辞書4',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/PEJV',
-      \       'name'       : 'pejv',
-      \       'title'      : '実用エスペラント小辞典 (第1版)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/ROGET',
-      \       'name'       : 'roget',
-      \       'title'      : 'ロジェーのシソーラス (Roget,s Thesaurus)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/RYAKU',
-      \       'name'       : 'ryaku',
-      \       'title'      : '略語辞典辞典 (K,s Bookshelf)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/VERA',
-      \       'name'       : 'vera',
-      \       'title'      : 'V.E.R.A. -- Virtual Entity of Relevant Acronyms',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/WDIC',
-      \       'name'       : 'wdic',
-      \       'title'      : '通信用語の基礎知識 (2004年後期版)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/WEB',
-      \       'name'       : 'web',
-      \       'title'      : 'Webster,s Revised Unabridged Dictionary (1913)',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/WORDNET',
-      \       'name'       : 'wordnet',
-      \       'title'      : 'WordNet(r) 1.6',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/WWASW',
-      \       'name'       : 'wwasw',
-      \       'title'      : '物故者名士録',
-      \       'skip'       : 0,
-      \    },
-      \    {
-      \       'book'       : g:user.dir.dictionary . '/FreePWING/YASOU',
-      \       'name'       : 'yasou',
-      \       'title'      : '身近な野草を調べよう',
-      \       'skip'       : 0,
-      \    },
-      \ ]
   else
     " non Windows
   endif
+
+  let g:eblook_dictlist1 = [
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/ASCDATES',
+    \       'name'       : 'ascdates',
+    \       'title'      : 'パソコン用語辞典 (1998年版アスキー DATES手帳巻末)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/BIBLENAM',
+    \       'name'       : 'biblenam',
+    \       'title'      : 'HITCHCOCK,S BIBLE NAMES DICTIONARY',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/CG',
+    \       'name'       : 'cg',
+    \       'title'      : 'CG 用語辞典 Ver.1.50h (日本大学吉川研究室)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/DEVIL',
+    \       'name'       : 'devil',
+    \       'title'      : '惡魔の辭典 (Devil,s Dictionary)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/EBD',
+    \       'name'       : 'ebd',
+    \       'title'      : 'Easton,s 1897 Bible Dictionary',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/EDICT',
+    \       'name'       : 'edict',
+    \       'title'      : 'EDICT',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/EIJIRO',
+    \       'name'       : 'eijiro',
+    \       'title'      : '英辞郎 Ver.144.6',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/FLOWER',
+    \       'name'       : 'flower',
+    \       'title'      : '花の咲く草木名小事典 (K,s Bookshelf)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/GENE95',
+    \       'name'       : 'gene95',
+    \       'title'      : 'GENE95辞書',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/FOLDOC',
+    \       'name'       : 'foldoc',
+    \       'title'      : 'Free On-line Dictionary of Computing (FOLDOC)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/FUMEIKAI',
+    \       'name'       : 'fumeikai',
+    \       'title'      : '不明解略語辞典',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/JARGON',
+    \       'name'       : 'jargon',
+    \       'title'      : 'The Jargon File',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/LSD',
+    \       'name'       : 'lsd',
+    \       'title'      : 'ライフサイエンス辞書4',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/PEJV',
+    \       'name'       : 'pejv',
+    \       'title'      : '実用エスペラント小辞典 (第1版)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/ROGET',
+    \       'name'       : 'roget',
+    \       'title'      : 'ロジェーのシソーラス (Roget,s Thesaurus)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/RYAKU',
+    \       'name'       : 'ryaku',
+    \       'title'      : '略語辞典辞典 (K,s Bookshelf)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/VERA',
+    \       'name'       : 'vera',
+    \       'title'      : 'V.E.R.A. -- Virtual Entity of Relevant Acronyms',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/WDIC',
+    \       'name'       : 'wdic',
+    \       'title'      : '通信用語の基礎知識 (2004年後期版)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/WEB',
+    \       'name'       : 'web',
+    \       'title'      : 'Webster,s Revised Unabridged Dictionary (1913)',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/WORDNET',
+    \       'name'       : 'wordnet',
+    \       'title'      : 'WordNet(r) 1.6',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/WWASW',
+    \       'name'       : 'wwasw',
+    \       'title'      : '物故者名士録',
+    \       'skip'       : 0,
+    \    },
+    \    {
+    \       'book'       : g:user.dir.dictionary . '/FreePWING/YASOU',
+    \       'name'       : 'yasou',
+    \       'title'      : '身近な野草を調べよう',
+    \       'skip'       : 0,
+    \    },
+    \ ]
 '''
 
 [[plugins]]
@@ -331,7 +332,7 @@ hook_post_update = '''
   if g:user.system.windows
     let s:cmd = 'install.bat'
   else
-    let s:cmd = 'install.sh'
+    let s:cmd = './install.sh'
   endif
   let g:dein#plugin.build = s:cmd
 '''
@@ -835,6 +836,14 @@ hook_add = '''
   autocmd MyAutoGroup BufNewFile,BufRead *.jsx setlocal filetype=javascript.jsx
   autocmd MyAutoGroup BufNewFile,BufRead *.tsx setlocal filetype=typescript.jsx
 '''
+
+[[plugins]]
+repo = 'othree/es.next.syntax.vim'
+on_ft = ['javascript']
+
+[[plugins]]
+repo = 'othree/yajs.vim'
+on_ft = ['javascript']
 
 [[plugins]]
 repo = 'othree/javascript-libraries-syntax.vim'
