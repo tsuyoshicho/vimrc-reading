@@ -137,12 +137,13 @@ hook_add = '''
     let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
   endfor
 
+  " if use transparent
+    "\   'theme': {
+    "\     'default': {
+    "\       'transparent_background': 1
+    "\     }
+    "\   },
   let g:PaperColor_Theme_Options = {
-    \   'theme': {
-    \     'default': {
-    \       'transparent_background': 1
-    \     }
-    \   },
     \   'language': {
     \     'python': {
     \       'highlight_builtins' : 1
@@ -497,6 +498,19 @@ hook_add = '''
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
+[[plugins]] # カラースキーム
+repo = 'drewtempelmeyer/palenight.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'palenight'
+  let s:scheme['lightline']  = 'palenight'
+  let s:scheme['airline']    = 'palenight'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
 [[plugins]] # カラースキーム (iceberg support & variant)
 repo = 'gkeep/iceberg-dark'
 depends = ['iceberg.vim']
@@ -619,6 +633,32 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'hardcoreplayers/oceanic-material'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'oceanic_material'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " If you doesn't like some of the code to be bolded, like functions and language controls, add this option to vimrc:
+  "
+  " let g:oceanic_material_enable_bold = 0
+  " If you want comments to be in italic, also add this:
+  "
+  " let g:oceanic_material_enable_italic = 1
+  " To use transparent background, add this option:
+  "
+  " let g:oceanic_material_transparent_background = 1
+  " If you doesn't like underline reverse undercurl, you can add these option:
+  "
+  " let g:oceanic_material_enable_underline = 1
+  " let g:oceanic_material_enable_undercurl = 1
+  " let g:oceanic_material_enable_reverse = 1
+'''
+
+[[plugins]] # カラースキーム
 repo = 'icymind/NeoSolarized'
 hook_add = '''
   for s:bg in ['light', 'dark']
@@ -697,6 +737,18 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'jdsimcoe/abstract.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'abstract'
+  let s:scheme['airline']    = 'abstract'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'jeetsukumaran/vim-nefertiti'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -762,6 +814,20 @@ hook_add = '''
 
     let s:scheme['name']       = 'quantum'
     let s:scheme['lightline']  = 'quantum'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'koron/vim-monochromenote'
+hook_add = '''
+  " bi-mode same work?
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'monochromenote'
     let s:scheme['background'] = s:bg
     let s:scheme['mode']       = ['termguicolors', 'gui']
   endfor
@@ -939,6 +1005,18 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'niuez/lyla.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'lyla'
+  let s:scheme['airline']    = 'lyla'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'noahfrederick/vim-noctu'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -1080,6 +1158,31 @@ hook_add = '''
   let s:scheme['name']       = 'srcery'
   let s:scheme['lightline']  = 'srcery'
   let s:scheme['airline']    = 'srcery'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sts10/vim-pink-moon'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'orange-moon'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'pink-moon'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'yellow-moon'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''

@@ -101,6 +101,7 @@ hook_post_update = '''
 
 [[plugins]]
 repo = 'mattn/vimtweak'
+merged = 0
 
 # 'vimtweak' depends windows only
 [[plugins]]
@@ -287,12 +288,23 @@ hook_post_source = '''
 ##############
 [[plugins]]
 repo = 'lambdalisue/fern.vim'
+hook_post_source = '''
+  " thanks lambdalisue
+  " conflict workaround : prefix <Leader>F as Fern
+  nnoremap <silent> <Leader>Fb :<C-u>Fern bookmark:///<CR>
+  nnoremap <silent> <Leader>Fe :<C-u>Fern <C-r>=<SID>smart_path()<CR> -reveal=%<CR>
+  nnoremap <silent> <Leader>Ff :<C-u>Fern . -drawer -toggle -reveal=%<CR>
+  nnoremap <silent> <Leader>Fj :<C-u>Fern <C-r>=expand(g:junkfile#directory)<CR> -drawer -toggle -reveal=%<CR>
+'''
 
 [[plugins]]
-repo = 'lambdalisue/fern-renderer-devicons.vim'
-depends = ['fern.vim', 'vim-devicons']
+# repo = 'lambdalisue/fern-renderer-devicons.vim'
+repo = 'lambdalisue/fern-renderer-nerdfont.vim'
+# depends = ['fern.vim', 'vim-devicons']
+depends = ['fern.vim', 'nerdfont.vim']
 hook_add = '''
-  let g:fern#renderer = 'devicons'
+  " let g:fern#renderer = 'devicons'
+  let g:fern#renderer = "nerdfont"
 '''
 
 [[plugins]]
@@ -301,6 +313,23 @@ depends = ['fern.vim']
 hook_add = '''
   let g:fern#comparator = 'lexical'
 '''
+
+[[plugins]]
+repo = 'lambdalisue/fern-bookmark.vim'
+depends = ['fern.vim']
+
+[[plugins]]
+repo = 'lambdalisue/fern-mapping-project-top.vim'
+depends = ['fern.vim']
+
+[[plugins]]
+repo = 'lambdalisue/fern-mapping-git.vim'
+depends = ['fern.vim']
+
+# too heavy, currently do not use
+# [[plugins]]
+# repo = 'lambdalisue/fern-git-status.vim'
+# depends = ['fern.vim']
 
 [[plugins]]
 repo = 'justinmk/vim-dirvish'
@@ -346,6 +375,18 @@ repo = 'rbtnn/vimconsole.vim'
 [[plugins]]
 repo = 'thinca/vim-editvar'
 # depends = ['vim-prettyprint'] # non-depend, but if already exist; use PrettyPrint
+
+[[plugins]]
+repo = 'Bakudankun/BackAndForward.vim'
+
+[[plugins]]
+repo = 'c000/rapidfire.vim'
+hook_add = '''
+  let g:rapidfire#persistent_filename = expand(g:user.dir.cache_home . '/rapidfire_commands.json')
+
+  " need custom setting
+  " like nnoremap <F12> :<C-u>Rapidfire F12<CR>
+'''
 
 [[plugins]]
 repo = 'tsuyoshicho/vim-pass'
@@ -439,6 +480,22 @@ repo = 'thinca/vim-ambicmd'
 hook_post_source = '''
   cnoremap <expr> <Space> ambicmd#expand("\<Space>")
   cnoremap <expr> <CR>    ambicmd#expand("\<CR>")
+'''
+
+[[plugins]]
+repo = 'gelguy/wilder.nvim'
+hook_add = '''
+'''
+hook_post_source = '''
+  " enable
+  call wilder#enable_cmdline_enter()
+
+  cnoremap <expr> <Tab>   wilder#in_context() ? wilder#next()     : "\<Tab>"
+  cnoremap <expr> <S-Tab> wilder#in_context() ? wilder#previous() : "\<S-Tab>"
+
+  " only / and ? is enabled by default
+  call wilder#set_option('modes', ['/', '?'])
+  " : is conflicted to wildmenu option longest:full,full
 '''
 
 # search
@@ -623,8 +680,8 @@ depends = ['inspecthi.vim']
 [[plugins]]
 repo = 'lifepillar/vim-colortemplate'
 
-# [[plugins]]
-# repo = 'tpope/vim-sleuth'
+[[plugins]]
+repo = 'lambdalisue/vim-findent'
 
 [[plugins]]
 repo = 'rickhowe/diffchar.vim'
@@ -716,7 +773,7 @@ repo = 'thinca/vim-showtime'
 repo = 'drmingdrmer/vim-toggle-quickfix'
 hook_post_source = '''
   nmap <C-g><C-o> <Plug>window:quickfix:loop
-  autocmd MyAutoGroup FileType qf nested nmap q <Plug>window:quickfix:loop
+  autocmd MyAutoGroup FileType qf nested nmap <buffer> q <Plug>window:quickfix:loop
 '''
 
 [[plugins]]
@@ -752,17 +809,16 @@ hook_post_source = '''
 '''
 
 [[plugins]] # folding support
-repo = 'LeafCage/foldCC.vim'
+repo = 'lambdalisue/vim-foldround'
 hook_post_source = '''
-  " based on http://leafcage.hateblo.jp/entry/2013/04/24/053113
-  let g:foldCCtext_enable_autofdc_adjuster = 1
-  " add  nf-oct-unfold / f42d
-  let g:foldCCtext_head = 'nr2char(0xf42d)." ".v:folddashes." "'
+  nmap <Leader>zff <Plug>(foldround-forward)
+  nmap <Leader>zfb <Plug>(foldround-backward)
+'''
 
-  " need post_source for use defined function
-  set foldtext=FoldCCtext()
-  " overwrite markdown-ex foldtext function
-  autocmd MyAutoGroup FileType markdown nested setlocal foldtext=FoldCCtext()
+[[plugins]] # folding support
+repo = 'lambdalisue/readablefold.vim'
+hook_post_source = '''
+  autocmd MyAutoGroup FileType markdown nested setlocal foldtext=readablefold#foldtext()
 
   " generic folding setting start
   set foldcolumn=3
@@ -776,6 +832,32 @@ hook_post_source = '''
 
   " generic folding setting end
 '''
+
+# [[plugins]] # folding support
+# repo = 'LeafCage/foldCC.vim'
+# hook_post_source = '''
+#   " based on http://leafcage.hateblo.jp/entry/2013/04/24/053113
+#   let g:foldCCtext_enable_autofdc_adjuster = 1
+#   " add  nf-oct-unfold / f42d
+#   let g:foldCCtext_head = 'nr2char(0xf42d)." ".v:folddashes." "'
+#
+#   " need post_source for use defined function
+#   set foldtext=FoldCCtext()
+#   " overwrite markdown-ex foldtext function
+#   autocmd MyAutoGroup FileType markdown nested setlocal foldtext=FoldCCtext()
+#
+#   " generic folding setting start
+#   set foldcolumn=3
+#   set foldlevel=2
+#   " window local
+#
+#   " set fillchars=vert:\|
+#
+#   " highlight Folded gui=bold term=standout ctermbg=LightGrey ctermfg=DarkBlue guibg=Grey29 guifg=Grey80
+#   " highlight FoldColumn gui=bold term=standout ctermbg=LightGrey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue
+#
+#   " generic folding setting end
+# '''
 
 [[plugins]] # folding support
 repo = 'arecarn/vim-fold-cycle'
@@ -1174,6 +1256,23 @@ hook_add = '''
 
   " Check spelling for words longer than set characters. (default: 4)
   " let g:spelunker_target_min_char_len = 4
+
+  " Option to disable word checking.
+  " Disable URI checking. (default: 0)
+  " let g:spelunker_disable_uri_checking = 1
+
+  " Disable email-like words checking. (default: 0)
+  " let g:spelunker_disable_email_checking = 1
+
+  " Disable account name checking, e.g. @foobar, foobar@. (default: 0)
+  " NOTE: Spell checking is also disabled for JAVA annotations.
+  " let g:spelunker_disable_account_name_checking = 1
+
+  " Disable acronym checking. (default: 0)
+  " let g:spelunker_disable_acronym_checking = 1
+
+  " Disable checking words in backtick/backquote. (default: 0)
+  " let g:spelunker_disable_backquoted_checking = 1
 
   " Max amount of word suggestions. (default: 15)
   autocmd MyAutoGroup VimEnter,VimResized * let g:spelunker_max_suggest_words = min([(&lines/4), 10])
@@ -1575,28 +1674,32 @@ hook_add = '''
   let g:sandwich#recipes += [
     \ {
     \   'buns': ['#{', '}'],
+    \   'input': ['#'],
     \   'filetype': ['vim'],
     \   'nesting': 1,
     \ },
     \ {
     \   'buns': ['\(', '\)'],
+    \   'input': ['8'],
     \   'filetype': ['vim'],
     \   'nesting': 1,
     \ },
     \ {
     \   'buns': ['\%(', '\)'],
+    \   'input': ['%'],
     \   'filetype': ['vim'],
     \   'nesting': 1,
     \ },
     \ {
     \   'buns': ['\<', '\>'],
+    \   'input': [','],
     \   'filetype': ['vim'],
     \   'nesting': 0,
     \ },
     \ {
     \   'buns': ['$(', ')'],
-    \   'filetype': ['sh'],
     \   'input': ['$'],
+    \   'filetype': ['sh'],
     \   'nesting': 1,
     \ },
     \ {'buns' : ['（', '）']},
@@ -1619,6 +1722,20 @@ hook_add = '''
     \   'bra'    : '(',       'ket'    : ')',
     \ },
     \]
+'''
+
+# viwなど 選択状態にして<c-g>qで処理 強制改行
+[[plugins]]  # like gq operator
+repo = 'lambdalisue/vim-operator-breakline'
+depends = ['vim-operator-user']
+hook_add = '''
+  " The following mappings use the value of 'textwidth'
+  nmap <C-g>q <Plug>(operator-breakline-textwidth)
+  xmap <C-g>q <Plug>(operator-breakline-textwidth)
+
+  " The following mappings shows prompt to ask the value
+  nmap <C-g>Q <Plug>(operator-breakline-manual)
+  xmap <C-g>Q <Plug>(operator-breakline-manual)
 '''
 
 # viwなど 選択状態にしてzrで処理 yankと入れ替え
@@ -2188,13 +2305,19 @@ hook_add = '''
   let g:vsnip_snippet_dir = expand(g:user.dir.config_home . '/snippet')
 '''
 hook_post_source = '''
-  imap <expr> <C-b>  vsnip#available(1)  ? '<Plug>(vsnip-expand)'         : '<C-b>'
+  " Expand
+  imap <expr> <C-b>  vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-b>'
+  smap <expr> <C-b>  vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-b>'
+
+ " Expand or jump
   imap <expr> <C-CR> vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
   smap <expr> <C-CR> vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
-  imap <expr> <C-n>  vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
-  smap <expr> <C-n>  vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
-  imap <expr> <C-p>  vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
-  smap <expr> <C-p>  vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
+
+  " Jump forward or backward
+  imap <expr> <C-n>  vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
+  smap <expr> <C-n>  vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
+  imap <expr> <C-p>  vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
+  smap <expr> <C-p>  vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
 '''
 
 [[plugins]]
@@ -2262,6 +2385,21 @@ hook_add = '''
       \  'python-ver'  : s:py_ver,
       \}
   endif
+
+  let g:lsp_settings['gopls'] = {
+    \  'workspace_config': {
+    \    'usePlaceholders': v:true,
+    \    'analyses': {
+    \      'fillstruct': v:true,
+    \    },
+    \  },
+    \  'initialization_options': {
+    \    'usePlaceholders': v:true,
+    \    'analyses': {
+    \      'fillstruct': v:true,
+    \    },
+    \  },
+    \}
 
   " per filetype
   let g:lsp_settings_filetype_python = ['pyls-ms']
@@ -2915,7 +3053,7 @@ repo = 'mattn/vim-quickrunex'
 
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-depends = ['vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex']
+depends = ['vim-altercmd', 'vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex']
 hook_add = '''
   " <Plug>(precious-quickrun-op) in osyo-manga/vim-precious
   if dein#tap('vim-precious') " after load support : not dein#is_sourced
@@ -3000,7 +3138,7 @@ hook_add = '''
   if executable('clang')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/clang',
-    \}, get(g:quickrun_config, 'cpp', {}), "keep")
+    \}, get(g:quickrun_config, 'c', {}), "keep")
 
     " Until PR merge, temp fix
     let g:quickrun_config['c/clang'] = extend({
@@ -3018,7 +3156,7 @@ hook_add = '''
   elseif executable('gcc')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/gcc',
-    \}, get(g:quickrun_config, 'cpp', {}), "keep")
+    \}, get(g:quickrun_config, 'c', {}), "keep")
 
     " Until PR merge, temp fix
     let g:quickrun_config['c/gcc'] = extend({
@@ -3059,7 +3197,12 @@ hook_add = '''
       let g:quickrun_config._['runner/vimproc/sleep'] = 30
       let g:quickrun_config._['runner/vimproc/updatetime'] = 50
     elseif has('job')
-      let g:quickrun_config._['runner'] = 'job'
+      if has('nvim')
+        let g:quickrun_config._['runner'] = 'neovim_job'
+      else
+        let g:quickrun_config._['runner'] = 'job'
+      endif
+
       " elseif has('clientserver')
       "   let g:quickrun_config._['runner'] = 'remote'
     else
@@ -3071,6 +3214,13 @@ hook_add = '''
     autocmd!
     autocmd VimEnter * nested :call s:runner_setup() | autocmd! vimrc_init-quickrun
   augroup END
+
+  " mapping
+  " thanks lambdalisue
+  nmap <Leader>qr <Plug>(quickrun)
+
+  " Terminate the quickrun with <C-c>
+  nnoremap <expr><silent> <C-c> quickrun#is_running() ? quickrun#sweep_sessions() : "\<C-c>"
 '''
 hook_post_source = '''
   let s:slash_hook = {
@@ -3111,6 +3261,10 @@ hook_post_source = '''
 
   call quickrun#module#register(s:clear_hook, 1)
   unlet s:clear_hook
+
+  " thanks ycino
+  AlterCommand        r[un] QuickRun
+  AlterCommand cmdwin r[un] QuickRun
 '''
 
 # UI
@@ -3121,18 +3275,53 @@ repo = 'ryanoasis/vim-devicons'
 hook_add = '''
   " フォルダアイコンの表示をON
   let g:WebDevIconsUnicodeDecorateFolderNodes = 1
-  " let g:WebDevIconsUnicodeDecorateFolderNodesDefaultSymbol = ''
-  " ? let g:WebDevIconsDefaultFolderOpenSymbol = ''
-'''
-hook_post_source = '''
+
   let g:NERDTreeDirArrowExpandable  = nr2char(0xf0da) "  nf-fa-caret_right
   let g:NERDTreeDirArrowCollapsible = nr2char(0xf0d7) "  nf-fa-caret_down
 
+  let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = get(g:, 'WebDevIconsUnicodeDecorateFileNodesExtensionSymbols', {})
   let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['html']     = nr2char(0xe736) " ''
   let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['css']      = nr2char(0xe749) " ''
   let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['markdown'] = nr2char(0xf48a) " ''
   let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['md']       = nr2char(0xf48a) " ''
   let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['txt']      = nr2char(0xf0f6) " ''
+
+  let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols = get(g:, 'WebDevIconsUnicodeDecorateFileNodesExactSymbols', {})
+  let g:WebDevIconsUnicodeDecorateFileNodesExactSymbols['pipfile']      = nr2char(0xe73c) " ''
+'''
+
+[[plugins]]
+repo = 'lambdalisue/nerdfont.vim'
+hook_add = '''
+  let g:nerdfont#path#extension#customs = get(g:, 'nerdfont#path#extension#customs', {})
+  let g:nerdfont#path#extension#customs['html']     = nr2char(0xe736) " ''
+  let g:nerdfont#path#extension#customs['css']      = nr2char(0xe749) " ''
+  let g:nerdfont#path#extension#customs['markdown'] = nr2char(0xf48a) " ''
+  let g:nerdfont#path#extension#customs['md']       = nr2char(0xf48a) " ''
+  let g:nerdfont#path#extension#customs['txt']      = nr2char(0xf0f6) " ''
+
+  let g:nerdfont#path#basename#customs = get(g:, 'nerdfont#path#basename#customs', {})
+  let g:nerdfont#path#basename#customs['pipfile']   = nr2char(0xe73c) " ''
+'''
+
+[[plugins]]
+repo = 'lambdalisue/glyph-palette.vim'
+hook_add = '''
+  " custom glyph
+  let g:glyph_palette#palette = get(g:, 'glyph_palette#palette', copy(g:glyph_palette#defaults#palette))
+
+  let g:glyph_palette#palette['GlyphPalette3'] += [
+    \ nr2char(0xe736),
+    \ nr2char(0xe749),
+    \ nr2char(0xf48a),
+    \ nr2char(0xf0f6),
+    \ ]
+
+  augroup vimrc-init_nerdfont
+    autocmd!
+    autocmd FileType fern     call glyph_palette#apply()
+    autocmd FileType startify call glyph_palette#apply()
+  augroup END
 '''
 
 # currently off
@@ -3382,6 +3571,18 @@ hook_post_source = '''
 [[plugins]]
 repo = 'tsuyoshicho/lightline-lsp'
 depends = ['lightline.vim']
+hook_add = '''
+  let g:lightline#lsp#server_interval = 60
+
+  if has('gui_running')
+    let g:lightline#lsp#indicator_checking = "\uf110"
+    let g:lightline#lsp#indicator_warning = "\uf071"
+    let g:lightline#lsp#indicator_error = "\uf05e"
+    let g:lightline#lsp#indicator_information = "\uf05a"
+    let g:lightline#lsp#indicator_hint = "\uf0e5"
+    let g:lightline#lsp#indicator_ok = "\uf00c"
+  endif
+'''
 
 # lightline setting use lightline-delphinus
 # based on https://qiita.com/delphinus/items/af5809b587f2af0a9f7f
@@ -3430,9 +3631,9 @@ hook_post_source = '''
     \ 'active': {
     \   'left' : [
     \     [ 'mode', 'paste' ],
-    \     [ 'gitbranch', 'signify'],
+    \     [ 'gitbranch', 'signify', 'lsp_count'],
     \     [ 'filepath' ],
-    \     [ 'filename', 'method', 'lsp_status_error', 'lsp_status_warning', 'lsp_status_ok']
+    \     [ 'filename', 'method', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning']
     \   ],
     \   'right': [
     \     [ 'sky_color_clock' ],
@@ -3465,6 +3666,7 @@ hook_post_source = '''
     \   'currenttag':   'lightline#delphinus#components#currenttag',
     \   'gitgutter':    'lightline#delphinus#components#gitgutter',
     \   'signify':      'lightline#delphinus#components#signify',
+    \   'lsp_count':    'lightline#lsp#count',
     \   'method':       'NearestMethodOrFunction',
     \   'anzu':         'anzu#search_status',
     \   'gitbranch':    'Lightline_components_gina',
@@ -3480,9 +3682,6 @@ hook_post_source = '''
     \   'fileencoding': 0,
     \ },
     \ 'component_expand': {
-    \   'ale_error':          'lightline#delphinus#components#ale_error',
-    \   'ale_warning':        'lightline#delphinus#components#ale_warning',
-    \   'ale_ok':             'lightline#delphinus#components#ale_ok',
     \   'lsp_status_error':   'lightline#lsp#status_error',
     \   'lsp_status_warning': 'lightline#lsp#status_warning',
     \   'lsp_status_ok':      'lightline#lsp#status_ok',
@@ -3491,9 +3690,9 @@ hook_post_source = '''
     \   'bufferafter':        'lightline#buffer#bufferafter',
     \ },
     \ 'component_type': {
-    \   'ale_error':     'error',
-    \   'ale_warning':   'warning',
-    \   'ale_ok':        'ok',
+    \   'lsp_status_error':     'error',
+    \   'lsp_status_warning':   'warning',
+    \   'lsp_status_ok':        'ok',
     \   'buffercurrent': 'tabsel',
     \   'bufferbefore':  'raw',
     \   'bufferafter':   'raw',
@@ -3563,17 +3762,18 @@ hook_add = '''
   " g:nd_themes setting template
   if has('gui_running')
     let g:nd_themes = [
-      \ ['sunrise+0',   'gruvbox-material', 'light', 'gruvbox_material'],
+      \ ['sunrise+0',   'solarized8',       'light', 'solarized_improved'],
       \ ['sunrise+1/2', 'iceberg',          'light', 'iceberg'],
-      \ ['sunset+0',    'forest-night',     'dark',  'forest_night'],
+      \ ['sunset+0',    'gruvbox-material', 'dark',  'gruvbox_material'],
       \ ['sunset+1/3',  'rigel',            'dark',  'rigel'],
       \ ['sunset+2/3',  'iceberg',          'dark',  'icebergDark'],
       \]
   else
     " gruvbox,iceberg
     let g:nd_themes = [
-      \ ['sunrise+0', 'gruvbox-material',   'dark',  'gruvbox_material'],
-      \ ['sunset+0',  'iceberg',            'dark',  'icebergDark'],
+      \ ['sunrise+0',   'rigel',            'dark',  'rigel'],
+      \ ['sunrise+1/2', 'iceberg',          'dark',  'icebergDark'],
+      \ ['sunset+0',    'noctu',            'dark',  'icebergDark'],
       \]
   endif
 
@@ -3657,11 +3857,24 @@ hook_post_source = '''
   map mJ <Plug>(columnskip:first-nonblank:next)
 '''
 
+# [[plugins]]
+# repo = 'haya14busa/vim-edgemotion'
+# hook_post_source = '''
+#   " map <C-j> <Plug>(edgemotion-j)
+#   " map <C-k> <Plug>(edgemotion-k)
+#
+#   map <Leader><C-j> <Plug>(edgemotion-j)
+#   map <Leader><C-k> <Plug>(edgemotion-k)
+# '''
+
 [[plugins]]
 repo = 'bronson/vim-trailing-whitespace'
 hook_add = '''
   let g:extra_whitespace_ignored_filetypes = ['markdown', 'startify', 'nerdtree', 'tagbar', 'unite']
 '''
+
+[[plugins]]
+repo = 'lambdalisue/trimmer.vim'
 
 [[plugins]]
 repo = 'thinca/vim-zenspace'
@@ -4104,16 +4317,6 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'haya14busa/vim-edgemotion'
-hook_post_source = '''
-  " map <C-j> <Plug>(edgemotion-j)
-  " map <C-k> <Plug>(edgemotion-k)
-
-  map <Leader><C-j> <Plug>(edgemotion-j)
-  map <Leader><C-k> <Plug>(edgemotion-k)
-'''
-
-[[plugins]]
 repo = 'kana/vim-niceblock'
 
 [[plugins]]
@@ -4504,37 +4707,37 @@ hook_post_source = '''
   nnoremap <silent><expr> [fzf]m ':' . <SID>fzf_command('Mark')    . '<CR>'
 '''
 
-[[plugins]] # fzf
-repo = 'yuki-ycino/fzf-preview.vim'
-depends = ['fzf', 'vim-devicons']
-hook_add = '''
-  " filelist preview
-  if executable('bat')
-    let g:fzf_preview_command = 'bat --color=always --style=grid {-1}'
-  else
-    let g:fzf_preview_command = 'head -100 {-1}'
-  endif
-
-  " filelist command
-  " let g:fzf_preview_filelist_command
-  " grep command
-  " let g:fzf_preview_grep_cmd
-
-  " filelist post process
-  if executable('exa')
-    let g:fzf_preview_filelist_postprocess_command = 'xargs -d "\n" exa --color=always'
-  else
-    let g:fzf_preview_filelist_postprocess_command = ''
-  endif
-
-  " Use vim-devicons
-  let g:fzf_preview_use_dev_icons = 1
-
-  if g:user.system.windows
-    let g:fzf_preview_use_floating_window = 0
-    let g:fzf_preview_layout = 'top split new'
-  endif
-'''
+# [[plugins]] # fzf
+# repo = 'yuki-ycino/fzf-preview.vim'
+# depends = ['fzf', 'vim-devicons']
+# hook_add = '''
+#   " filelist preview
+#   if executable('bat')
+#     let g:fzf_preview_command = 'bat --color=always --style=grid {-1}'
+#   else
+#     let g:fzf_preview_command = 'head -100 {-1}'
+#   endif
+#
+#   " filelist command
+#   " let g:fzf_preview_filelist_command
+#   " grep command
+#   " let g:fzf_preview_grep_cmd
+#
+#   " filelist post process
+#   if executable('exa')
+#     let g:fzf_preview_filelist_postprocess_command = 'xargs -d "\n" exa --color=always'
+#   else
+#     let g:fzf_preview_filelist_postprocess_command = ''
+#   endif
+#
+#   " Use vim-devicons
+#   let g:fzf_preview_use_dev_icons = 1
+#
+#   if g:user.system.windows
+#     let g:fzf_preview_use_floating_window = 0
+#     let g:fzf_preview_layout = 'top split new'
+#   endif
+# '''
 
 [[plugins]] # fzf
 repo = 'n04ln/yankee.vim'

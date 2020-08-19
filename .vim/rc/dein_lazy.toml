@@ -162,7 +162,7 @@ hook_add = '''
     \    {
     \       'book'       : g:user.dir.dictionary . '/FreePWING/EIJIRO',
     \       'name'       : 'eijiro',
-    \       'title'      : '英辞郎 Ver.144.6',
+    \       'title'      : '英辞郎 Ver.144.8',
     \       'skip'       : 0,
     \    },
     \    {
@@ -348,9 +348,7 @@ hook_add = '''
   let g:Lf_UseCache = 1
   let g:Lf_CacheDirectory = expand(g:user.dir.cache_home . '/ctrlp')
 
-  if executable('files')
-    let g:Lf_ExternalCommand = 'files -a "%s"'
-  elseif executable('jvgrep')
+  if executable('jvgrep')
     let g:Lf_DefaultExternalTool = 'jvgrep'
     let g:Lf_ExternalCommand = 'jvgrep --no-color -Rril "" "%s"'
   elseif executable('pt')
@@ -362,6 +360,12 @@ hook_add = '''
   else
     let g:Lf_DefaultExternalTool = ''
   endif
+
+  " overwrite external command if files exists
+  " currently windows not work, disabled
+  " if executable('files')
+  "   let g:Lf_ExternalCommand = 'files -a "%s"'
+  " endif
 
   if has_key(g:, 'Lf_ExternalCommand')
     let g:Lf_UseCache = 0
@@ -386,8 +390,9 @@ hook_add = '''
   autocmd MyAutoGroup VimEnter,VimResized * let g:Lf_PopupHeight = max([(&lines   * 3)/4, 15])
 
   " mapping
-  let g:Lf_ShortcutF = '<Leader>F'
-  let g:Lf_ShortcutB = '<Leader>B'
+  " conflict workaround : prefix <Leader>L as LeaderF
+  let g:Lf_ShortcutF = '<Leader>Lf'
+  let g:Lf_ShortcutB = '<Leader>Lb'
 '''
 hook_post_source = '''
   let s:List     = g:V.import('Data.List')
@@ -579,11 +584,21 @@ on_cmd = ['Sayonara']
 
 [[plugins]]
 repo = 'rbtnn/vim-mru'
+depends = ['vim-altercmd']
 on_cmd = ['MRU']
+hook_post_source = '''
+  AlterCommand        mru MRU
+  AlterCommand cmdwin mru MRU
+'''
 
 [[plugins]]
 repo = 'rbtnn/vim-mrw'
+depends = ['vim-altercmd']
 on_cmd = ['MRW']
+hook_post_source = '''
+  AlterCommand        mrw MRW
+  AlterCommand cmdwin mrw MRW
+'''
 
 [[plugins]]
 repo = 'tyru/capture.vim'
@@ -891,13 +906,30 @@ repo = 'ap/vim-css-color'
 on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'vim', 'xdefaults', 'xml', 'yaml']
 
 [[plugins]]
+repo = 'hail2u/vim-css3-syntax'
+on_ft = ['css']
+hook_add = '''
+  augroup MyAutoGroup
+    autocmd FileType css setlocal iskeyword+=-
+  augroup END
+'''
+
+[[plugins]]
 repo = 'cakebaker/scss-syntax.vim'
 on_ft = ['scss']
+
+[[plugins]]
+repo = 'othree/html5.vim'
+on_ft = ['html']
 
 [[plugins]]
 repo = 'relastle/vim-nayvy'
 on_ft = ['python']
 # work require pyflakes,fzf(fzf vim plugin)
+
+[[plugins]]
+repo = 'hynek/vim-python-pep8-indent'
+on_ft = ['python']
 
 [[plugins]]
 repo = 'udalov/kotlin-vim'
@@ -946,5 +978,9 @@ on_ft = ['cmake']
 [[plugins]]
 repo = 'marshallward/vim-restructuredtext'
 on_ft = ['rst']
+
+[[plugins]]
+repo = 'alcesleo/vim-uppercase-sql'
+on_ft = ['sql']
 
 # EOF

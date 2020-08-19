@@ -37,7 +37,7 @@ if s:is_windows && exists('&completeslash')
   set completeslash=slash
 endif
 
-" 初期値削除
+" 初期値削除(プラグインで設定もあるので、ここでやる)
 set tags=
 
 " <Leader>はプラグイン内でマッピングする際に展開してしまうので
@@ -287,6 +287,7 @@ set tagcase=followscs
 
 " inc/dec operation
 " 0123を10進扱いする、bin/hexは生かす
+set nrformats&
 set nrformats-=octal
 if has('patch-8.2.0860')
   " 符合なし
@@ -316,6 +317,9 @@ set concealcursor=nc
 " 自動インデントを有効化する
 set autoindent
 set smartindent
+" thanks lambdalisue
+set copyindent
+set preserveindent
 " 桁溢れインデントの設定
 set breakindent
 set breakindentopt=min:50,shift:4,sbr
@@ -339,6 +343,8 @@ set expandtab
 set tabstop=8
 " タブの値 (自動インデントの幅)
 set shiftwidth=2
+" thanks lambdalisue
+set shiftround
 " ソフトタブ展開数 (0は無効、-1はshiftwidthに同じ)
 set softtabstop=-1
 " 行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけに整理される
@@ -370,11 +376,17 @@ set backspace=indent,eol,start
 
 " Diff. {{{
 " based on http://nanasi.jp/articles/howto/diff/diffopt.html
-set diffopt=internal
-set diffopt+=vertical
-set diffopt+=filler
-set diffopt+=indent-heuristic
-set diffopt+=algorithm:histogram
+" thanks lambdalisue
+if has('vim-8.0.1361') || has('nvim')
+  set diffopt&
+    \ diffopt+=internal
+    \ diffopt+=filler
+    \ diffopt+=closeoff
+    \ diffopt+=vertical
+    \ diffopt+=hiddenoff
+    \ diffopt+=indent-heuristic
+    \ diffopt+=algorithm:histogram
+endif
 
 " }}}
 
@@ -586,9 +598,10 @@ set lazyredraw
 " ターミナルのタイトルをセットする
 set title
 " intro off
-set shortmess+=I
 " complete msg off
-set shortmess+=c
+set shortmess&
+  \ shortmess+=I
+  \ shortmess+=c
 
 " モード表示
 set showmode
@@ -739,8 +752,7 @@ set statusline=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V
 " set conceallevel=2
 
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
-set display=lastline
-set display+=uhex
+set display=lastline,uhex
 set synmaxcol=512
 
 " }}}
@@ -889,9 +901,13 @@ augroup END
 " endif
 
 set ttyfast
-set ttimeout
 " based on https://qiita.com/k2nakamura/items/fa19806a041d0429fc9f
-set ttimeoutlen=10
+" Do not wait more than 100 ms for keys
+" thanks lambdalisue
+set timeout
+set ttimeout
+set ttimeoutlen=100
+
 " }}}
 
 " Others. {{{
@@ -911,12 +927,20 @@ set ttimeoutlen=10
 " ビジュアルベル
 " set visualbell
 " based on https://postd.cc/vim-galore-4/
-set belloff=all
+" Disable annoying bells
+" thanks lambdalisue
+set noerrorbells
+set novisualbell t_vb=
+if exists('&belloff')
+  set belloff=all
+endif
 
 " フォーマットを有効にする
-set formatoptions=tcmBjroq2l
+set formatoptions=tcmBjroq2l]
 
-set matchpairs+=<:>
+" reset matchparis
+set matchpairs&
+  \  matchpairs+=<:>
 
 " updatetime need plugin setting
 " let &updatetime=??
@@ -929,24 +953,30 @@ set matchpairs+=<:>
 autocmd MyAutoGroup FileType * nested if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
 
 " 補完設定
-" set complete as default
-set complete&
 " based on https://postd.cc/vim-galore-4/
 " fast search
-set complete-=i   " disable scanning included files
-set complete-=t   " disable searching tags
+" set complete as default
+" disable scanning included files
+" disable searching tags
+set complete&
+  \ complete-=i
+  \ complete-=t
 
-set completeopt=menuone,noselect,noinsert
-set completeopt+=preview
+" base menuone or menu
+set completeopt=menuone
 if has('patch-8.1.1882')
-  set completeopt-=preview
   set completeopt+=popup
+else
+  set completeopt+=preview
 endif
+set completeopt+=noselect
+set completeopt+=noinsert
 
 " ファイルパスの@を利用可能にする
-set isfname+=@-@
 " = は使われないはずなので除外
-set isfname-==
+set isfname&
+  \ isfname+=@-@
+  \ isfname-==
 
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set pumheight=10
@@ -954,6 +984,8 @@ set pumwidth=20
 set wildmenu
 set wildmode=longest:full,full
 set wildignorecase
+" add char/charm need wilder.nvim
+set wildcharm=<Tab>
 
 " 辞書
 " see http://nanasi.jp/articles/howto/config/dictionary.html
@@ -968,8 +1000,12 @@ endif
 
 " spell check
 set spell
+" add spell completion
 set complete+=kspell
 set spelllang=en_us,cjk
+if exists('+spelloptions')
+  set spelloptions=camel
+endif
 let &spellfile = expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')
 autocmd MyAutoGroup VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
@@ -982,6 +1018,7 @@ endif
 if filereadable(s:thesaurus)
   let &thesaurus = s:thesaurus
 endif
+" add thesaurus completion
 set complete+=s
 
 " based on http://koturn.hatenablog.com/entry/2018/02/10/170000
@@ -1095,7 +1132,8 @@ autocmd MyAutoGroup VimEnter * nested call s:imap_setup()
 " Clipboard. {{{
 " based on https://qiita.com/janus_wel/items/86082f69190f40df09e8
 " and http://pocke.hatenablog.com/entry/2014/10/26/145646
-if has('clipboard') && (has('gui') || has('xterm_clipboard'))
+let s:clipboard = has('clipboard')
+if s:clipboard && (has('gui') || has('xterm_clipboard'))
   set clipboard&
   if g:user.system.windows
     set clipboard^=unnamed
@@ -1115,7 +1153,7 @@ endif
 function! s:clip_text(data) abort " {{{
   let @0=a:data
   let @"=a:data
-  if has('clipboard')
+  if s:clipboard
     let @*=a:data
   endif
 endfunction " }}}
@@ -1129,7 +1167,9 @@ nnoremap <C-g> :call <SID>clip_text(fnamemodify(expand('%'), ':p'))<CR><C-g>
 " http://qiita.com/msmhrt/items/486658cd251302e2edf6
 " keep default : https://ysk24ok.github.io/2017/02/05/vim_256color.html
 
-let s:saved_t_Co=&t_Co
+if !exists('s:saved_t_Co')
+  let s:saved_t_Co=&t_Co
+endif
 
 " 256色モード at console
 if !has('gui_running')
@@ -1156,7 +1196,9 @@ if !has('gui_running')
 
     " https://conemu.github.io/en/VimXterm.html#Vim-scrolling-using-mouse-Wheel
     " with mouse
-    set mouse=a
+    " set mouse=a
+    " thanks lambdalisue
+    set mouse=nvchr
   elseif (has('vtp') && has('vcon'))
     " Windows 10 color enable
     " currently off true color
@@ -1182,23 +1224,23 @@ augroup MyAutoGroup
   " vimdiff config
   " http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
   " vimdiffの色設定
-  " autocmd ColorScheme * nested highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
-  " autocmd ColorScheme * nested highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
-  " autocmd ColorScheme * nested highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
-  " autocmd ColorScheme * nested highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
+  " autocmd ColorScheme,VimEnter * nested highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
+  " autocmd ColorScheme,VimEnter * nested highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
+  " autocmd ColorScheme,VimEnter * nested highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
+  " autocmd ColorScheme,VimEnter * nested highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
 
   " based on https://thinca.hatenablog.com/entry/20160214/1455415240
-  " autocmd ColorScheme * nested highlight ZenSpace ctermbg=Red guibg=Red
+  " autocmd ColorScheme,VimEnter * nested highlight ZenSpace ctermbg=Red guibg=Red
 
   " based on http://secret-garden.hatenablog.com/entry/2016/08/16/000149
-  autocmd ColorScheme * nested highlight link EndOfBuffer Ignore
+  autocmd ColorScheme,VimEnter * nested highlight link EndOfBuffer Ignore
 
   " based on http://qiita.com/svjunic/items/f987d51ed3fc078fa27e
   " based on http://d.hatena.ne.jp/ryochack/20111029/1319913548
   " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 
-  " autocmd ColorScheme * nested highlight Comment ctermfg=103
-  " autocmd ColorScheme * nested highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
+  " autocmd ColorScheme,VimEnter * nested highlight Comment ctermfg=103
+  " autocmd ColorScheme,VimEnter * nested highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
 
   " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 
@@ -1326,7 +1368,7 @@ if has('iconv')
     let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
     " let &fileencodings = &fileencodings .','. s:fileencodings_default
     " 今はUTF-8が基本なので調整
-    let &fileencodings = 'ucs-bom,utf-8,' . &fileencodings . ',default,latin1'
+    let &fileencodings = 'ucs-bom,utf-8,' . &fileencodings . 'utf-16,utf-16le,default,cp1250,latin1'
     unlet s:fileencodings_default
   else
     let &fileencodings = &fileencodings .','. s:enc_jis
@@ -1355,6 +1397,10 @@ if has('autocmd')
   endfunction " }}}
   autocmd MyAutoGroup BufReadPost * nested call AU_ReCheck_FENC()
 endif
+
+" " simplify
+" set fileencodings=ucs-bom,utf-8,euc-jp,iso-2022-jp,cp932,utf-16,utf-16le,default,cp1250,latin1
+
 " 改行コードの自動認識
 if g:user.system.windows
   set fileformats=dos,unix,mac
@@ -1365,7 +1411,9 @@ endif
 if exists('&ambiwidth')
   " set ambiwidth=double
   " 有用だがlightlineのpowerlineフォント設定とぶつかるので、外す(singleとする)
-  set ambiwidth=single
+  " thanks lambdalisue
+  set emoji               " use double in unicode emoji characters
+  set ambiwidth=single    " use single in ambiguous characters
   " GUIは平気なので、gvimrcでdoubleに上書きしている
 endif
 " }}}
@@ -1462,6 +1510,8 @@ nnoremap o A<CR>
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
+" thanks lambdalisue and ku/thinca
+vnoremap v <Esc>0v$
 nnoremap Y y$
 
 " x,s でレジスタを汚染しない
@@ -1537,8 +1587,11 @@ cnoremap <c-a> <Home>
 " use anzu plugin and setting aggregate
 
 " 先頭が現在のコマンドラインと一致するコマンドラインを呼び出し
-cnoremap <c-n>  <down>
-cnoremap <c-p>  <up>
+" thanks lambdalisue
+cnoremap <C-p>  <Up>
+cnoremap <C-n>  <Down>
+cnoremap <Up>   <C-p>
+cnoremap <Down> <C-n>
 
 " 念のため、pasteモードのトグルの設定はする
 " set pastetoggle=<F12>
@@ -1621,6 +1674,14 @@ let g:zipPlugin_ext = '*.zip'
 " netrw {{{
 " based on http://blog.tojiru.net/article/234400966.html
 
+" Disable netrw
+let g:loaded_netrw             = 1
+let g:loaded_netrwPlugin       = 1
+let g:loaded_netrwSettings     = 1
+let g:loaded_netrwFileHandlers = 1
+
+" -- setting --
+
 " netrwは常にtree view
 let g:netrw_liststyle = 3
 
@@ -1644,7 +1705,8 @@ let g:netrw_altv = 1
 let g:netrw_alto = 1
 " }}}
 
-" Kaoriya Plugin(とりあえずOff)設定 {{{
+" Kaoriya Plugin {{{
+" (とりあえずOff)設定
 " http://kaworu.jpn.org/vim/Windows%E3%81%ABvim%E3%81%AE%E7%92%B0%E5%A2%83%E3%82%92%E6%A7%8B%E7%AF%89%E3%81%99%E3%82%8B%E6%96%B9%E6%B3%95#KaoriYa.E7.89.88Vim.E3.81.AE.E3.83.80.E3.82.A6.E3.83.B3.E3.83.AD.E3.83.BC.E3.83.89
 if has('kaoriya')
   let g:no_vimrc_example         = 0
@@ -1770,6 +1832,16 @@ function! SmartDrop(tabedit_args) abort " {{{
   endif
   silent execute drop_cmd . a:tabedit_args
 endfunction " }}}
+
+" thanks lambdalisue
+" keep wait import from
+" create dir if nothing
+" s:auto_mkdir
+" https://github.com/lambdalisue/dotfiles/blob/02549431364232b051cc8bdb5b124e9e75256a6b/nvim/init.vim#L422-L449
+"
+" clear register data
+" s:clear_register()
+" https://github.com/lambdalisue/dotfiles/blob/02549431364232b051cc8bdb5b124e9e75256a6b/nvim/init.vim#L500-L506
 
 " }}}
 
