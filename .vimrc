@@ -24,6 +24,7 @@ augroup END
 " Windows check
 let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
 let s:is_cygwin  = has('win32unix')
+let s:is_mac     = has('mac')
 
 " }}}
 
@@ -33,7 +34,9 @@ let s:is_cygwin  = has('win32unix')
 " if s:is_windows
 "   set shellslash
 " endif
-if s:is_windows && exists('&completeslash')
+" fern need completeslash is default value(in vim bug)
+" need not non-file buffer enter, enable it
+if s:is_windows && exists('+completeslash')
   set completeslash=slash
 endif
 
@@ -58,6 +61,46 @@ let g:user = {}
 let g:user.name     = 'Tsuyoshi CHO'
 let g:user.email    = 'Tsuyoshi.CHO@Gmail.com'
 let g:user.devemail = 'Tsuyoshi.CHO+develop@Gmail.com'
+
+" common function
+let g:user.function = {}
+function! g:user.function.mkdir(dir) abort
+  if !isdirectory(a:dir)
+    call mkdir(a:dir, 'p')
+  endif
+endfunction
+
+function! g:user.function.dllsearch(cmd, relpath, dllglob) abort
+  if executable(a:cmd)
+    let path = exepath(a:cmd)
+    " unstable globpath?
+    let dll = glob(fnamemodify(path, ':h') . '/' . a:relpath . '/' . a:dllglob,   v:false,  v:true)
+    if len(dll) > 0
+      return fnamemodify(dll[0], ':p')
+    else
+      return ''
+    endif
+  endif
+endfunction
+
+" dll setup
+if has('python3_dynamic')
+  " unstable
+  let s:pycmd     = 'python3'
+  let s:pyrelpath = '../lib'
+  let s:pydllglob = 'libpython3*.so'
+  if s:is_windows
+    let s:pycmd     = 'python'
+    let s:pyrelpath = '.'
+    let s:pydllglob = 'python3?*.dll'
+  elseif s:is_mac
+    " unstable
+    let s:pydllglob = 'libpython3*.dylib'
+  endif
+
+  let &pythonthreedll = g:user.function.dllsearch(s:pycmd, s:pyrelpath, s:pydllglob)
+  unlet s:pycmd s:pyrelpath s:pydllglob
+endif
 
 let g:user.template = {}
 let g:user.template.colorscheme = {
@@ -130,14 +173,29 @@ endif
 
 let g:user.dir = {}
 let g:user.dir.vim         = expand($HOME . '/.vim')
+
+let g:user.dir.undo    = g:user.dir.vim . '/undo'
+let g:user.dir.backup  = g:user.dir.vim . '/backup'
+let g:user.dir.swap    = g:user.dir.vim . '/swap'
+let g:user.dir.view    = g:user.dir.vim . '/view'
+call g:user.function.mkdir(g:user.dir.undo  )
+call g:user.function.mkdir(g:user.dir.backup)
+call g:user.function.mkdir(g:user.dir.swap  )
+call g:user.function.mkdir(g:user.dir.view  )
+
 let g:user.dir.cache_home  = empty($XDG_CACHE_HOME)  ? expand($HOME . '/.cache')       : expand($XDG_CACHE_HOME)
 let g:user.dir.config_home = empty($XDG_CONFIG_HOME) ? expand($HOME . '/.config')      : expand($XDG_CONFIG_HOME)
 let g:user.dir.data_home   = empty($XDG_DATA_HOME)   ? expand($HOME . '/.local/share') : expand($XDG_DATA_HOME)
+call g:user.function.mkdir(g:user.dir.cache_home )
+call g:user.function.mkdir(g:user.dir.config_home)
+call g:user.function.mkdir(g:user.dir.data_home  )
 
 let g:user.system = {}
 let g:user.system.windows = s:is_windows ? v:true : v:false
 let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
-unlet s:is_windows s:is_cygwin
+let g:user.system.mac     = s:is_mac     ? v:true : v:false
+
+unlet s:is_windows s:is_cygwin s:is_mac
 let g:user.system.arch = 'x86_64' " heuristic
 if exists('$NUMBER_OF_PROCESSORS')
   if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
@@ -197,6 +255,7 @@ let g:dein.file = {}
 
 " プラグインが実際にインストールされるディレクトリ
 let g:dein.dir.plugins = expand(g:user.dir.cache_home . '/dein')
+call g:user.function.mkdir(g:dein.dir.plugins)
 " 問題がある時用固定パス
 " let g:dein.dir.plugins = expand('~/.cache/dein')
 
@@ -422,7 +481,7 @@ nnoremap <silent> <Leader><C-[> :pop<CR>
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  let &undodir = g:user.dir.vim . '/undo'
+  let &undodir = g:user.dir.undo
   set undofile
   " set undolevels=1000 " default
 endif
@@ -440,7 +499,7 @@ set confirm
 
 " バックアップファイルを作らない
 set nobackup
-let &backupdir = g:user.dir.vim . '/backup//'  " // use fullpath
+let &backupdir = g:user.dir.backup . '//'  " // use fullpath
 
 " backupは上書き時だけつくって、成功で削除
 " from https://github.com/cohama/.vim/blob/master/init.vim
@@ -450,7 +509,7 @@ set nowritebackup
 " スワップファイルを作らない -> 作るがROで対応
 " -> thinca さんのIFを移植(ROでコマンドでRecover/Delete)
 " set noswapfile
-let &directory = g:user.dir.vim . '/swap//'  " // use fullpath
+let &directory = g:user.dir.swap . '//'  " // use fullpath
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 " autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
 
@@ -667,7 +726,7 @@ augroup MyAutoGroup
   " based on https://postd.cc/vim-galore-4/
   " edit off
   " if cursorlineopt support: Enter only show number/Leave show both
-  if exists('&cursorlineopt')
+  if exists('+cursorlineopt')
     autocmd InsertEnter * nested setlocal cursorlineopt=number
     autocmd InsertLeave * nested setlocal cursorlineopt=both
   else
@@ -758,7 +817,7 @@ set synmaxcol=512
 " }}}
 
 " View. {{{
-let &viewdir = g:user.dir.vim . '/view'
+let &viewdir = g:user.dir.view
 " " from muramount/conf_files
 " " ファイル全般に設定
 " " augroup General
@@ -931,9 +990,7 @@ set ttimeoutlen=100
 " thanks lambdalisue
 set noerrorbells
 set novisualbell t_vb=
-if exists('&belloff')
-  set belloff=all
-endif
+set belloff=all
 
 " フォーマットを有効にする
 set formatoptions=tcmBjroq2l]
@@ -1408,14 +1465,12 @@ else
   set fileformats=unix,dos,mac
 endif
 " □とか○の文字があってもカーソル位置がずれないようにする
-if exists('&ambiwidth')
-  " set ambiwidth=double
-  " 有用だがlightlineのpowerlineフォント設定とぶつかるので、外す(singleとする)
-  " thanks lambdalisue
-  set emoji               " use double in unicode emoji characters
-  set ambiwidth=single    " use single in ambiguous characters
-  " GUIは平気なので、gvimrcでdoubleに上書きしている
-endif
+" set ambiwidth=double
+" 有用だがlightlineのpowerlineフォント設定とぶつかるので、外す(singleとする)
+" thanks lambdalisue
+set emoji               " use double in unicode emoji characters
+set ambiwidth=single    " use single in ambiguous characters
+" GUIは平気なので、gvimrcでdoubleに上書きしている
 " }}}
 
 " FileType detecion. {{{
@@ -1455,7 +1510,7 @@ augroup END
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
 " Tab op key.
 nnoremap    [Tab] <Nop>
-if exists('g:clever_f_not_overwrites_standard_mappings') && g:clever_f_not_overwrites_standard_mappings
+if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#tap('vim-eft')
   " overwrite stop : use t
   nmap    t [Tab]
 else
@@ -1492,6 +1547,12 @@ vnoremap <DOWN> gj
 " ctrlで行固定移動
 nnoremap <C-j> <C-e>j
 nnoremap <C-k> <C-y>k
+
+" 2文字で先頭/末尾移動
+noremap <Space>H 0
+noremap <Space>h ^
+noremap <Space>l g_
+noremap <Space>L $
 
 " speed save & exit
 nnoremap <space>w :w<CR>
@@ -1579,6 +1640,7 @@ vnoremap <S-Tab> <gv
 cnoremap <c-b> <S-Left>
 cnoremap <c-f> <S-Right>
 cnoremap <c-a> <Home>
+" cnoremap <c-e> <End> is default mapping
 
 " based on https://postd.cc/vim-galore-4/
 " nを前方へ、Nを後方へと固定

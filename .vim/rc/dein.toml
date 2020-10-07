@@ -1,7 +1,11 @@
 # based on http://qiita.com/kawaz/items/ee725f6214f91337b42b
 [[plugins]]
 repo = 'Shougo/dein.vim'
+merged = 0
 hook_add = '''
+  " dein fixed setting in vimrc
+  " if try branch, manual `git switch` needed
+
   " setting for dein
 
   " process
@@ -15,6 +19,20 @@ hook_add = '''
   else
     " non windows x2
     let g:dein#install_max_processes = g:dein#install_max_processes * 2
+  endif
+'''
+hook_post_source = '''
+  " dein no depend trick(need vim-pass)
+  if dein#tap('vim-pass')
+    function! s:dein_token_set() abort
+      let g:dein#install_github_api_token = pass#get('Develop/Github')
+    endfunction
+
+    call timer_start(0, { -> s:dein_token_set() })
+
+    command! DeinUpdateStart call dein#check_update(v:true)
+  else
+    command! DeinUpdateStart call dein#update()
   endif
 '''
 
@@ -288,13 +306,43 @@ hook_post_source = '''
 ##############
 [[plugins]]
 repo = 'lambdalisue/fern.vim'
+# depends = ['memolist.vim', 'junkfile.vim']
+hook_add = '''
+  " fern need completeslash is default value
+  function! s:fern_init() abort
+    setlocal nonumber
+    setlocal norelativenumber
+    setlocal foldcolumn=0
+    setlocal signcolumn=yes
+  endfunction
+
+  " let g:fern#loglevel = g:fern#DEBUG
+
+  augroup vimrc_init-fern
+    autocmd!
+    autocmd FileType fern nested call s:fern_init()
+  augroup END
+'''
 hook_post_source = '''
   " thanks lambdalisue
+  function! s:smart_path() abort
+    if !empty(&buftype) || bufname('%') =~# '^[^:]\+://'
+      return fnamemodify('.', ':p')
+    endif
+    return fnamemodify(expand('%'), ':p:h')
+  endfunction
+
   " conflict workaround : prefix <Leader>F as Fern
   nnoremap <silent> <Leader>Fb :<C-u>Fern bookmark:///<CR>
   nnoremap <silent> <Leader>Fe :<C-u>Fern <C-r>=<SID>smart_path()<CR> -reveal=%<CR>
   nnoremap <silent> <Leader>Ff :<C-u>Fern . -drawer -toggle -reveal=%<CR>
-  nnoremap <silent> <Leader>Fj :<C-u>Fern <C-r>=expand(g:junkfile#directory)<CR> -drawer -toggle -reveal=%<CR>
+  nnoremap <silent> <Leader>Ft :<C-u>Fern . -opener=tabedit -reveal=%<CR>
+  if exists('g:memolist_path')
+    nnoremap <silent> <Leader>Fm :<C-u>Fern <C-r>=expand(g:memolist_path)<CR> -drawer -toggle -reveal=%<CR>
+  endif
+  if exists('g:junkfile#directory')
+    nnoremap <silent> <Leader>Fj :<C-u>Fern <C-r>=expand(g:junkfile#directory)<CR> -drawer -toggle -reveal=%<CR>
+  endif
 '''
 
 [[plugins]]
@@ -308,6 +356,10 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 'lambdalisue/fern-hijack.vim'
+depends = ['fern.vim']
+
+[[plugins]]
 repo = 'lambdalisue/fern-comparator-lexical.vim'
 depends = ['fern.vim']
 hook_add = '''
@@ -317,54 +369,120 @@ hook_add = '''
 [[plugins]]
 repo = 'lambdalisue/fern-bookmark.vim'
 depends = ['fern.vim']
+hook_add = '''
+  let g:fern#scheme#bookmark#store#file = expand(g:user.dir.vim . '/bookmark.json')
+'''
+
+[[plugins]]
+repo = 'hrsh7th/fern-mapping-call-function.vim'
+depends = ['fern.vim']
+hook_add = '''
+  function! s:setup_fern() abort
+    " Map to your custom function.
+    " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
+  endfunction
+
+  augroup vimrc_init-fern-funcall
+    autocmd!
+    autocmd! FileType fern call s:setup_fern()
+  augroup END
+'''
+hook_post_source = '''
+  " Add your custom function to mapping.
+  " function! s:fern_project_top(helper) abort
+  "   let l:node = a:helper.sync.get_current_node()
+  "   let l:proj = s:detect_project_root(l:node._path)
+  "   execute printf('Fern %s', fnameescape(l:proj))
+  " endfunction
+  " :w
+
+  " call fern#mapping#call_function#add('project_top', function('s:fern_project_top'))
+'''
+
+[[plugins]]
+repo = 'hrsh7th/fern-mapping-collapse-or-leave.vim'
+depends = ['fern.vim']
+# I need root change and tcd with this and expand
 
 [[plugins]]
 repo = 'lambdalisue/fern-mapping-project-top.vim'
+depends = ['fern.vim']
+hook_add = '''
+  function! s:fern_init_project_top() abort
+    nmap <buffer> ^ <Plug>(fern-action-project-top)
+  endfunction
+
+  augroup vimrc_init-fern
+    autocmd FileType fern nested call s:fern_init_project_top()
+  augroup END
+'''
+
+[[plugins]]
+repo = 'lambdalisue/fern-mapping-mark-children.vim'
+depends = ['fern.vim']
+
+[[plugins]]
+repo = 'lambdalisue/fern-mapping-quickfix.vim'
 depends = ['fern.vim']
 
 [[plugins]]
 repo = 'lambdalisue/fern-mapping-git.vim'
 depends = ['fern.vim']
 
-# too heavy, currently do not use
-# [[plugins]]
-# repo = 'lambdalisue/fern-git-status.vim'
-# depends = ['fern.vim']
+[[plugins]]
+repo = 'lambdalisue/fern-git-status.vim'
+depends = ['fern.vim']
+hook_add = '''
+  " Disable listing ignored files/directories
+  let g:fern_git_status#disable_ignored = 1
+
+  " Disable listing untracked files
+  let g:fern_git_status#disable_untracked = 1
+
+  " Disable listing status of submodules
+  " let g:fern_git_status#disable_submodules = 1
+
+  " Disable listing status of directories
+  " let g:fern_git_status#disable_directories = 1
+'''
 
 [[plugins]]
-repo = 'justinmk/vim-dirvish'
-hook_add = '''
-  nmap <Plug>(nomap-dirvish_up) <Plug>(dirvish_up)
+repo = 'lambdalisue/vim-protocol'
 
-  " need git support for 0
-  let g:dirvish_relative_paths = 1
-
-  augroup vimrc_init-dirvish
-    autocmd!
-
-    " re-map only dirvish
-    autocmd FileType dirvish nmap <silent><buffer>
-          \ - <Plug>(dirvish_up)
-
-    " Map `t` to open in new tab.
-    autocmd FileType dirvish
-          \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
-          \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
-
-    " Map `gr` to reload.
-    autocmd FileType dirvish nnoremap <silent><buffer>
-          \ gr :<C-U>Dirvish %<CR>
-
-    " Map `gh` to hide dot-prefixed files.  Press `R` to "toggle" (reload).
-    autocmd FileType dirvish nnoremap <silent><buffer>
-          \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>:setl cole=3<cr>
-  augroup END
-'''
-hook_post_source = '''
-  if has('gui_running')
-    call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
-  endif
-'''
+# [[plugins]]
+# repo = 'justinmk/vim-dirvish'
+# hook_add = '''
+#   nmap <Plug>(nomap-dirvish_up) <Plug>(dirvish_up)
+#
+#   " need git support for 0
+#   let g:dirvish_relative_paths = 1
+#
+#   augroup vimrc_init-dirvish
+#     autocmd!
+#
+#     " re-map only dirvish
+#     autocmd FileType dirvish nmap <silent><buffer>
+#          \ - <Plug>(dirvish_up)
+#
+#     " Map `t` to open in new tab.
+#     autocmd FileType dirvish
+#          \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
+#          \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
+#
+#     " Map `gr` to reload.
+#     autocmd FileType dirvish nnoremap <silent><buffer>
+#          \ gr :<C-U>Dirvish %<CR>
+#
+#     " Map `gh` to hide dot-prefixed files.  Press `R` to "toggle" (reload).
+#     autocmd FileType dirvish nnoremap <silent><buffer>
+#          \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>:setl cole=3<cr>
+#   augroup END
+# '''
+# hook_post_source = '''
+#   if has('gui_running')
+#     call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
+#   endif
+# '''
 
 # Utils
 ##############
@@ -390,7 +508,7 @@ hook_add = '''
 
 [[plugins]]
 repo = 'tsuyoshicho/vim-pass'
-rev  = 'develop'
+# rev  = 'develop'
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -705,6 +823,7 @@ repo = 'will133/vim-dirdiff'
 #
 #   " auto create dir in plugin
 #   let g:yankround_dir = expand(g:user.dir.cache_home . '/yankround')
+#   call g:user.function.mkdir(expand(g:yankround_dir))
 # '''
 # hook_post_source = '''
 #   " keymap
@@ -1169,6 +1288,11 @@ hook_add = '''
         \      ['Enable', 'Disable'],
         \      ['ENABLE', 'DISABLE'],
         \      ['left', 'right'],
+        \      ['Left', 'Right'],
+        \      ['LEFT', 'RIGHT'],
+        \      ['min', 'max'],
+        \      ['Min', 'Max'],
+        \      ['MIN', 'MAX'],
         \      ['=', ' = '],
         \      ['+', ' + '],
         \      ['-', ' - '],
@@ -1275,7 +1399,7 @@ hook_add = '''
   " let g:spelunker_disable_backquoted_checking = 1
 
   " Max amount of word suggestions. (default: 15)
-  autocmd MyAutoGroup VimEnter,VimResized * let g:spelunker_max_suggest_words = min([(&lines/4), 10])
+  autocmd MyAutoGroup VimEnter,VimResized * let g:spelunker_max_suggest_words = min([(&lines/4), 10]) - 1
 
   " Max amount of highlighted words in buffer. (default: 100)
   " let g:spelunker_max_hi_words_each_buf = 100
@@ -1381,15 +1505,26 @@ hook_add = '''
 # textobj
 # see http://d.hatena.ne.jp/osyo-manga/20130717/1374069987
 # support tool
-[[plugins]]
-repo = 'terryma/vim-expand-region'
-hook_post_source = '''
-  " conflict vim built-in v/C-V operation(switch normal/visual-submode)
-  " vmap v     <Plug>(expand_region_expand)
-  " vmap <C-v> <Plug>(expand_region_shrink)
-  vmap w     <Plug>(expand_region_expand)
-  vmap n     <Plug>(expand_region_shrink)
-'''
+# need more good config, temp off
+# [[plugins]]
+# repo = 'terryma/vim-expand-region'
+# hook_add = '''
+#   " set use textobj keymap
+#   " let g:expand_region_text_objects = {
+#   " need config
+#   "   \}
+#   " and other config for custom textobj
+# '''
+# hook_post_source = '''
+#   " conflict vim built-in v/C-V operation(switch normal/visual-submode)
+#   " vmap v     <Plug>(expand_region_expand)
+#   " vmap <C-v> <Plug>(expand_region_shrink)
+#   " do not work
+#   " vmap w     <Plug>(expand_region_expand)
+#   " omap w     <Plug>(expand_region_expand)
+#   " vmap n     <Plug>(expand_region_shrink)
+#   " omap n     <Plug>(expand_region_shrink)
+# '''
 
 # textobj のベース
 [[plugins]]
@@ -1723,6 +1858,12 @@ hook_add = '''
     \ },
     \]
 '''
+hook_post_source = '''
+  omap as <Plug>(textobj-sandwich-auto-a)
+  omap is <Plug>(textobj-sandwich-auto-i)
+  vmap as <Plug>(textobj-sandwich-auto-a)
+  vmap is <Plug>(textobj-sandwich-auto-i)
+'''
 
 # viwなど 選択状態にして<c-g>qで処理 強制改行
 [[plugins]]  # like gq operator
@@ -1872,7 +2013,7 @@ hook_post_source = '''
   let g:startify_commands = [
         \ {'h': ':help help'},
         \ {'r': ['Restart', 'Restart']},
-        \ {'u': ['Plugin update', 'Dein update']},
+        \ {'u': ['Plugin update', 'DeinUpdateStart']},
         \ {'l': ['CtrlP Launcher', 'CtrlPLauncher']},
         \ {'f': ['LeaderF file search', 'Leaderf file']},
         \ {'m': ['Mastodon', 'Mastodon timeline']},
@@ -2097,49 +2238,32 @@ repo = 'chrisbra/unicode.vim'
 
 [[plugins]] # カーソル位置のコンテキストのftを判定するライブラリ
 repo = 'Shougo/context_filetype.vim'
+# repo = 'tsuyoshicho/context_filetype.vim'
+# rev = 'develop'
 hook_post_source = '''
   let s:default_filetypes = g:context_filetype#default_filetypes()
 
   let s:plantuml_context = [
         \  {
-        \   'start' : '\_.\%(@startuml\)\@=',
-        \   'end' : '\%(@enduml\)\@<=\_.', 'filetype' : 'plantuml'
+        \   'start' : '\_.\%(@start\(uml\|gantt\|ditaa\|salt\|wbs\|mindmap\|math\|latex\)\)\@=',
+        \   'end' : '\%(@end\1\)\@<=\_.', 'filetype' : 'plantuml'
         \  },
+        \ ]
+
+      " currently broken
+  let s:yaml_context = [
         \  {
-        \   'start' : '\_.\%(@startgantt\)\@=',
-        \   'end' : '\%(@endgantt\)\@<=\_.', 'filetype' : 'plantuml'
-        \  },
-        \  {
-        \   'start' : '\_.\%(@startditaa\)\@=',
-        \   'end' : '\%(@endditaa\)\@<=\_.', 'filetype' : 'plantuml'
-        \  },
-        \  {
-        \   'start' : '\_.\%(@startdot\)\@=',
-        \   'end' : '\%(@enddot\)\@<=\_.', 'filetype' : 'plantuml'
-        \  },
-        \  {
-        \   'start' : '\_.\%(@startsalt\)\@=',
-        \   'end' : '\%(@endsalt\)\@<=\_.', 'filetype' : 'plantuml'
-        \  },
-        \  {
-        \   'start' : '\_.\%(@startwbs\)\@=',
-        \   'end' : '\%(@endwbs\)\@<=\_.', 'filetype' : 'plantuml'
-        \  },
-        \  {
-        \   'start' : '\_.\%(@startmindmap\)\@=',
-        \   'end' : '\%(@endmindmap\)\@<=\_.', 'filetype' : 'plantuml'
+        \   'start' : '\%^-\{3,}.*$',
+        \   'end' : '\_^-\{3,}.*$',
+        \   'filetype' : 'yaml'
         \  },
         \ ]
 
   for s:key in ['markdown','text']
-    if has_key(s:default_filetypes, s:key)
-      let g:context_filetype#filetypes[s:key] = extend(
-            \ s:plantuml_context,
-            \ s:default_filetypes[s:key]
-            \)
-    else
-      let g:context_filetype#filetypes[s:key] = s:plantuml_context
-    endif
+    let g:context_filetype#filetypes[s:key] = extend(
+      \ s:plantuml_context,
+      \ get(s:default_filetypes, s:key, [])
+      \)
   endfor
 
   " same as typename
@@ -2180,6 +2304,7 @@ hook_post_source = '''
 
   " usable define
   nnoremap <silent> <Leader>mp :<C-u>FgPt<CR>
+  " vnoremap <silent> <Leader>mp :<C-u>FgPt <need visual-select item><CR>
   nnoremap <silent> <Leader>ma :<C-u>FgAg<CR>
 '''
 
@@ -2303,6 +2428,7 @@ hook_post_source = '''
 repo = 'hrsh7th/vim-vsnip'
 hook_add = '''
   let g:vsnip_snippet_dir = expand(g:user.dir.config_home . '/snippet')
+  call g:user.function.mkdir(g:vsnip_snippet_dir)
 '''
 hook_post_source = '''
   " Expand
@@ -2332,7 +2458,7 @@ hook_add = '''
   " install path
   " ~/.local/share/vim-lsp-settings/
   let g:lsp_settings_servers_dir = expand(g:user.dir.data_home . '/vim-lsp-settings')
-  call mkdir(g:lsp_settings_servers_dir, 'p')
+  call g:user.function.mkdir(g:lsp_settings_servers_dir)
 
   " config
   " system-wide / per lsp server
@@ -2659,7 +2785,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emoji#get_source_options({
       \     'name': 'emoji',
-      \     'whitelist': ['*'],
+      \     'whitelist': ['markdown', 'text'],
       \     'completor': function('asyncomplete#sources#emoji#completor'),
       \   }))
   endif
@@ -2781,9 +2907,6 @@ hook_add = '''
     call g:lightline#update()
   endfunction
 
-  " # 検索の際に200[ms]のウェイトを入れる(1文字入力の度に検索結果がコロコロ変わるのが気に入らないため)
-  let g:ctrlp_lazy_update = 200
-
   let g:ctrlp_buffer_func = {
         \ 'enter': 'CtrlPEnter',
         \ 'exit' : 'CtrlPLeave'
@@ -2792,11 +2915,12 @@ hook_add = '''
   " based on https://kamiya555.github.io/2016/07/24/vim-ctrlp/
   " キャッシュディレクトリ
   let g:ctrlp_use_caching = 1
-  let g:ctrlp_cache_dir = expand($HOME) . '/.cache/ctrlp'
+  let g:ctrlp_cache_dir = expand(g:user.dir.cache_home . '/ctrlp')
+  call g:user.function.mkdir(g:ctrlp_cache_dir)
 
   " CtrlPのウィンドウ最大高さ
   autocmd MyAutoGroup VimEnter,VimResized *
-    \ let g:ctrlp_match_window = 'max:' . string(min([(&lines/3), 20]))
+    \ let g:ctrlp_match_window = 'max:' . string(min([(&lines/3), 20]) - 1)
 
   " 無視するディレクトリ
   " let g:ctrlp_custom_ignore = {
@@ -2859,18 +2983,34 @@ hook_post_source = '''
   let g:ctrlp_root_markers = s:List.concat([
     \ g:user.rootmarker.dirs,
     \ g:user.rootmarker.files])
+
+  " matcher
+  if dein#is_sourced('ctrlp-matchfuzzy') && exists('*matchfuzzy')
+    let g:ctrlp_match_func = {'match' : 'ctrlp_matchfuzzy#matcher'}
+    " fastest for built-in function
+    let g:ctrlp_lazy_update = 10
+  elseif dein#is_sourced('ctrlp-py-matcher') && has('python3')
+    " python2 deprecated
+    let g:ctrlp_match_func = {'match' : 'pymatcher#PyMatch'}
+    " fast but python call small heavy
+    let g:ctrlp_lazy_update = 20
+  else
+    " normal search more heavy
+    let g:ctrlp_lazy_update = 50
+  endif
 '''
+
+[[plugins]]
+repo = 'mattn/ctrlp-matchfuzzy'
+merged = 0
+depends = ['ctrlp.vim']
+# config in ctrlp.vim
 
 [[plugins]]
 repo = 'FelikZ/ctrlp-py-matcher'
 merged = 0
 depends = ['ctrlp.vim']
-hook_add = '''
-  " python2 deprecated
-  if has('python3')
-    let g:ctrlp_match_func = {'match' : 'pymatcher#PyMatch'}
-  endif
-'''
+# config in ctrlp.vim
 
 [[plugins]] # based on https://blog.kaneshin.co/entry/vim-advent-calendar-2012
 repo = 'kaneshin/ctrlp-git-log'
@@ -3104,70 +3244,20 @@ hook_add = '''
     let g:quickrun_config['cpp'] = extend({
     \  'type' : 'cpp/clang++',
     \}, get(g:quickrun_config, 'cpp', {}), "keep")
-
-    " Until PR merge, temp fix
-    let g:quickrun_config['cpp/clang++'] = extend({
-      \   'command': 'clang++',
-      \   'exec':
-      \     g:user.system.windows
-      \      ? ['%c %o %s -o %s:p:r.exe', '%s:p:r %a']
-      \      : ['%c %o %s -o %s:p:r', '%s:p:r %a'],
-      \   'tempfile': '%{tempname()}.cpp',
-      \   'hook/sweep/files':
-      \     g:user.system.windows
-      \      ? ['%S:p:r.exe']
-      \      : ['%S:p:r'],
-      \}, get(g:quickrun_config, 'cpp/clang++', {}), "keep")
   elseif executable('g++')
     let g:quickrun_config['cpp'] = extend({
     \  'type' : 'cpp/g++',
     \}, get(g:quickrun_config, 'cpp', {}), "keep")
-
-    " Until PR merge, temp fix
-    let g:quickrun_config['cpp/g++'] = extend({
-      \   'command': 'g++',
-      \   'exec': ['%c %o %s -o %s:p:r', '%s:p:r %a'],
-      \   'tempfile': '%{tempname()}.cpp',
-      \   'hook/sweep/files':
-      \     g:user.system.windows
-      \      ? ['%S:p:r.exe']
-      \      : ['%S:p:r'],
-      \}, get(g:quickrun_config, 'cpp/g++', {}), "keep")
   endif
 
   if executable('clang')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/clang',
     \}, get(g:quickrun_config, 'c', {}), "keep")
-
-    " Until PR merge, temp fix
-    let g:quickrun_config['c/clang'] = extend({
-      \   'command': 'clang',
-      \   'exec':
-      \     g:user.system.windows
-      \      ? ['%c %o %s -o %s:p:r.exe', '%s:p:r %a']
-      \      : ['%c %o %s -o %s:p:r', '%s:p:r %a'],
-      \   'tempfile': '%{tempname()}.c',
-      \   'hook/sweep/files':
-      \     g:user.system.windows
-      \      ? ['%S:p:r.exe']
-      \      : ['%S:p:r'],
-      \}, get(g:quickrun_config, 'c/clang', {}), "keep")
   elseif executable('gcc')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/gcc',
     \}, get(g:quickrun_config, 'c', {}), "keep")
-
-    " Until PR merge, temp fix
-    let g:quickrun_config['c/gcc'] = extend({
-      \   'command': 'gcc',
-      \   'exec': ['%c %o %s -o %s:p:r', '%s:p:r %a'],
-      \   'tempfile': '%{tempname()}.c',
-      \   'hook/sweep/files':
-      \     g:user.system.windows
-      \      ? ['%S:p:r.exe']
-      \      : ['%S:p:r'],
-      \}, get(g:quickrun_config, 'c/gcc', {}), "keep")
   endif
 
   " shift jis: 'cp932'
@@ -3870,7 +3960,8 @@ hook_post_source = '''
 [[plugins]]
 repo = 'bronson/vim-trailing-whitespace'
 hook_add = '''
-  let g:extra_whitespace_ignored_filetypes = ['markdown', 'startify', 'nerdtree', 'tagbar', 'unite']
+  let g:extra_whitespace_ignored_filetypes =
+    \ ['markdown', 'startify', 'nerdtree', 'tagbar', 'unite', 'fern']
 '''
 
 [[plugins]]
@@ -4026,6 +4117,7 @@ repo = 'mattn/vim-sonictemplate'
 hook_add = '''
   " user template
   let g:sonictemplate_vim_template_dir = expand(g:user.dir.config_home . '/template')
+  call g:user.function.mkdir(g:sonictemplate_vim_template_dir)
 
   " always my name
   let g:sonictemplate_vim_vars = {
@@ -4098,6 +4190,9 @@ hook_add = '''
   let g:lexima_enable_newline_rules = 1
   let g:lexima_enable_space_rules = 1
   let g:lexima_enable_endwise_rules = 1
+
+  " self process define : need abnormal completion process(like asyncomplete)
+  " let g:lexima_accept_pum_with_enter = 0
 '''
 hook_post_source = '''
   call lexima#set_default_rules()
@@ -4238,31 +4333,58 @@ hook_post_source = '''
 [[plugins]]
 repo = 'justinmk/vim-gtfo'
 
-[[plugins]]
-repo = 'rhysd/clever-f.vim'
-hook_add = '''
-  " let g:clever_f_ignore_case           = 1
-  let g:clever_f_smart_case            = 1
-  let g:clever_f_use_migemo            = 1
-  let g:clever_f_fix_key_direction     = 1
-  let g:clever_f_chars_match_any_signs = ";:"
+# [[plugins]]
+# repo = 'deris/vim-shot-f'
 
-  let g:clever_f_not_overwrites_standard_mappings = 1
+# [[plugins]]
+# repo = 'rhysd/clever-f.vim'
+# hook_add = '''
+#   " let g:clever_f_ignore_case           = 1
+#   let g:clever_f_smart_case            = 1
+#   let g:clever_f_use_migemo            = 1
+#   let g:clever_f_fix_key_direction     = 1
+#   let g:clever_f_chars_match_any_signs = ";:"
+#
+#   let g:clever_f_not_overwrites_standard_mappings = 1
+# '''
+# hook_post_source = '''
+#     nmap f <Plug>(clever-f-f)
+#     xmap f <Plug>(clever-f-f)
+#     omap f <Plug>(clever-f-f)
+#     nmap F <Plug>(clever-f-F)
+#     xmap F <Plug>(clever-f-F)
+#     omap F <Plug>(clever-f-F)
+#     " t use tab
+#     " nmap t <Plug>(clever-f-t)
+#     " xmap t <Plug>(clever-f-t)
+#     " omap t <Plug>(clever-f-t)
+#     " nmap T <Plug>(clever-f-T)
+#     " xmap T <Plug>(clever-f-T)
+#     " omap T <Plug>(clever-f-T)
+# '''
+
+[[plugins]]
+repo = 'hrsh7th/vim-eft'
+hook_add = '''
+  let g:eft_ignorecase = v:true
 '''
 hook_post_source = '''
-    nmap f <Plug>(clever-f-f)
-    xmap f <Plug>(clever-f-f)
-    omap f <Plug>(clever-f-f)
-    nmap F <Plug>(clever-f-F)
-    xmap F <Plug>(clever-f-F)
-    omap F <Plug>(clever-f-F)
-    " t use tab
-    " nmap t <Plug>(clever-f-t)
-    " xmap t <Plug>(clever-f-t)
-    " omap t <Plug>(clever-f-t)
-    " nmap T <Plug>(clever-f-T)
-    " xmap T <Plug>(clever-f-T)
-    " omap T <Plug>(clever-f-T)
+  nmap ; <Plug>(eft-repeat)
+  xmap ; <Plug>(eft-repeat)
+
+  nmap f <Plug>(eft-f-repeatable)
+  xmap f <Plug>(eft-f-repeatable)
+  omap f <Plug>(eft-f-repeatable)
+  nmap F <Plug>(eft-F-repeatable)
+  xmap F <Plug>(eft-F-repeatable)
+  omap F <Plug>(eft-F-repeatable)
+  " t use tab
+  " nmap t <Plug>(eft-t-repeatable)
+  " xmap t <Plug>(eft-t-repeatable)
+  " omap t <Plug>(eft-t-repeatable)
+  " nmap T <Plug>(eft-T-repeatable)
+  " xmap T <Plug>(eft-T-repeatable)
+  " omap T <Plug>(eft-T-repeatable)
 '''
 
 [[plugins]]
@@ -4537,8 +4659,10 @@ hook_add = '''
   endfunction
   augroup vimrc_init-vista
     autocmd!
-    autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter * nested call vista#RunForNearestMethodOrFunction()
-    autocmd User lsp_server_init                        nested call vista#RunForNearestMethodOrFunction()
+    autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter *
+      \ nested call vista#RunForNearestMethodOrFunction()
+    autocmd User                                      lsp_server_init
+      \ nested call vista#RunForNearestMethodOrFunction()
   augroup END
 '''
 hook_post_source = '''
@@ -4758,6 +4882,7 @@ repo = 'jceb/vim-orgmode'
 repo = 'Shougo/junkfile.vim'
 hook_add = '''
   let g:junkfile#directory = expand(g:user.dir.cache_home . '/junkfile')
+  call g:user.function.mkdir(g:junkfile#directory)
 '''
 
 [[plugins]] # memo
@@ -4774,8 +4899,10 @@ repo = 'glidenote/memolist.vim'
 depends = ['ctrlp.vim']
 merged = 0
 hook_add = '''
-  let g:memolist_path = expand(g:user.dir.vim. '/memo')
+  let g:memolist_path = expand(g:user.dir.vim . '/memo')
+  call g:user.function.mkdir(g:memolist_path)
   let g:memolist_template_dir_path = expand(g:user.dir.config_home . '/template/memo')
+  call g:user.function.mkdir(g:memolist_template_dir_path)
 
   nnoremap <silent> <Leader>mn  :<C-u>MemoNew<CR>
   nnoremap <silent> <Leader>ml  :<C-u>MemoList<CR>
@@ -4859,16 +4986,31 @@ repo = 'vitalk/vim-shebang'
 repo = 'yasuhiroki/github-actions-yaml.vim'
 
 [[plugins]]
+repo = 'mattn/vim-maketable'
+depends = ['vim-altercmd']
+hook_post_source = '''
+  AlterCommand        maketable MakeTable
+  AlterCommand cmdwin maketable MakeTable
+'''
+
+[[plugins]]
 repo = 'dhruvasagar/vim-table-mode'
+depends = ['vim-submode']
 hook_add = '''
   augroup vimrc_init-vim-table-mode
     autocmd!
     autocmd FileType markdown,rst nested if tablemode#IsActive() == 0 | call tablemode#Enable() | endif
   augroup END
 
-  " default
-  " let g:table_mode_corner_corner='+'
-  " let g:table_mode_header_fillchar='=' " global only : need -
+  let g:table_mode_map_prefix = '<Leader>T'
+'''
+hook_post_source = '''
+  " table move
+  call submode#enter_with('tablemove', 'n', '',  g:table_mode_map_prefix . 'M')
+  call submode#map('tablemove', 'n', 'r', 'k', '<Plug>(table-mode-motion-up)'   )
+  call submode#map('tablemove', 'n', 'r', 'j', '<Plug>(table-mode-motion-down)' )
+  call submode#map('tablemove', 'n', 'r', 'h', '<Plug>(table-mode-motion-left)' )
+  call submode#map('tablemove', 'n', 'r', 'l', '<Plug>(table-mode-motion-right)')
 '''
 
 # EOF

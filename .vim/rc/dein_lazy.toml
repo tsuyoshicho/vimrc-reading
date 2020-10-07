@@ -75,10 +75,10 @@ hook_post_source = '''
 '''
 
 # dirvish
-[[plugins]]
-repo = 'bounceme/remote-viewer'
-on_if= 'executable("ssh") || executable("curl")'
-depends = ['vim-dirvish']
+# [[plugins]]
+# repo = 'bounceme/remote-viewer'
+# on_if= 'executable("ssh") || executable("curl")'
+# depends = ['vim-dirvish']
 
 # [[plugins]]
 # repo = 'kristijanhusak/vim-dirvish-git'
@@ -110,10 +110,17 @@ hook_add = '''
   "   \ ]
 
   " buffer setting
-  autocmd MyAutoGroup FileType
-    \ eblook nested setlocal nonumber norelativenumber
-    \ |             setlocal signcolumn=no
-    \ |             setlocal foldcolumn=0
+  augroup vimrc_init-eblook
+    autocmd!
+    autocmd FileType
+      \ eblook nested setlocal nonumber norelativenumber
+      \ |             setlocal signcolumn=no
+      \ |             setlocal foldcolumn=0
+    " autocmd VimEnter,VimResized *
+    "   \ let g:eblook_entrywin_height   = min([max([(&lines/6),  4]),  8]) - 1
+    " autocmd VimEnter,VimResized *
+    "   \ let g:eblook_contentwin_height = min([max([(&lines/3), 10]), 25]) - 1
+  augroup END
 
   if g:user.system.windows
     " Windows環境用のコード
@@ -308,11 +315,11 @@ hook_add = '''
 # [[plugins]]
 # repo = 'hokorobi/vim-clap-filelist'
 # on_source = ['vim-clap']
-# hook_add = '''
-#   " let g:clap_filelist_file = expand(g:user.dir.cache_home . '/' . 'mrulist')
+# hook_post_source = '''
+#   " let g:clap_filelist_file = expand(g:user.dir.cache_home . '/mrulist')
 #   " based on https://qiita.com/hokorobi/items/615277a0ea8ab7c9c4c3
 #   if !empty(get(g:, 'ctrlp_cache_dir', ''))
-#     let g:clap_filelist_file = g:ctrlp_cache_dir . '/mru/cache.txt'
+#     let g:clap_filelist_file = expand(g:ctrlp_cache_dir . '/mru/cache.txt')
 #   endif
 # '''
 #
@@ -327,7 +334,7 @@ hook_add = '''
 [[plugins]]
 repo = 'Yggdroot/LeaderF'
 on_if = 'has("python3")'
-depends = ['vital.vim']
+depends = ['vital.vim', 'vim-devicons']
 hook_post_update = '''
   if g:user.system.windows
     let s:cmd = 'install.bat'
@@ -346,7 +353,8 @@ hook_add = '''
 
   " search cache strategy like ctrlp
   let g:Lf_UseCache = 1
-  let g:Lf_CacheDirectory = expand(g:user.dir.cache_home . '/ctrlp')
+  let g:Lf_CacheDirectory = expand(g:user.dir.cache_home . '/leaderf')
+  " mkdir delay
 
   if executable('jvgrep')
     let g:Lf_DefaultExternalTool = 'jvgrep'
@@ -362,10 +370,9 @@ hook_add = '''
   endif
 
   " overwrite external command if files exists
-  " currently windows not work, disabled
-  " if executable('files')
-  "   let g:Lf_ExternalCommand = 'files -a "%s"'
-  " endif
+  if executable('files')
+    let g:Lf_ExternalCommand = 'cd "%s" && files -H=0 -a -m ""'
+  endif
 
   if has_key(g:, 'Lf_ExternalCommand')
     let g:Lf_UseCache = 0
@@ -386,8 +393,8 @@ hook_add = '''
   " let g:Lf_PopupHeight
   " let g:Lf_PreviewPopupWidth
 
-  autocmd MyAutoGroup VimEnter,VimResized * let g:Lf_PopupWidth  = max([(&columns * 3)/4, 20])
-  autocmd MyAutoGroup VimEnter,VimResized * let g:Lf_PopupHeight = max([(&lines   * 3)/4, 15])
+  autocmd MyAutoGroup VimEnter,VimResized * let g:Lf_PopupWidth  = min([max([(&columns * 3)/4, 20]), (&columns - 2)])
+  autocmd MyAutoGroup VimEnter,VimResized * let g:Lf_PopupHeight = min([max([(&lines   * 3)/4, 15]), (&lines - (2 + 1 + &cmdheight))])
 
   " mapping
   " conflict workaround : prefix <Leader>L as LeaderF
@@ -401,16 +408,19 @@ hook_post_source = '''
   let g:Lf_RootMarkers = s:List.concat([
     \ g:user.rootmarker.dirs,
     \ g:user.rootmarker.files])
+  let g:Lf_WorkingDirectoryMode = 'a'
 
   " keymap
+'''
+hook_post_source = '''
+  let g:Lf_CacheDirectory = get(g:, 'ctrlp_cache_dir', g:Lf_CacheDirectory)
+  call g:user.function.mkdir(g:Lf_CacheDirectory)
 '''
 
 [[plugins]]
 repo = 'tamago324/LeaderF-filer'
-# repo = 'tsuyoshicho/LeaderF-filer'
-# rev  = 'develop'
-on_source = ['LeaderF', 'vim-devicons']
-merged = 0
+on_source = ['LeaderF']
+depends = ['LeaderF', 'vim-devicons']
 hook_add = '''
   " Plug 'ryanoasis/vim-devicons'
   let g:Lf_FilerShowDevIcons = 1
@@ -423,6 +433,16 @@ on_source = ['LeaderF']
 [[plugins]]
 repo = 'tamago324/LeaderF-bookmark'
 on_source = ['LeaderF']
+hook_add = '''
+  " same as fern
+  let g:Lf_BookmarkFilePath = expand(g:user.dir.vim . '/bookmark.json')
+'''
+hook_post_source = '''
+  if exists('g:fern#scheme#bookmark#store#file')
+    " use fern's bookmark
+    let g:Lf_BookmarkFilePath = g:fern#scheme#bookmark#store#file
+  endif
+'''
 
 [[plugins]]
 repo = 'hilarryxu/LeaderF-funky'
@@ -439,6 +459,11 @@ on_source = ['LeaderF']
 # [[plugins]]
 # repo = 'xltan/LeaderF-tjump'
 # on_source = ['LeaderF']
+
+[[plugins]]
+repo = 'tamago324/LeaderF-sonictemplate'
+on_source = ['LeaderF']
+depends = ['LeaderF', 'vim-sonictemplate']
 
 # Edit operation
 # Align
@@ -471,6 +496,11 @@ hook_add = '''
     autocmd FileType qf nmap <buffer> <C-P> <plug>(qf-preview-open)
   augroup END
 '''
+
+[[plugins]]
+repo = 'jceb/vim-hier'
+on_ft= ['qf']
+
 [[plugins]]
 repo = 'thinca/vim-partedit'
 on_cmd = ['Partedit', 'ParteditEnd']
@@ -531,7 +561,7 @@ on_if= '(executable("curl") && executable("openssl"))'
 hook_add = '''
   let g:twitvim_force_ssl = 1
   let g:twitvim_count = 40
-  let g:twitvim_token_file = expand('~/.vim/twitvim.token')
+  let g:twitvim_token_file = expand(g:user.dir.vim . '/twitvim.token')
   if exists('$HTTP_PROXY')
     let s:proxy_url_pattern =
                 \ '^\%(\([^:]*\):\/\/\)\='

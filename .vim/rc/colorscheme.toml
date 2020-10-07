@@ -791,7 +791,8 @@ hook_add = '''
   " let g:material_terminal_italics = 1
 
   " 'default' | 'palenight' | 'ocean' | 'lighter' | 'darker'
-  let g:material_theme_style = 'ocean'
+  " -community add support external filetype syntax
+  let g:material_theme_style = 'darker-community'
 '''
 
 [[plugins]] # カラースキーム
@@ -1136,6 +1137,20 @@ hook_add = '''
   " let g:gruvbox_material_palette                = 'material'
   " let g:gruvbox_material_transparent_background =  0
   " let g:gruvbox_material_cursor_line_contrast   = 'lower'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'severij/vadelma'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'vadelma'
+    let s:scheme['lightline']  = 'vadelma'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 '''
 
 [[plugins]] # カラースキーム

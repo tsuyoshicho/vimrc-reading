@@ -10,6 +10,7 @@ if &l:buftype !=# 'help'
   if has('conceal')
     setlocal conceallevel=0
   endif
+  setlocal nofoldenable
 else
   " reading help
   setlocal nofoldenable
