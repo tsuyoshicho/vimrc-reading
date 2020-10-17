@@ -611,6 +611,28 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'ghifarit53/tokyonight-vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'tokyonight'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['lightline']  = 'tokyonight'
+  let s:scheme['airline']    = 'tokyonight'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+
+  " option
+  let g:tokyonight_style = 'night' " available: night, storm
+  " let g:tokyonight_transparent_background
+  " let g:tokyonight_menu_selection_background = 'green' " 'red', 'blue', 'green'
+  let g:tokyonight_disable_italic_comment = 1
+  let g:tokyonight_enable_italic = 0
+  let g:tokyonight_cursor = 'auto' " 'auto', 'red', 'green', 'blue'
+  let g:tokyonight_current_word = 'underline' " 'bold', 'underline', 'italic', 'grey background'
+'''
+
+[[plugins]] # カラースキーム
 repo = 'habamax/vim-colors-defminus'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -630,6 +652,19 @@ hook_add = '''
   let s:scheme['name']       = 'defnoche'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'habamax/vim-gruvbit'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'gruvbit'
+  let s:scheme['lightline']  = 'gruvbit'
+  let s:scheme['airline']    = 'gruvbit'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム

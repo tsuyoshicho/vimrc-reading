@@ -308,15 +308,23 @@ hook_post_source = '''
 repo = 'lambdalisue/fern.vim'
 # depends = ['memolist.vim', 'junkfile.vim']
 hook_add = '''
-  " fern need completeslash is default value
+  " let g:fern#loglevel = g:fern#DEBUG
+
   function! s:fern_init() abort
     setlocal nonumber
     setlocal norelativenumber
     setlocal foldcolumn=0
     setlocal signcolumn=yes
-  endfunction
 
-  " let g:fern#loglevel = g:fern#DEBUG
+    " mapping
+    nmap <buffer><silent> <C-m>
+      \ <Plug>(fern-action-open-or-enter)
+      \ <Plug>(fern-wait)
+      \ <Plug>(fern-action-tcd:root)
+
+    " define autocmd for buffer
+    autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
+  endfunction
 
   augroup vimrc_init-fern
     autocmd!
@@ -377,14 +385,14 @@ hook_add = '''
 repo = 'hrsh7th/fern-mapping-call-function.vim'
 depends = ['fern.vim']
 hook_add = '''
-  function! s:setup_fern() abort
+  function! s:fern_init_funcall() abort
     " Map to your custom function.
     " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
   endfunction
 
   augroup vimrc_init-fern-funcall
     autocmd!
-    autocmd! FileType fern call s:setup_fern()
+    autocmd! FileType fern call s:fern_init_funcall()
   augroup END
 '''
 hook_post_source = '''
@@ -402,17 +410,32 @@ hook_post_source = '''
 [[plugins]]
 repo = 'hrsh7th/fern-mapping-collapse-or-leave.vim'
 depends = ['fern.vim']
-# I need root change and tcd with this and expand
+hook_add = '''
+  let g:fern#mapping#collapse_or_leave#disable_default_mappings = 1
+
+  function! s:fern_init_collapse_or_leave() abort
+    nmap <buffer><silent> h
+      \ <Plug>(fern-action-collapse-or-leave)
+      \ <Plug>(fern-wait)
+      \ <Plug>(fern-action-tcd:root)
+  endfunction
+
+  augroup vimrc_init-fern-collapse-or-leave
+    autocmd!
+    autocmd FileType fern nested call s:fern_init_collapse_or_leave()
+  augroup END
+'''
 
 [[plugins]]
 repo = 'lambdalisue/fern-mapping-project-top.vim'
 depends = ['fern.vim']
 hook_add = '''
   function! s:fern_init_project_top() abort
-    nmap <buffer> ^ <Plug>(fern-action-project-top)
+    nmap <buffer><silent> ^ <Plug>(fern-action-project-top)
   endfunction
 
-  augroup vimrc_init-fern
+  augroup vimrc_init-fern-project-top
+    autocmd!
     autocmd FileType fern nested call s:fern_init_project_top()
   augroup END
 '''
@@ -495,6 +518,16 @@ repo = 'thinca/vim-editvar'
 # depends = ['vim-prettyprint'] # non-depend, but if already exist; use PrettyPrint
 
 [[plugins]]
+repo = 'lambdalisue/mr.vim'
+depends = ['vim-altercmd']
+hook_post_source = '''
+  AlterCommand          mru Mru<Space><Bar><Space>copen
+  AlterCommand <cmdwin> mru Mru<Space><Bar><Space>copen
+  AlterCommand          mrw Mrw<Space><Bar><Space>copen
+  AlterCommand <cmdwin> mrw Mrw<Space><Bar><Space>copen
+'''
+
+[[plugins]]
 repo = 'Bakudankun/BackAndForward.vim'
 
 [[plugins]]
@@ -543,6 +576,12 @@ hook_post_source = '''
     \ s:List.map(g:user.rootmarker.dirs, { v ->  v . '/' }),
     \ g:user.rootmarker.files,
     \ g:user.rootmarker.fileglob])
+  unlet s:List
+
+  augroup vimrc-init_findroot
+    autocmd!
+    autocmd User StartifyBufferOpened :FindRoot!
+  augroup END
 '''
 
 # なくてもちゃんと動きそうなので置いておく
@@ -675,8 +714,8 @@ hook_add = '''
   " over not work normal built-in command (r,d,v and so on).
 '''
 hook_post_source = '''
-  AlterCommand        rewo[rd] Reword
-  AlterCommand cmdwin rewo[rd] Reword
+  AlterCommand          rewo[rd] Reword
+  AlterCommand <cmdwin> rewo[rd] Reword
 '''
 
 [[plugins]]
@@ -882,7 +921,7 @@ hook_add = '''
 [[plugins]]
 repo = 'y0za/vim-reading-vimrc'
 # repo = 'tsuyoshicho/vim-reading-vimrc'
-# rev  = 'develop'
+# rev  = 'fix/urlredirect-20201004'
 
 [[plugins]]
 repo = 'thinca/vim-showtime'
@@ -983,7 +1022,6 @@ repo = 'arecarn/vim-fold-cycle'
 
 # [[plugins]] # folding support
 # repo = 'pseewald/vim-anyfold'
-# # merged = 0
 
 [[plugins]]
 repo = 'mattn/wwwrenderer-vim'
@@ -1361,7 +1399,6 @@ hook_post_source = '''
 repo = 'kamykn/spelunker.vim'
 # repo = 'tsuyoshicho/spelunker.vim'
 # rev  = 'feature/ctrlp'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   " ctrlp ext
@@ -2005,8 +2042,8 @@ hook_post_source = '''
         \ {'x': '~/.vimrc'},
         \ {'c': '~/.vim/rc/colorscheme.toml'},
         \ {'d': '~/.vim/rc/dein.toml'},
-        \ {'v': '~/.vim/rc/dein_lazy.toml'},
-        \ {'b': '~/.bashrc'},
+        \ {'g': '~/.vim/rc/dein_lazy.toml'},
+        \ {'w': '~/.bashrc'},
         \]
 
   " no need depend : write as text (if no-exist , no work)
@@ -2018,7 +2055,7 @@ hook_post_source = '''
         \ {'f': ['LeaderF file search', 'Leaderf file']},
         \ {'m': ['Mastodon', 'Mastodon timeline']},
         \ {'o': ['Qiita', 'Qiita -l']},
-        \ {'i': ['Calendar', 'Calendar -split=vertical -s:position=right']},
+        \ {'p': ['Calendar', 'Calendar -split=vertical -s:position=right']},
         \]
 
   " let g:startify_disable_at_vimenter=0
@@ -2094,6 +2131,8 @@ hook_post_source = '''
   " oldfile refine unix/win path style
   call map(v:oldfiles, 's:Filepath.realpath(v:val)')
   call map(v:oldfiles, 'fnamemodify(v:val, ":p:~")')
+
+  unlet s:Filepath s:List s:String
 '''
 
 [[plugins]]
@@ -2536,6 +2575,7 @@ hook_post_source = '''
   let g:lsp_settings_root_markers = s:List.concat([
     \ s:List.map(g:user.rootmarker.dirs, { v ->  v . '/' }),
     \ g:user.rootmarker.files])
+  unlet s:List
 '''
 
 [[plugins]]
@@ -2932,6 +2972,9 @@ hook_add = '''
   let g:ctrlp_brief_prompt = 1
   " let g:ctrlp_user_command_async = 1
 
+  " input japanese
+  let g:ctrlp_key_loop = 1
+
   " based on https://qiita.com/0829/items/7053b6e3371592e4fbe6
   " based on https://christina04.hatenablog.com/entry/2014/10/30/100612
   " based on https://postd.cc/how-to-boost-your-vim-productivity/
@@ -2983,6 +3026,7 @@ hook_post_source = '''
   let g:ctrlp_root_markers = s:List.concat([
     \ g:user.rootmarker.dirs,
     \ g:user.rootmarker.files])
+  unlet s:List
 
   " matcher
   if dein#is_sourced('ctrlp-matchfuzzy') && exists('*matchfuzzy')
@@ -3002,19 +3046,16 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'mattn/ctrlp-matchfuzzy'
-merged = 0
 depends = ['ctrlp.vim']
 # config in ctrlp.vim
 
 [[plugins]]
 repo = 'FelikZ/ctrlp-py-matcher'
-merged = 0
 depends = ['ctrlp.vim']
 # config in ctrlp.vim
 
 [[plugins]] # based on https://blog.kaneshin.co/entry/vim-advent-calendar-2012
 repo = 'kaneshin/ctrlp-git-log'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3023,7 +3064,6 @@ hook_add = '''
 
 [[plugins]] # based on https://mattn.kaoriya.net/software/vim/20120427205409.htm
 repo = 'mattn/ctrlp-mark'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3032,7 +3072,6 @@ hook_add = '''
 
 [[plugins]] # based on https://mattn.kaoriya.net/software/vim/20120427205409.htm
 repo = 'mattn/ctrlp-register'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3041,7 +3080,6 @@ hook_add = '''
 
 [[plugins]] # based on https://mattn.kaoriya.net/software/vim/20120427205409.htm
 repo = 'mattn/ctrlp-launcher'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3053,7 +3091,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'ompugao/ctrlp-history'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3062,7 +3099,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'suy/vim-ctrlp-commandline'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3071,7 +3107,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'prabirshrestha/ctrlp-env'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3080,7 +3115,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'ompugao/ctrlp-locate'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3089,7 +3123,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'hara/ctrlp-colorscheme'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3098,7 +3131,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'endel/ctrlp-filetype.vim'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3109,7 +3141,6 @@ hook_add = '''
 # repo = 'sgur/ctrlp-extensions.vim'
 repo = 'tsuyoshicho/ctrlp-extensions.vim'
 rev  = 'develop'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   " ['yankring', 'menu', 'cmd']
@@ -3127,7 +3158,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'zeero/vim-ctrlp-help'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3136,7 +3166,6 @@ hook_add = '''
 
 [[plugins]]
 repo = 'DavidEGx/ctrlp-smarttabs'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -3153,6 +3182,14 @@ hook_add = '''
   let g:ctrlp_smarttabs_exclude_quickfix = 1
   " Exclude quickfix buffers.
   " (Default: 0)
+'''
+
+[[plugins]]
+repo = 'mattn/ctrlp-lsp'
+depends = ['vim-lsp', 'ctrlp.vim']
+hook_add = '''
+  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
+        \ + ['lsp_document_symbol', 'lsp_workspace_symbol']
 '''
 
 [[plugins]] # w3m,lynx,wwwrenderer-vimのどれかが必要
@@ -3184,12 +3221,15 @@ hook_add = '''
 repo = 'eiiches/vim-ref-info'
 depends = ['vim-ref']
 
-# QuickRun
+# QuickRun & AsyncRun
 [[plugins]]
 repo = 'osyo-manga/quickrun-hook-u-nya-'
 
 [[plugins]]
 repo = 'mattn/vim-quickrunex'
+
+[[plugins]]
+repo = 'lambdalisue/vim-quickrun-neovim-job'
 
 [[plugins]]
 repo = 'thinca/vim-quickrun'
@@ -3199,7 +3239,6 @@ hook_add = '''
   if dein#tap('vim-precious') " after load support : not dein#is_sourced
     nmap <Leader>o <Plug>(precious-quickrun-op)
   endif
-
 
   " if untype buffer, prev run timing type detect work hook
   "
@@ -3223,23 +3262,28 @@ hook_add = '''
   " per filetype
   let s:quickrun_filetype_encode_fixlist = ['python', 'ruby', 'markdown']
 
+  " vim
   let g:quickrun_config['vim'] = extend({
         \  'hook/slash/enable' : 0,
         \}, get(g:quickrun_config, 'vim', {}), "keep")
 
+  " markdown
   let g:quickrun_config['markdown'] = extend({
         \  'type' : 'markdown/pandoc',
         \  'outputter' : 'browser',
         \}, get(g:quickrun_config, 'markdown', {}), "keep")
 
+  " python
   let g:quickrun_config['python'] = extend({
         \  'hook/time/enable' : 1,
         \}, get(g:quickrun_config, 'python', {}), "keep")
 
+  " ruby
   let g:quickrun_config['ruby'] = extend({
         \  'hook/time/enable' : 1,
         \}, get(g:quickrun_config, 'ruby', {}), "keep")
 
+  " c++
   if executable('clang++')
     let g:quickrun_config['cpp'] = extend({
     \  'type' : 'cpp/clang++',
@@ -3250,6 +3294,7 @@ hook_add = '''
     \}, get(g:quickrun_config, 'cpp', {}), "keep")
   endif
 
+  " c
   if executable('clang')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/clang',
@@ -3259,6 +3304,16 @@ hook_add = '''
     \  'type' : 'c/gcc',
     \}, get(g:quickrun_config, 'c', {}), "keep")
   endif
+
+  " typescript
+  " from ycino
+  " tsc command check run as root
+  let g:quickrun_config['typescript/tsc/noemit'] = extend({
+    \ 'command': 'tsc',
+    \ 'exec': ['%C --project . --noEmit --incremental --tsBuildInfoFile .git/.tsbuildinfo'],
+    \ 'outputter' : 'quickfix',
+    \ 'outputter/quickfix/errorformat' : '%+A %#%f %#(%l\,%c): %m,%C%m',
+    \}, get(g:quickrun_config, 'typescript/tsc/noemit', {}), "keep")
 
   " shift jis: 'cp932'
   " shift jis: 'cp65001'
@@ -3286,15 +3341,12 @@ hook_add = '''
       let g:quickrun_config._['runner'] = 'vimproc'
       let g:quickrun_config._['runner/vimproc/sleep'] = 30
       let g:quickrun_config._['runner/vimproc/updatetime'] = 50
-    elseif has('job')
+    elseif has('job') || has('nvim')
       if has('nvim')
         let g:quickrun_config._['runner'] = 'neovim_job'
       else
         let g:quickrun_config._['runner'] = 'job'
       endif
-
-      " elseif has('clientserver')
-      "   let g:quickrun_config._['runner'] = 'remote'
     else
       let g:quickrun_config._['runner'] = 'system'
     endif
@@ -3353,8 +3405,20 @@ hook_post_source = '''
   unlet s:clear_hook
 
   " thanks ycino
-  AlterCommand        r[un] QuickRun
-  AlterCommand cmdwin r[un] QuickRun
+  AlterCommand          r[un] QuickRun
+  AlterCommand <cmdwin> r[un] QuickRun
+'''
+
+[[plugins]]
+repo = 'skywind3000/asyncrun.vim'
+depends = ['vital.vim']
+hook_post_source = '''
+  let s:List     = g:V.import('Data.List')
+
+  let g:asyncrun_rootmarks = s:List.concat([
+    \ g:user.rootmarker.dirs,
+    \ g:user.rootmarker.files])
+  unlet s:List
 '''
 
 # UI
@@ -3852,18 +3916,13 @@ hook_add = '''
   " g:nd_themes setting template
   if has('gui_running')
     let g:nd_themes = [
-      \ ['sunrise+0',   'solarized8',       'light', 'solarized_improved'],
-      \ ['sunrise+1/2', 'iceberg',          'light', 'iceberg'],
-      \ ['sunset+0',    'gruvbox-material', 'dark',  'gruvbox_material'],
-      \ ['sunset+1/3',  'rigel',            'dark',  'rigel'],
-      \ ['sunset+2/3',  'iceberg',          'dark',  'icebergDark'],
+      \ ['sunrise+0', 'iceberg',          'light', 'iceberg'],
+      \ ['sunset+0',  'tokyonight',       'dark',  'tokyonight'],
       \]
   else
-    " gruvbox,iceberg
     let g:nd_themes = [
       \ ['sunrise+0',   'rigel',            'dark',  'rigel'],
-      \ ['sunrise+1/2', 'iceberg',          'dark',  'icebergDark'],
-      \ ['sunset+0',    'noctu',            'dark',  'icebergDark'],
+      \ ['sunset+0',    'tokyonight',       'dark',  'tokyonight'],
       \]
   endif
 
@@ -4091,7 +4150,6 @@ depends = ['vim-operator-user', 'vim-repeat']
 
 [[plugins]]
 repo = 'tweekmonster/braceless.vim'
-# merged = 0
 hook_add = '''
   augroup vimrc_init-braceless
     autocmd!
@@ -4695,7 +4753,6 @@ hook_add = '''
 
 [[plugins]] # vimref
 repo = 'cowsys/ctrlp-vimref'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -4704,7 +4761,6 @@ hook_add = '''
 
 [[plugins]] # Qiita
 repo = 'mattn/qiita-vim'
-merged = 0
 depends = ['ctrlp.vim']
 hook_add = '''
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -4766,14 +4822,6 @@ hook_add = '''
   endfunction
 
   command! -nargs=1 -complete=custom,<SID>mastodon_completion MastodonHostChange :call <SID>mastodon_change_hosttoken(<f-args>)
-'''
-
-[[plugins]] # plantuml
-repo = 'aklt/plantuml-syntax'
-hook_add = '''
-  if g:user.system.windows && executable('plantumlc.exe')
-    let g:plantuml_executable_script = 'plantumlc -tsvg'
-  endif
 '''
 
 [[plugins]] # man
@@ -4897,7 +4945,6 @@ hook_add = '''
 [[plugins]] # memo
 repo = 'glidenote/memolist.vim'
 depends = ['ctrlp.vim']
-merged = 0
 hook_add = '''
   let g:memolist_path = expand(g:user.dir.vim . '/memo')
   call g:user.function.mkdir(g:memolist_path)
@@ -4989,8 +5036,8 @@ repo = 'yasuhiroki/github-actions-yaml.vim'
 repo = 'mattn/vim-maketable'
 depends = ['vim-altercmd']
 hook_post_source = '''
-  AlterCommand        maketable MakeTable
-  AlterCommand cmdwin maketable MakeTable
+  AlterCommand          maketable MakeTable
+  AlterCommand <cmdwin> maketable MakeTable
 '''
 
 [[plugins]]

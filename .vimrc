@@ -34,8 +34,6 @@ let s:is_mac     = has('mac')
 " if s:is_windows
 "   set shellslash
 " endif
-" fern need completeslash is default value(in vim bug)
-" need not non-file buffer enter, enable it
 if s:is_windows && exists('+completeslash')
   set completeslash=slash
 endif

@@ -354,7 +354,7 @@ hook_add = '''
   " search cache strategy like ctrlp
   let g:Lf_UseCache = 1
   let g:Lf_CacheDirectory = expand(g:user.dir.cache_home . '/leaderf')
-  " mkdir delay
+  call g:user.function.mkdir(g:Lf_CacheDirectory)
 
   if executable('jvgrep')
     let g:Lf_DefaultExternalTool = 'jvgrep'
@@ -411,10 +411,6 @@ hook_post_source = '''
   let g:Lf_WorkingDirectoryMode = 'a'
 
   " keymap
-'''
-hook_post_source = '''
-  let g:Lf_CacheDirectory = get(g:, 'ctrlp_cache_dir', g:Lf_CacheDirectory)
-  call g:user.function.mkdir(g:Lf_CacheDirectory)
 '''
 
 [[plugins]]
@@ -588,7 +584,8 @@ on_cmd = ['VimscriptLastError']
 
 [[plugins]]
 repo = 'LumaKernel/vim-messages-qf'
-on_func = ['g:messages_qf#messages()']
+on_cmd = ['MessagesQF']
+on_func = ['g:messages_qf#messages']
 hook_add = '''
   command! MessagesQF call g:messages_qf#messages() | copen
 '''
@@ -611,24 +608,6 @@ hook_add = '''
 [[plugins]]
 repo = 'mhinz/vim-sayonara'
 on_cmd = ['Sayonara']
-
-[[plugins]]
-repo = 'rbtnn/vim-mru'
-depends = ['vim-altercmd']
-on_cmd = ['MRU']
-hook_post_source = '''
-  AlterCommand        mru MRU
-  AlterCommand cmdwin mru MRU
-'''
-
-[[plugins]]
-repo = 'rbtnn/vim-mrw'
-depends = ['vim-altercmd']
-on_cmd = ['MRW']
-hook_post_source = '''
-  AlterCommand        mrw MRW
-  AlterCommand cmdwin mrw MRW
-'''
 
 [[plugins]]
 repo = 'tyru/capture.vim'
@@ -777,7 +756,7 @@ repo = 'aklt/plantuml-syntax'
 on_ft = ['plantuml']
 hook_add = '''
   if g:user.system.windows && executable('plantumlc.exe')
-    let g:plantuml_executable_script = 'plantumlc.exe'
+    let g:plantuml_executable_script = 'plantumlc -tsvg'
   endif
 '''
 
@@ -975,6 +954,10 @@ on_ft = ['vim']
 
 [[plugins]]
 repo = 'rbtnn/vim-vimscript_formatter'
+on_ft = ['vim']
+
+[[plugins]]
+repo = 'rbtnn/vim-vimscript_tagfunc'
 on_ft = ['vim']
 
 [[plugins]]
