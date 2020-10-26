@@ -441,6 +441,12 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'linjiX/LeaderF-git'
+on_source = ['LeaderF']
+# optional depends
+# depends = ['vim-fugitive']
+
+[[plugins]]
 repo = 'hilarryxu/LeaderF-funky'
 on_source = ['LeaderF']
 
@@ -528,7 +534,7 @@ hook_add = '''
   endfor
 
   " git リポジトリ内などでも直にtagsを生成する関数
-  function! DirectAutoCtags()
+  function! s:direct_auto_ctags()
     let s:ctags_list_backup = copy(g:auto_ctags_directory_list)
     let s:ctags_search_backup = g:auto_ctags_search_recursively
 
@@ -548,7 +554,7 @@ hook_add = '''
   endfunction
 
   " コマンド定義
-  command! CtagsDirect call DirectAutoCtags()
+  command! CtagsDirect call <SID>direct_auto_ctags()
 '''
 
 [[plugins]] # Twitter

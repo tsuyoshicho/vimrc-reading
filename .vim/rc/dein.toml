@@ -238,6 +238,9 @@ hook_post_source = '''
   let $SYNCTERMCWD_SRC_PATH = expand(g:dein#plugin.rtp . '/macros/synctermcwd.sh')
 '''
 
+[[plugins]]
+repo = 'rbtnn/vim-pterm'
+
 # [[plugins]]
 # repo = 'terryma/vim-multiple-cursors'
 # hook_add = '''
@@ -1286,7 +1289,7 @@ hook_add = '''
 
   " see https://bitbucket.org/hokorobi/vimfiles_pub/src
   " see https://github.com/syngan/vim-clurin
-  function! g:CtrlAX(cnt) abort
+  function! s:ctrl_a_x(cnt) abort
     " normal op
     " if a:cnt >= 0
     "     execute 'normal!' a:cnt . "\<C-A>"
@@ -1308,7 +1311,7 @@ hook_add = '''
   let g:clurin = {
         \ '-': {
         \   'use_default': 0,
-        \   'nomatch': function('g:CtrlAX'),
+        \   'nomatch': function('s:ctrl_a_x'),
         \   'def': [
         \      ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         \      ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -1396,9 +1399,9 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'kamykn/spelunker.vim'
-# repo = 'tsuyoshicho/spelunker.vim'
-# rev  = 'feature/ctrlp'
+# repo = 'kamykn/spelunker.vim'
+repo = 'tsuyoshicho/spelunker.vim'
+rev  = 'feature/ctlp-improve'
 depends = ['ctrlp.vim']
 hook_add = '''
   " ctrlp ext
@@ -2027,36 +2030,133 @@ hook_post_source = '''
   let g:startify_padding_left=3
   let s:padding = repeat(" ", g:startify_padding_left)
 
-  let g:startify_lists = [
-        \ { 'type': 'files',     'header': [s:padding . 'MRU']            },
-        \ { 'type': 'dir',       'header': [s:padding . 'MRU '. getcwd()] },
-        \ { 'type': 'commands',  'header': [s:padding . 'Commands']       },
-        \ { 'type': 'sessions',  'header': [s:padding . 'Sessions']       },
-        \ { 'type': 'bookmarks', 'header': [s:padding . 'Bookmarks']      },
-        \]
+  " filter func
+  function! s:file_contains_list(base, list) abort
+    let Filepath = g:V.import('System.Filepath')
 
-  let g:startify_files_number = 15
+    let root = expand(a:base, ":p")
+    let filelist = copy(a:list)
+
+    call filter(filelist, 'Filepath.contains(v:val, root)')
+    return filelist[ : g:startify_files_number ]
+  endfunction
+
+  if exists('*mr#mru#list')
+    function! s:mru_list() abort
+      return mr#mru#list()
+    endfunction
+  else
+    let g:startify_update_oldfiles = 1
+    function! s:mru_list() abort
+      let Filepath = g:V.import('System.Filepath')
+      " oldfile refine unix/win path style
+      let oldfiles = copy(v:oldfiles)
+      call map(oldfiles, 'Filepath.realpath(v:val)')
+      call map(oldfiles, 'fnamemodify(v:val, ":p:~")')
+      return oldfiles
+    endfunction
+  endif
+
+  function! s:skip_filter(path) abort
+    if exists('g:startify_skiplist')
+      for regexp in g:startify_skiplist
+        try
+          if a:path =~# regexp
+            return 0
+          endif
+        catch
+          call s:warn('Pattern '. string(regexp) .' threw an exception. Read :help g:startify_skiplist')
+        endtry
+      endfor
+    endif
+    return 1
+  endfunction
+
+  function! s:totallist() abort
+    let Filepath = g:V.import('System.Filepath')
+
+    let mru_total_list = s:mru_list()
+
+    call filter(mru_total_list, '!Filepath.contains(v:val, expand(g:user.dir.cache_home))')
+    call filter(mru_total_list, { _,v -> s:skip_filter(v) })
+
+    let mru_total_list = mru_total_list[ : g:startify_files_number ]
+
+    call map(mru_total_list, { k, v -> { 'line': fnamemodify(v, ":p:~") , 'path': v } })
+    return mru_total_list
+  endfunction
+
+  function! s:currentlist() abort
+    let Filepath = g:V.import('System.Filepath')
+
+    let mru_current_list = s:file_contains_list(getcwd(), s:mru_list())
+
+    call filter(mru_current_list, '!Filepath.contains(v:val, g:user.dir.cache_home)')
+    if exists('g:memolist_path')
+      call filter(mru_current_list, '!Filepath.contains(v:val, g:memolist_path)')
+    endif
+    if exists('g:junkfile#directory')
+      call filter(mru_current_list, '!Filepath.contains(v:val, g:junkfile#directory)')
+    endif
+    call filter(mru_current_list, { _,v -> s:skip_filter(v) })
+
+    call map(mru_current_list, { k, v -> { 'line': fnamemodify(v, ":p:.") , 'path': v } })
+    return mru_current_list
+  endfunction
+
+  function! s:memolist() abort
+    let mru_memo_list = []
+    if exists('g:memolist_path')
+      let mru_memo_list = s:file_contains_list(g:memolist_path, s:mru_list())
+
+      call map(mru_memo_list, { k, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+    endif
+    return mru_memo_list
+  endfunction
+
+  function! s:junklist() abort
+    let mru_junk_list = []
+    if exists('g:junkfile#directory')
+      let mru_junk_list = s:file_contains_list(g:junkfile#directory, s:mru_list())
+
+      call map(mru_junk_list, { k, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+    endif
+
+    return mru_junk_list
+  endfunction
+
+  let g:startify_lists = [
+    \ { 'header': [s:padding . 'MRU']            , 'type': { -> s:totallist() }   },
+    \ { 'header': [s:padding . 'MRU pwd']        , 'type': { -> s:currentlist() } },
+    \ { 'header': [s:padding . 'memos']          , 'type': { -> s:memolist() }    },
+    \ { 'header': [s:padding . 'junkfiles']      , 'type': { -> s:junklist() }    },
+    \ { 'header': [s:padding . 'Sessions']       , 'type': 'sessions'             },
+    \ { 'header': [s:padding . 'Bookmarks']      , 'type': 'bookmarks'            },
+    \ { 'header': [s:padding . 'Commands']       , 'type': 'commands'             },
+    \]
+
+  let g:startify_files_number = 8
 
   let g:startify_bookmarks = [
-        \ {'z': '~/.gvimrc'},
-        \ {'x': '~/.vimrc'},
-        \ {'c': '~/.vim/rc/colorscheme.toml'},
-        \ {'d': '~/.vim/rc/dein.toml'},
-        \ {'g': '~/.vim/rc/dein_lazy.toml'},
-        \ {'w': '~/.bashrc'},
-        \]
+    \ {'g': '~/.gvimrc'},
+    \ {'x': '~/.vimrc'},
+    \ {'c': '~/.vim/rc/colorscheme.toml'},
+    \ {'d': '~/.vim/rc/dein.toml'},
+    \ {'z': '~/.vim/rc/dein_lazy.toml'},
+    \ {'w': '~/.bashrc'},
+    \]
 
   " no need depend : write as text (if no-exist , no work)
   let g:startify_commands = [
-        \ {'h': ':help help'},
-        \ {'r': ['Restart', 'Restart']},
-        \ {'u': ['Plugin update', 'DeinUpdateStart']},
-        \ {'l': ['CtrlP Launcher', 'CtrlPLauncher']},
-        \ {'f': ['LeaderF file search', 'Leaderf file']},
-        \ {'m': ['Mastodon', 'Mastodon timeline']},
-        \ {'o': ['Qiita', 'Qiita -l']},
-        \ {'p': ['Calendar', 'Calendar -split=vertical -s:position=right']},
-        \]
+    \ {'h': ':help help'},
+    \ {'r': ['Restart', 'Restart']},
+    \ {'u': ['Plugin update', 'DeinUpdateStart']},
+    \ {'l': ['CtrlP Launcher', 'CtrlPLauncher']},
+    \ {'f': ['LeaderF file search', 'Leaderf file']},
+    \ {'m': ['Mastodon', 'Mastodon timeline']},
+    \ {'o': ['Qiita', 'Qiita -l']},
+    \ {'p': ['Calendar', 'Calendar -split=vertical -s:position=right']},
+    \]
 
   " let g:startify_disable_at_vimenter=0
   " This value as default
@@ -2105,7 +2205,6 @@ hook_post_source = '''
   " let g:startify_fortune_use_unicode=1
   " autocmd MyAutoGroup User Startified nested setlocal ambiwidth=single
   " oops: open mru and other keep ambiwidth...
-  let g:startify_files_number = 12
 
   let s:logo = [
         \ '___    ______________  ___',
@@ -2126,11 +2225,6 @@ hook_post_source = '''
   endif
   let g:startify_custom_footer =
         \ map(s:vimver, 's:padding . v:val')
-
-  let g:startify_update_oldfiles = 1
-  " oldfile refine unix/win path style
-  call map(v:oldfiles, 's:Filepath.realpath(v:val)')
-  call map(v:oldfiles, 'fnamemodify(v:val, ":p:~")')
 
   unlet s:Filepath s:List s:String
 '''
@@ -2318,6 +2412,16 @@ hook_post_source = '''
 repo = 'osyo-manga/vim-precious'
 depends = ['context_filetype.vim', 'vim-textobj-user']
 # and support context textobj
+hook_add = '''
+  " move to change disable
+  let g:precious_enable_switch_CursorMoved = {
+  \  "*"    : 0,
+  \  "help" : 1,
+  \}
+  let g:precious_enable_switch_CursorMoved_i = {
+  \  "*" : 0,
+  \}
+'''
 
 [[plugins]]
 repo = 'wellle/context.vim'
@@ -2566,7 +2670,21 @@ hook_add = '''
     \  },
     \}
 
+  let g:lsp_settings['yaml-language-server'] = {
+    \  'workspace_config': {
+    \    'yaml': {
+    \       'schemas': {
+    \       },
+    \       'completion': v:true,
+    \       'hover': v:true,
+    \       'validate': v:true,
+    \     }
+    \   }
+    \ }
+  " scheme example  'https://mattn.github.io/efm-langserver/schema.json': '/efm-langserver/config.yaml'
+
   " per filetype
+  " let g:lsp_settings_filetype_vim    = ['vimscript-language-server']
   let g:lsp_settings_filetype_python = ['pyls-ms']
 '''
 hook_post_source = '''
@@ -3255,7 +3373,7 @@ hook_add = '''
         \  'outputter/buffer/split'          : ':rightbelow 8sp',
         \  'outputter/buffer/close_on_empty' : 1,
         \  'outputter/buffer/running_mark'   : '[running...]',
-        \  "hook/slash/enable" : 1,
+        \  "hook/slash/enable"               : 1,
         \  'hook/u_nya_/enable'              : 1,
         \}, get(g:quickrun_config, '_', {}), "keep")
 
@@ -4790,7 +4908,7 @@ hook_add = '''
     return join(team_list,"\n")
   endfunction
 
-  function s:slack_token_change(team) abort
+  function! s:slack_token_change(team) abort
     let path = 'Message/Slack/' . a:team . '.legacy'
 
     let token = pass#get(path)
@@ -4815,7 +4933,7 @@ hook_add = '''
     return join(host_list,"\n")
   endfunction
 
-  function s:mastodon_change_hosttoken(host) abort
+  function! s:mastodon_change_hosttoken(host) abort
     let path = 'Message/Mastodon/' . a:host
     let g:mastodon_host = a:host
     let g:mastodon_access_token = pass#get(path)

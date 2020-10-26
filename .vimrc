@@ -55,20 +55,24 @@ nnoremap <Subleader>, ,
 nnoremap <Subleader>; ;
 
 " user setting {{{
-let g:user = {}
-let g:user.name     = 'Tsuyoshi CHO'
-let g:user.email    = 'Tsuyoshi.CHO@Gmail.com'
-let g:user.devemail = 'Tsuyoshi.CHO+develop@Gmail.com'
+let g:user = {
+  \  'name'     : 'Tsuyoshi CHO',
+  \  'email'    : 'Tsuyoshi.CHO@Gmail.com',
+  \  'devemail' : 'Tsuyoshi.CHO+develop@Gmail.com',
+  \}
 
 " common function
 let g:user.function = {}
-function! g:user.function.mkdir(dir) abort
+
+" dll search target glob
+function! g:user.function.mkdir(dir) abort " {{{
   if !isdirectory(a:dir)
     call mkdir(a:dir, 'p')
   endif
-endfunction
+endfunction " }}}
 
-function! g:user.function.dllsearch(cmd, relpath, dllglob) abort
+" dll search target glob
+function! g:user.function.dllsearch(cmd, relpath, dllglob) abort " {{{
   if executable(a:cmd)
     let path = exepath(a:cmd)
     " unstable globpath?
@@ -79,7 +83,16 @@ function! g:user.function.dllsearch(cmd, relpath, dllglob) abort
       return ''
     endif
   endif
-endfunction
+endfunction " }}}
+
+" local vimrc load setting
+function! g:user.function.load_setting(loc) abort " {{{
+  let path = expand(escape(a:loc, ' '), 'p')
+  let files = glob(path . '/*.vim', 1, 1)
+  for i in reverse(filter(files, 'filereadable(v:val)'))
+    source `=i`
+  endfor
+endfunction " }}}
 
 " dll setup
 if has('python3_dynamic')
@@ -170,23 +183,23 @@ if s:is_cygwin
 endif
 
 let g:user.dir = {}
-let g:user.dir.vim         = expand($HOME . '/.vim')
+let g:user.dir = extend({
+  \  'vim'         : expand($HOME . '/.vim')
+  \}, g:user.dir)
+let g:user.dir = extend({
+  \  'undo'        : expand(g:user.dir.vim . '/undo'  ),
+  \  'backup'      : expand(g:user.dir.vim . '/backup'),
+  \  'swap'        : expand(g:user.dir.vim . '/swap'  ),
+  \  'view'        : expand(g:user.dir.vim . '/view'  ),
+  \}, g:user.dir)
+let g:user.dir = extend({
+  \  'cache_home'  : expand(empty($XDG_CACHE_HOME)  ? ($HOME . '/.cache')       : $XDG_CACHE_HOME ),
+  \  'config_home' : expand(empty($XDG_CONFIG_HOME) ? ($HOME . '/.config')      : $XDG_CONFIG_HOME),
+  \  'data_home'   : expand(empty($XDG_DATA_HOME)   ? ($HOME . '/.local/share') : $XDG_DATA_HOME  ),
+  \}, g:user.dir)
 
-let g:user.dir.undo    = g:user.dir.vim . '/undo'
-let g:user.dir.backup  = g:user.dir.vim . '/backup'
-let g:user.dir.swap    = g:user.dir.vim . '/swap'
-let g:user.dir.view    = g:user.dir.vim . '/view'
-call g:user.function.mkdir(g:user.dir.undo  )
-call g:user.function.mkdir(g:user.dir.backup)
-call g:user.function.mkdir(g:user.dir.swap  )
-call g:user.function.mkdir(g:user.dir.view  )
-
-let g:user.dir.cache_home  = empty($XDG_CACHE_HOME)  ? expand($HOME . '/.cache')       : expand($XDG_CACHE_HOME)
-let g:user.dir.config_home = empty($XDG_CONFIG_HOME) ? expand($HOME . '/.config')      : expand($XDG_CONFIG_HOME)
-let g:user.dir.data_home   = empty($XDG_DATA_HOME)   ? expand($HOME . '/.local/share') : expand($XDG_DATA_HOME)
-call g:user.function.mkdir(g:user.dir.cache_home )
-call g:user.function.mkdir(g:user.dir.config_home)
-call g:user.function.mkdir(g:user.dir.data_home  )
+" check and mkdir
+call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
 
 let g:user.system = {}
 let g:user.system.windows = s:is_windows ? v:true : v:false
@@ -270,9 +283,11 @@ endif
 
 " 設定開始
 let g:dein.dir.rc                = expand(g:user.dir.vim . '/rc')
-let g:dein.file.colorscheme_toml = g:dein.dir.rc . '/colorscheme.toml'
-let g:dein.file.dein_toml        = g:dein.dir.rc . '/dein.toml'
-let g:dein.file.dein_lazy_toml   = g:dein.dir.rc . '/dein_lazy.toml'
+let g:dein.file.toml = {
+  \  g:dein.dir.rc . '/colorscheme.toml' : {'lazy': 0},
+  \  g:dein.dir.rc . '/dein.toml'        : {'lazy': 0},
+  \  g:dein.dir.rc . '/dein_lazy.toml'   : {'lazy': 1},
+  \}
 
 " setting for dein
 let g:dein#install_max_processes = g:user.system.cpunum
@@ -281,22 +296,14 @@ if dein#load_state(g:dein.dir.plugins)
   " プラグインリストを収めた TOML ファイル
   " 予め TOML ファイル(後述)を用意しておく
 
-  call dein#begin(g:dein.dir.plugins, [
-  \  $MYVIMRC,
-  \  g:dein.file.colorscheme_toml,
-  \  g:dein.file.dein_toml,
-  \  g:dein.file.dein_lazy_toml,
-  \])
+  call dein#begin(g:dein.dir.plugins, keys(g:dein.file.toml))
 
   " TOML を読み込み、キャッシュしておく
-  call dein#load_toml(g:dein.file.colorscheme_toml, {'lazy': 0})
-  call dein#load_toml(g:dein.file.dein_toml,        {'lazy': 0})
-  call dein#load_toml(g:dein.file.dein_lazy_toml,   {'lazy': 1})
+  call map(deepcopy(g:dein.file.toml), { k, v -> dein#load_toml(k, v) })
 
   " 設定終了
   call dein#end()
   call dein#save_state()
-
 endif
 
 " call source
@@ -308,6 +315,13 @@ autocmd MyAutoGroup VimEnter * nested call dein#call_hook('post_source')
 if (0 == v:vim_did_enter) && dein#check_install()
   call dein#install()
 endif
+" もし、不要なものがあったら、削除
+let s:removed_plugins = dein#check_clean()
+if len(s:removed_plugins) > 0
+  call map(s:removed_plugins, "delete(v:val, 'rf')")
+  call dein#recache_runtimepath()
+endif
+unlet s:removed_plugins
 " }}}
 
 " plugin manager after setup {{{
@@ -316,8 +330,6 @@ endif
 "   add ~/.vim
 let &runtimepath =  &runtimepath . ',' . g:user.dir.vim
 let &runtimepath =  &runtimepath . ',' . g:user.dir.vim . '/after'
-
-filetype plugin indent on
 
 " option
 
@@ -328,6 +340,8 @@ filetype plugin indent on
 " based on https://vim-jp.org/vim-users-jp/2010/02/17/Hack-125.html
 " syntax enable
 syntax on
+
+filetype plugin indent on
 
 " }}}
 
@@ -1445,12 +1459,12 @@ if has('iconv')
 endif
 " 日本語を含まない場合は fileencoding に encoding を使うようにする
 if has('autocmd')
-  function! AU_ReCheck_FENC() " {{{
+  function! s:au_recheck_fenc() " {{{
     if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
       let &fileencoding=&encoding
     endif
   endfunction " }}}
-  autocmd MyAutoGroup BufReadPost * nested call AU_ReCheck_FENC()
+  autocmd MyAutoGroup BufReadPost * nested call <SID>au_recheck_fenc()
 endif
 
 " " simplify
@@ -1819,13 +1833,13 @@ endfunction
 
 autocmd MyAutoGroup VimEnter * nested call s:plugin_status_update_and_redefine()
 
-function! s:EchoSyntax(status) abort " {{{
+function! s:echo_syntax(status) abort " {{{
   if a:status
     redraw | echon synIDattr(synID(line('.'), col('.'), 0), 'name')
   endif
 endfunction " }}}
 
-" function! s:SetSyntaxEchoStatus(status) abort {{{
+" function! s:set_syntax_echo_status(status) abort {{{
 "   let b:SyntaxEchoStatus = a:status
 " endfunction " }}}
 
@@ -1842,7 +1856,7 @@ function! s:tab_num() abort " {{{
   return tabpagenr('$')
 endfunction " }}}
 
-function! s:ExpandAllBufferToTab() abort " {{{
+function! s:expand_all_buffer_to_tab() abort " {{{
   let save_hidden = &hidden
   set hidden
   silent tabonly!
@@ -1883,7 +1897,7 @@ endfunction " }}}
 
 " from https://github.com/cohama/.vim/blob/master/init.vim
 " 現在のバッファが空っぽならば :drop それ以外なら :tab drop になるコマンド
-function! SmartDrop(tabedit_args) abort " {{{
+function! s:smart_drop(tabedit_args) abort " {{{
 
   if expand('%') == '' && !&modified
     let drop_cmd = 'drop '
@@ -1922,13 +1936,13 @@ command! AsUnix set ff=unix    | w
 
 " from https://github.com/cohama/.vim/blob/master/init.vim
 " 現在のバッファが空っぽならば :drop それ以外なら :tab drop になるコマンド {{{
-command! -nargs=* SmartDrop call SmartDrop(<q-args>)
+command! -nargs=* SmartDrop call <SID>smart_drop(<q-args>)
 " }}}
 
-" command! SyntaxEchoEnable  :call <SID>SetSyntaxEchoStatus(1)
-" command! SyntaxEchoDisable :call <SID>SetSyntaxEchoStatus(0)
-command! SyntaxEcho        call <SID>EchoSyntax(1)
-command! BufferToTab       call <SID>ExpandAllBufferToTab()
+" command! SyntaxEchoEnable  :call <SID>set_syntax_echo_status(1)
+" command! SyntaxEchoDisable :call <SID>set_syntax_echo_status(0)
+command! SyntaxEcho        call <SID>echo_syntax(1)
+command! BufferToTab       call <SID>expand_all_buffer_to_tab()
 " see http://koturn.hatenablog.com/entry/2018/02/13/000000
 command! -bar TabInfo      call <SID>show_tab_info()
 
@@ -1944,21 +1958,14 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 
 " autocmd {{{
 " augroup MyAutoGroup
-"   autocmd CursorMoved * nested call <SID>EchoSyntax(get(b:, 'SyntaxEchoStatus', 0))
+"   autocmd CursorMoved * nested call <SID>echo_syntax(get(b:, 'SyntaxEchoStatus', 0))
 " augroup END
 " }}}
 
 " local setting {{{
 " load non init vimrc setting in .vim/rc/
-function! s:vimrc_load_noninit_setting(loc) abort " {{{
-  let path = expand(escape(a:loc, ' '), 'p')
-  let files = glob(path . '/*.vim', 1, 1)
-  for i in reverse(filter(files, 'filereadable(v:val)'))
-    source `=i`
-  endfor
-endfunction " }}}
+call g:user.function.load_setting(g:dein.dir.rc)
 
-call s:vimrc_load_noninit_setting(g:dein.dir.rc)
 " }}}
 
 " testing {{{
