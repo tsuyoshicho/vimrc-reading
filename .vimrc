@@ -49,7 +49,7 @@ let g:mapleader = ','
 let g:maplocalleader  = ';'
 " use \ as , instead
 nnoremap <Subleader> <Nop>
-map \ <Subleader>
+nmap \ <Subleader>
 " f,tでの移動の逆にする機能が設定されているので、保持はする
 nnoremap <Subleader>, ,
 nnoremap <Subleader>; ;
@@ -1553,8 +1553,8 @@ nnoremap <silent> [Tab]p :tabprevious<CR>
 "矢印キーでは表示行単位で行移動する
 nnoremap <UP>   gk
 nnoremap <DOWN> gj
-vnoremap <UP>   gk
-vnoremap <DOWN> gj
+xnoremap <UP>   gk
+xnoremap <DOWN> gj
 
 " ctrlで行固定移動
 nnoremap <C-j> <C-e>j
@@ -1584,23 +1584,23 @@ nnoremap o A<CR>
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 " thanks lambdalisue and ku/thinca
-vnoremap v <Esc>0v$
+xnoremap v <Esc>0v$
 nnoremap Y y$
 
 " x,s でレジスタを汚染しない
 " x,Xでカーソル文字を削除する際レジスタを汚さない
 " ビジュアルモードで選択すればヤンクしないdとして使用できる
 nnoremap x "_x
-vnoremap x "_x
+xnoremap x "_x
 nnoremap X "_X
-vnoremap X "_X
+xnoremap X "_X
 
 " s,Sでカーソル文字を削除する際レジスタを汚さない設定
 " ビジュアルモードで選択すればヤンクしないcとして使用できる
 nnoremap s "_s
-vnoremap s "_s
+xnoremap s "_s
 nnoremap S "_S
-vnoremap S "_S
+xnoremap S "_S
 " setup in cutlass(future)
 " s use easymotion
 
@@ -1635,16 +1635,16 @@ nnoremap U <C-R>
 " (shift)Tab でインデント
 nnoremap <Tab>   >>
 nnoremap <S-Tab> <<
-vnoremap <Tab>   >gv
-vnoremap <S-Tab> <gv
+xnoremap <Tab>   >gv
+xnoremap <S-Tab> <gv
 
 " Switch between the last two files
 " nnoremap <tab><tab> <c-^>
 
 " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 " Move visual block
-" vnoremap mJ :m '>+1<CR>gv=gv
-" vnoremap mK :m '<-2<CR>gv=gv
+" xnoremap mJ :m '>+1<CR>gv=gv
+" xnoremap mK :m '<-2<CR>gv=gv
 " vim-move / vim-submode cover this move
 
 " コマンドラインで単語移動

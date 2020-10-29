@@ -522,7 +522,10 @@ repo = 'thinca/vim-editvar'
 
 [[plugins]]
 repo = 'lambdalisue/mr.vim'
-depends = ['vim-altercmd']
+
+[[plugins]]
+repo = 'lambdalisue/mr-quickfix.vim'
+depends = ['vim-altercmd', 'mr.vim']
 hook_post_source = '''
   AlterCommand          mru Mru<Space><Bar><Space>copen
   AlterCommand <cmdwin> mru Mru<Space><Bar><Space>copen
@@ -744,9 +747,11 @@ hook_post_source = '''
 
 [[plugins]] # https://rcmdnk.com/blog/2017/11/12/computer-vim/
 repo = 'haya14busa/is.vim'
+# repo = 'tsuyoshicho/is.vim'
+# rev =  'develop'
 depends = ['vim-asterisk', 'vim-anzu', 'vim-search-pulse']
 hook_add = '''
-  " let g:is#do_default_mappings = 0
+  let g:is#do_default_mappings = 0
 '''
 hook_post_source = '''
   " keymap : auto
@@ -754,15 +759,27 @@ hook_post_source = '''
   " based on https://postd.cc/vim-galore-4/
   " nを前方へ、Nを後方へと固定
   " integraton anzu
-  map <expr> n v:searchforward ? '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse' : '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse'
-  map <expr> N v:searchforward ? '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse' : '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse'
+  nmap <expr> n v:searchforward
+    \ ? '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse'
+    \ : '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse'
+  nmap <expr> N v:searchforward
+    \ ? '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse'
+    \ : '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse'
 
   " integration asterisk
   " stay only
-  map *  <Plug>(asterisk-z*)<Plug>(is-nohl-1)<Plug>Pulse
-  map g* <Plug>(asterisk-gz*)<Plug>(is-nohl-1)<Plug>Pulse
-  map #  <Plug>(asterisk-z#)<Plug>(is-nohl-1)<Plug>Pulse
-  map g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)<Plug>Pulse
+  nmap *  <Plug>(asterisk-z*)<Plug>(is-nohl-1)<Plug>Pulse
+  xmap *  <Plug>(asterisk-z*)<Plug>(is-nohl-1)
+  omap *  <Plug>(asterisk-z*)<Plug>(is-nohl-1)
+  nmap g* <Plug>(asterisk-gz*)<Plug>(is-nohl-1)<Plug>Pulse
+  xmap g* <Plug>(asterisk-gz*)<Plug>(is-nohl-1)
+  omap g* <Plug>(asterisk-gz*)<Plug>(is-nohl-1)
+  nmap #  <Plug>(asterisk-z#)<Plug>(is-nohl-1)<Plug>Pulse
+  xmap #  <Plug>(asterisk-z#)<Plug>(is-nohl-1)
+  omap #  <Plug>(asterisk-z#)<Plug>(is-nohl-1)
+  nmap g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)<Plug>Pulse
+  xmap g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)
+  omap g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)
 
   augroup vimrc-init_is
     autocmd!
@@ -1043,7 +1060,7 @@ repo = 's417-lama/carbonpaper.vim'
 [[plugins]]
 repo = 'kristijanhusak/vim-carbon-now-sh'
 hook_post_source = '''
-  vnoremap <silent> <F5> :CarbonNowSh<CR>
+  xnoremap <silent> <F5> :CarbonNowSh<CR>
 '''
 
 [[plugins]]
@@ -1175,15 +1192,15 @@ repo = 'osyo-manga/vim-jplus'
 hook_add = '''
   " J の挙動を jplus.vim で行う
   nmap J <Plug>(jplus)
-  vmap J <Plug>(jplus)
+  xmap J <Plug>(jplus)
 
   " getchar() を使用して挿入文字を入力します
   nmap <Leader>J <Plug>(jplus-getchar)
-  vmap <Leader>J <Plug>(jplus-getchar)
+  xmap <Leader>J <Plug>(jplus-getchar)
 
   " inputで複数
   nmap <Leader>gJ <Plug>(jplus-input)
-  vmap <Leader>gJ <Plug>(jplus-input)
+  xmap <Leader>gJ <Plug>(jplus-input)
 
   " let g:jplus#config = {}
 
@@ -1394,8 +1411,8 @@ hook_add = '''
 hook_post_source = '''
   nmap + <Plug>(clurin-next)
   nmap - <Plug>(clurin-prev)
-  vmap + <Plug>(clurin-next)
-  vmap - <Plug>(clurin-prev)
+  xmap + <Plug>(clurin-next)
+  xmap - <Plug>(clurin-prev)
 '''
 
 [[plugins]]
@@ -1557,12 +1574,12 @@ hook_add = '''
 # '''
 # hook_post_source = '''
 #   " conflict vim built-in v/C-V operation(switch normal/visual-submode)
-#   " vmap v     <Plug>(expand_region_expand)
-#   " vmap <C-v> <Plug>(expand_region_shrink)
+#   " xmap v     <Plug>(expand_region_expand)
+#   " xmap <C-v> <Plug>(expand_region_shrink)
 #   " do not work
-#   " vmap w     <Plug>(expand_region_expand)
+#   " xmap w     <Plug>(expand_region_expand)
 #   " omap w     <Plug>(expand_region_expand)
-#   " vmap n     <Plug>(expand_region_shrink)
+#   " xmap n     <Plug>(expand_region_shrink)
 #   " omap n     <Plug>(expand_region_shrink)
 # '''
 
@@ -1611,8 +1628,8 @@ hook_add = '''
 hook_post_source = '''
   omap amb <Plug>(textobj-multiblock-a)
   omap imb <Plug>(textobj-multiblock-i)
-  vmap amb <Plug>(textobj-multiblock-a)
-  vmap imb <Plug>(textobj-multiblock-i)
+  xmap amb <Plug>(textobj-multiblock-a)
+  xmap imb <Plug>(textobj-multiblock-i)
 '''
 
 # カッコ系で複数の処理を実施し、マッチしたものor(listなら)一番内側を使う
@@ -1677,13 +1694,13 @@ hook_add = '''
 hook_post_source = '''
   omap imt <Plug>(textobj-multitextobj-i)
   omap amt <Plug>(textobj-multitextobj-a)
-  vmap imt <Plug>(textobj-multitextobj-i)
-  vmap amt <Plug>(textobj-multitextobj-a)
+  xmap imt <Plug>(textobj-multitextobj-i)
+  xmap amt <Plug>(textobj-multitextobj-a)
 
   omap amj <Plug>(textobj-multitextobj-jabraces-a)
   omap imj <Plug>(textobj-multitextobj-jabraces-i)
-  vmap amj <Plug>(textobj-multitextobj-jabraces-a)
-  vmap imj <Plug>(textobj-multitextobj-jabraces-i)
+  xmap amj <Plug>(textobj-multitextobj-jabraces-a)
+  xmap imj <Plug>(textobj-multitextobj-jabraces-i)
 '''
 
 # バッファ全体
@@ -1756,8 +1773,8 @@ hook_add = '''
 hook_post_source = '''
   " omap iF <Plug>(textobj-function-i)
   " omap aF <Plug>(textobj-function-a)
-  " vmap iF <Plug>(textobj-function-i)
-  " vmap aF <Plug>(textobj-function-a)
+  " xmap iF <Plug>(textobj-function-i)
+  " xmap aF <Plug>(textobj-function-a)
 '''
 
 # 関数内
@@ -1771,6 +1788,25 @@ depends = ['vim-textobj-function']
 [[plugins]]
 repo = 'kana/vim-textobj-indent'
 depends = ['vim-textobj-user']
+
+# 右辺左辺
+# a=h/l, i=h/l
+[[plugins]]
+repo = 'romgrk/equal.operator'
+hook_add = '''
+  let equal_operator_default_mappings = 0
+'''
+hook_post_source = '''
+  xmap i=h <Plug>(visual-lhs)
+  omap i=h <Plug>(operator-lhs)
+  xmap a=h <Plug>(visual-Lhs)
+  omap a=h <Plug>(operator-Lhs)
+
+  xmap i=l <Plug>(visual-rhs)
+  omap i=l <Plug>(operator-rhs)
+  xmap a=l <Plug>(visual-Rhs)
+  omap a=l <Plug>(operator-Rhs)
+'''
 
 # URL選択
 # au, iu
@@ -1829,8 +1865,8 @@ hook_post_source = '''
 
   " see https://vim-jp.org/blog/2015/06/30/visual-ctrl-a-ctrl-x.html
   " visual ctrl-x/ctrl-a
-  " vnoremap <c-a> <c-a>gv
-  " vnoremap <c-x> <c-x>gv
+  " xnoremap <c-a> <c-a>gv
+  " xnoremap <c-x> <c-x>gv
   " use speeddating if
 
   " g<C-A> と g<C-X> を使う事で簡単に連番を付与する事が出来る
@@ -1901,8 +1937,8 @@ hook_add = '''
 hook_post_source = '''
   omap as <Plug>(textobj-sandwich-auto-a)
   omap is <Plug>(textobj-sandwich-auto-i)
-  vmap as <Plug>(textobj-sandwich-auto-a)
-  vmap is <Plug>(textobj-sandwich-auto-i)
+  xmap as <Plug>(textobj-sandwich-auto-a)
+  xmap is <Plug>(textobj-sandwich-auto-i)
 '''
 
 # viwなど 選択状態にして<c-g>qで処理 強制改行
@@ -2038,7 +2074,7 @@ hook_post_source = '''
     let filelist = copy(a:list)
 
     call filter(filelist, 'Filepath.contains(v:val, root)')
-    return filelist[ : g:startify_files_number ]
+    return filelist[ : max([g:startify_files_number - 1, 1]) ]
   endfunction
 
   if exists('*mr#mru#list')
@@ -2080,7 +2116,7 @@ hook_post_source = '''
     call filter(mru_total_list, '!Filepath.contains(v:val, expand(g:user.dir.cache_home))')
     call filter(mru_total_list, { _,v -> s:skip_filter(v) })
 
-    let mru_total_list = mru_total_list[ : g:startify_files_number ]
+    let mru_total_list = mru_total_list[ : max([g:startify_files_number - 1, 1]) ]
 
     call map(mru_total_list, { k, v -> { 'line': fnamemodify(v, ":p:~") , 'path': v } })
     return mru_total_list
@@ -2266,7 +2302,7 @@ repo = 'tyru/open-browser.vim'
 hook_add = '''
   let g:netrw_nogx = 1 " disable netrw's gx mapping.
   nmap gx <Plug>(openbrowser-smart-search)
-  vmap gx <Plug>(openbrowser-smart-search)
+  xmap gx <Plug>(openbrowser-smart-search)
 '''
 
 [[plugins]]
@@ -2447,7 +2483,7 @@ hook_post_source = '''
 
   " usable define
   nnoremap <silent> <Leader>mp :<C-u>FgPt<CR>
-  " vnoremap <silent> <Leader>mp :<C-u>FgPt <need visual-select item><CR>
+  " xnoremap <silent> <Leader>mp :<C-u>FgPt <need visual-select item><CR>
   nnoremap <silent> <Leader>ma :<C-u>FgAg<CR>
 '''
 
@@ -2590,11 +2626,17 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'kitagry/vs-snippets'
+merged = 0
+
+[[plugins]]
 repo = 'hrsh7th/vim-vsnip-integ'
 depends = ['vim-lsp', 'asyncomplete.vim', 'vim-vsnip']
 
 [[plugins]]
 repo = 'mattn/vim-lsp-settings'
+# repo = 'tsuyoshicho/vim-lsp-settings'
+# rev  = 'develop'
 merged = 0
 depends = ['vim-lsp', 'vital.vim']
 hook_add = '''
@@ -2602,6 +2644,9 @@ hook_add = '''
   " ~/.local/share/vim-lsp-settings/
   let g:lsp_settings_servers_dir = expand(g:user.dir.data_home . '/vim-lsp-settings')
   call g:user.function.mkdir(g:lsp_settings_servers_dir)
+
+  let g:lsp_settings_global_settings_dir = expand(g:user.dir.config_home . '/vim-lsp-settings')
+  call g:user.function.mkdir(g:lsp_settings_global_settings_dir)
 
   " config
   " system-wide / per lsp server
@@ -4675,7 +4720,7 @@ hook_post_source = '''
 
   " Move to line
   " omap <Leader>L <Plug>(textobj-signjk-lines)
-  " vmap <Leader>L <Plug>(textobj-signjk-lines)
+  " xmap <Leader>L <Plug>(textobj-signjk-lines)
   map <Leader>L <Plug>(easymotion-bd-jk)
   nmap <Leader>L <Plug>(easymotion-overwin-line)
   " JK motions: Line motions
