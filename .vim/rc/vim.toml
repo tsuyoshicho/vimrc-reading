@@ -1,0 +1,2 @@
+[[plugins]]
+repo = 'roxma/vim-hug-neovim-rpc'

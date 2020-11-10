@@ -23,7 +23,7 @@ hook_add = '''
 '''
 hook_post_source = '''
   " dein no depend trick(need vim-pass)
-  if dein#tap('vim-pass')
+  if dein#is_sourced('vim-pass')
     function! s:dein_token_set() abort
       let g:dein#install_github_api_token = pass#get('Develop/Github')
     endfunction
@@ -96,16 +96,12 @@ depends = ['vital.vim']
 repo = 'Shougo/vimproc.vim'
 merged = 0
 hook_post_update = '''
-  " from 0Delta/vimrc
-  " if !has('nvim')
-  "   call dein#add('roxma/nvim-yarp')
-  "   call dein#add('roxma/vim-hug-neovim-rpc')
-  " endif
-
-  if dein#util#_is_windows()
-    let cmd = 'tools\\update-dll-mingw'
-  elseif dein#util#_is_cygwin()
-    let cmd = 'make -f make_cygwin.mak'
+  if g:user.system.windows
+    if !g:user.system.cygwin
+      let cmd = 'tools\\update-dll-mingw'
+    else
+      let cmd = 'make -f make_cygwin.mak'
+    endif
   elseif executable('gmake')
     let cmd = 'gmake'
   else
@@ -114,8 +110,11 @@ hook_post_update = '''
   let g:dein#plugin.build = cmd
 '''
 
-# [[plugins]]
-# repo = 'prabirshrestha/async.vim'
+[[plugins]]
+repo = 'roxma/nvim-yarp'
+
+[[plugins]]
+repo = 'prabirshrestha/async.vim'
 
 [[plugins]]
 repo = 'mattn/vimtweak'
@@ -138,6 +137,50 @@ hook_post_source = '''
     " nmap --- <Plug>(TransparencyOff)
     nmap <F4> <Plug>(TransparencyToggle)
   endif
+'''
+
+[[plugins]]
+repo = 'liuchengxu/vim-which-key'
+hook_add = '''
+  " dynamic mapping
+  function s:whichkey_map(mapkey, rawkey) abort
+    let cmdstr = printf('nnoremap <silent> %s :<c-u>WhichKey ''%s''<CR>', a:mapkey, a:rawkey)
+    call execute(cmdstr)
+    " echomsg cmdstr
+    return cmdstr
+  endfunction
+
+  function! g:user.plugin.info.whichkey.enter() abort
+    let self.laststatus = &laststatus
+    let self.showmode   = &showmode
+    let self.ruler      = &ruler
+
+    " echomsg 'enter:' self
+    " echomsg 'enter:' &laststatus &showmode &ruler
+    set laststatus=0
+    set noshowmode
+    set noruler
+
+    autocmd BufLeave * <buffer> :call g:user.plugin.info.whichkey.leave()
+  endfunction
+
+  function! g:user.plugin.info.whichkey.leave() abort
+    let &laststatus = self.laststatus
+    let &showmode   = self.showmode
+    let &ruler      = self.ruler
+
+    " echomsg 'leave:' self
+    " echomsg 'leave:' &laststatus &showmode &ruler
+  endfunction
+
+  augroup vimrc_init_which_key
+    autocmd!
+    " mapping whitch key
+    autocmd VimEnter * nested :call map(copy(g:user.plugin.info.whichkey.mapkey), { k, v -> s:whichkey_map(k, v) })
+    " set & unset opt
+    " autocmd FileType which_key :call g:user.plugin.info.whichkey.enter()
+    " not work yet TODO:fix
+  augroup END
 '''
 
 [[plugins]]
@@ -195,9 +238,9 @@ repo = 'tyru/empty-prompt.vim'
 depends = ['vital.vim']
 hook_add = '''
   " : works as <C-w>:
-  autocmd MyAutoGroup VimEnter * call empty_prompt#map(#{lhs: ':', rhs: '<C-w>:'})
+  autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: ':', rhs: '<C-w>:'})
   " <Esc> works as <C-w>N
-  autocmd MyAutoGroup VimEnter * call empty_prompt#map(#{lhs: '<Esc>', rhs: '<C-w>N'})
+  autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: '<Esc>', rhs: '<C-w>N'})
 '''
 hook_post_source = '''
   let s:prompt = {}
@@ -329,7 +372,7 @@ hook_add = '''
     autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
   endfunction
 
-  augroup vimrc_init-fern
+  augroup vimrc_init_fern
     autocmd!
     autocmd FileType fern nested call s:fern_init()
   augroup END
@@ -393,7 +436,7 @@ hook_add = '''
     " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
   endfunction
 
-  augroup vimrc_init-fern-funcall
+  augroup vimrc_init_fern_funcall
     autocmd!
     autocmd! FileType fern call s:fern_init_funcall()
   augroup END
@@ -423,7 +466,7 @@ hook_add = '''
       \ <Plug>(fern-action-tcd:root)
   endfunction
 
-  augroup vimrc_init-fern-collapse-or-leave
+  augroup vimrc_init_fern_collapse_or_leave
     autocmd!
     autocmd FileType fern nested call s:fern_init_collapse_or_leave()
   augroup END
@@ -437,7 +480,7 @@ hook_add = '''
     nmap <buffer><silent> ^ <Plug>(fern-action-project-top)
   endfunction
 
-  augroup vimrc_init-fern-project-top
+  augroup vimrc_init_fern_project_top
     autocmd!
     autocmd FileType fern nested call s:fern_init_project_top()
   augroup END
@@ -483,7 +526,7 @@ repo = 'lambdalisue/vim-protocol'
 #   " need git support for 0
 #   let g:dirvish_relative_paths = 1
 #
-#   augroup vimrc_init-dirvish
+#   augroup vimrc_init_dirvish
 #     autocmd!
 #
 #     " re-map only dirvish
@@ -584,7 +627,7 @@ hook_post_source = '''
     \ g:user.rootmarker.fileglob])
   unlet s:List
 
-  augroup vimrc-init_findroot
+  augroup vimrc_init_findroot
     autocmd!
     autocmd User StartifyBufferOpened :FindRoot!
   augroup END
@@ -684,7 +727,7 @@ hook_add = '''
   \  }
   \}
 
-  augroup vimrc-init_over
+  augroup vimrc_init_over
     autocmd!
     " Pulses the first match after hitting the enter key
     autocmd User OverCmdLineExecute nested :call search_pulse#Pulse()
@@ -712,13 +755,7 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'lambdalisue/reword.vim'
-depends = ['vim-altercmd', 'vim-over']
-hook_add = '''
-  " if dein#tap('vim-over')
-  "   let g:reword_disable_seamless_preview = 1
-  " endif
-  " over not work normal built-in command (r,d,v and so on).
-'''
+depends = ['vim-altercmd']
 hook_post_source = '''
   AlterCommand          rewo[rd] Reword
   AlterCommand <cmdwin> rewo[rd] Reword
@@ -739,7 +776,7 @@ hook_post_source = '''
   " setup move to is.vim
 
   " update status
-  augroup vimrc-init_anzu
+  augroup vimrc_init_anzu
     autocmd!
     autocmd CursorMoved,WinEnter * AnzuUpdateSearchStatus
   augroup END
@@ -760,11 +797,11 @@ hook_post_source = '''
   " nを前方へ、Nを後方へと固定
   " integraton anzu
   nmap <expr> n v:searchforward
-    \ ? '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse'
-    \ : '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse'
+    \ ? "\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse"
+    \ : "\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse"
   nmap <expr> N v:searchforward
-    \ ? '\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse'
-    \ : '\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse'
+    \ ? "\<Plug>(is-nohl)\<Plug>(anzu-N-with-echo)\<Plug>Pulse"
+    \ : "\<Plug>(is-nohl)\<Plug>(anzu-n-with-echo)\<Plug>Pulse"
 
   " integration asterisk
   " stay only
@@ -781,7 +818,7 @@ hook_post_source = '''
   xmap g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)
   omap g# <Plug>(asterisk-gz#)<Plug>(is-nohl-1)
 
-  augroup vimrc-init_is
+  augroup vimrc_init_is
     autocmd!
     " Pulses the first match after hitting the enter key
     autocmd User IncSearchExecute nested :call search_pulse#Pulse()
@@ -837,10 +874,6 @@ repo = 'itchyny/vim-cursorword'
 
 # Colortheme Util
 ##############
-[[plugins]]
-repo = 'vim-scripts/ScrollColors'
-# repo = 'chumakd/ScrollColors'
-
 [[plugins]] # color edit
 repo = 'rbtnn/vim-coloredit'
 
@@ -951,7 +984,7 @@ repo = 'thinca/vim-showtime'
 repo = 'drmingdrmer/vim-toggle-quickfix'
 hook_post_source = '''
   nmap <C-g><C-o> <Plug>window:quickfix:loop
-  autocmd MyAutoGroup FileType qf nested nmap <buffer> q <Plug>window:quickfix:loop
+  autocmd vimrc_init_core FileType qf nested nmap <buffer> q <Plug>window:quickfix:loop
 '''
 
 [[plugins]]
@@ -996,7 +1029,7 @@ hook_post_source = '''
 [[plugins]] # folding support
 repo = 'lambdalisue/readablefold.vim'
 hook_post_source = '''
-  autocmd MyAutoGroup FileType markdown nested setlocal foldtext=readablefold#foldtext()
+  autocmd vimrc_init_core FileType markdown nested setlocal foldtext=readablefold#foldtext()
 
   " generic folding setting start
   set foldcolumn=3
@@ -1022,7 +1055,7 @@ hook_post_source = '''
 #   " need post_source for use defined function
 #   set foldtext=FoldCCtext()
 #   " overwrite markdown-ex foldtext function
-#   autocmd MyAutoGroup FileType markdown nested setlocal foldtext=FoldCCtext()
+#   autocmd vimrc_init_core FileType markdown nested setlocal foldtext=FoldCCtext()
 #
 #   " generic folding setting start
 #   set foldcolumn=3
@@ -1418,7 +1451,7 @@ hook_post_source = '''
 [[plugins]]
 # repo = 'kamykn/spelunker.vim'
 repo = 'tsuyoshicho/spelunker.vim'
-rev  = 'feature/ctlp-improve'
+rev  = 'develop'
 depends = ['ctrlp.vim']
 hook_add = '''
   " ctrlp ext
@@ -1428,7 +1461,7 @@ hook_add = '''
   " Enable spelunker.vim. (default: 1)
   " 1: enable
   " 0: disable
-  " let g:enable_spelunker_vim = 1
+  let g:enable_spelunker_vim = 0
 
   " Enable spelunker.vim on readonly files or buffer. (default: 0)
   " 1: enable
@@ -1456,7 +1489,7 @@ hook_add = '''
   " let g:spelunker_disable_backquoted_checking = 1
 
   " Max amount of word suggestions. (default: 15)
-  autocmd MyAutoGroup VimEnter,VimResized * let g:spelunker_max_suggest_words = min([(&lines/4), 10]) - 1
+  autocmd vimrc_init_core VimEnter,VimResized * let g:spelunker_max_suggest_words = min([(&lines/4), 10]) - 1
 
   " Max amount of highlighted words in buffer. (default: 100)
   " let g:spelunker_max_hi_words_each_buf = 100
@@ -1479,7 +1512,7 @@ hook_add = '''
 
   " Create own custom autogroup to enable spelunker.vim for specific filetypes.
 
-  " autocmd MyAutoGroup Filetype startify
+  " autocmd vimrc_init_core Filetype startify
   "      \ if g:enable_spelunker_vim  | call spelunker#toggle() | endif
 
   " Override highlight group name of incorrectly spelled words. (default:
@@ -1492,6 +1525,11 @@ hook_add = '''
 
   " skip word
   let g:spelunker_white_list_for_user = ['tsuyoshi_cho']
+
+  " which key
+  let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+    \  'Z'      : 'Z',
+    \})
 '''
 hook_post_source = '''
   set nospell
@@ -1618,7 +1656,7 @@ hook_add = '''
           \ ]
   endfunction
 
-  augroup vimrc-init_multiblock_hook_add
+  augroup vimrc_init_multiblock_hook_add
     autocmd!
     autocmd FileType tex,latex,plaintex nested call <SID>multiblock_hook_add_tex()
     autocmd FileType markdown           nested call <SID>multiblock_hook_add_markdown()
@@ -1794,7 +1832,7 @@ depends = ['vim-textobj-user']
 [[plugins]]
 repo = 'romgrk/equal.operator'
 hook_add = '''
-  let equal_operator_default_mappings = 0
+  let g:equal_operator_default_mappings = 0
 '''
 hook_post_source = '''
   xmap i=h <Plug>(visual-lhs)
@@ -1859,9 +1897,11 @@ hook_post_source = '''
   " You can use following operator.
 
   " This operator like :'<,'>RengBang (use default options).
-  map zS <Plug>(operator-rengbang)
+  omap zS <Plug>(operator-rengbang)
+  xmap zS <Plug>(operator-rengbang)
   " This operator like :'<,'>RengBangUsePrev (use previous options).
-  map zP <Plug>(operator-rengbang-useprev)
+  omap zP <Plug>(operator-rengbang-useprev)
+  xmap zP <Plug>(operator-rengbang-useprev)
 
   " see https://vim-jp.org/blog/2015/06/30/visual-ctrl-a-ctrl-x.html
   " visual ctrl-x/ctrl-a
@@ -1960,7 +2000,8 @@ hook_add = '''
 repo = 'kana/vim-operator-replace'
 depends = ['vim-operator-user']
 hook_add = '''
-  map zr <Plug>(operator-replace)
+  omap zr <Plug>(operator-replace)
+  xmap zr <Plug>(operator-replace)
 '''
 
 [[plugins]] # replace operator
@@ -1996,7 +2037,8 @@ repo = 'tommcdo/vim-exchange'
 repo = 'emonkak/vim-operator-sort'
 depends = ['vim-operator-user']
 hook_add = '''
-  map zs <Plug>(operator-sort)
+  omap zs <Plug>(operator-sort)
+  xmap zs <Plug>(operator-sort)
 '''
 
 # viwなど 選択状態にしてzu/zUで処理 / 当座はciwで
@@ -2004,8 +2046,11 @@ hook_add = '''
 repo = 'emonkak/vim-operator-comment'
 depends = ['vim-operator-user']
 hook_add = '''
-  map zu <Plug>(operator-comment)
-  map zU <Plug>(operator-uncomment)
+  omap zu <Plug>(operator-comment)
+  xmap zu <Plug>(operator-comment)
+
+  omap zU <Plug>(operator-uncomment)
+  xmap zU <Plug>(operator-uncomment)
 '''
 
 # viwなど 選択状態にしてzc/zCで処理
@@ -2013,8 +2058,11 @@ hook_add = '''
 repo = 'mopp/vim-operator-convert-case'
 depends = ['vim-operator-user']
 hook_add = '''
-  map zc <Plug>(operator-convert-case-loop)
-  map zC <Plug>(operator-convert-case-convert)
+  omap zc <Plug>(operator-convert-case-loop)
+  xmap zc <Plug>(operator-convert-case-loop)
+
+  omap zC <Plug>(operator-convert-case-convert)
+  xmap zC <Plug>(operator-convert-case-convert)
 '''
 
 # viwなど 選択状態にしてzt/zlで検索
@@ -2022,8 +2070,11 @@ hook_add = '''
 repo = 'tyru/operator-reverse.vim'
 depends = ['vim-operator-user']
 hook_add = '''
-  map zt <Plug>(operator-reverse-text)
-  map zl <Plug>(operator-reverse-lines)
+  omap zt <Plug>(operator-reverse-text)
+  xmap zt <Plug>(operator-reverse-text)
+
+  omap zl <Plug>(operator-reverse-lines)
+  xmap zl <Plug>(operator-reverse-lines)
 '''
 
 # Easy Operator(select,yank and other)
@@ -2118,7 +2169,8 @@ hook_post_source = '''
 
     let mru_total_list = mru_total_list[ : max([g:startify_files_number - 1, 1]) ]
 
-    call map(mru_total_list, { k, v -> { 'line': fnamemodify(v, ":p:~") , 'path': v } })
+    call map(mru_total_list, { _, v -> { 'line': fnamemodify(v, ":p:~") , 'path': v } })
+    call map(mru_total_list, { _, v -> extend(v, {'line': g:user.function.fileicon(v.path) . '  ' . v.line }, "force") })
     return mru_total_list
   endfunction
 
@@ -2136,7 +2188,8 @@ hook_post_source = '''
     endif
     call filter(mru_current_list, { _,v -> s:skip_filter(v) })
 
-    call map(mru_current_list, { k, v -> { 'line': fnamemodify(v, ":p:.") , 'path': v } })
+    call map(mru_current_list, { _, v -> { 'line': fnamemodify(v, ":p:.") , 'path': v } })
+    call map(mru_current_list, { _, v -> extend(v, {'line': g:user.function.fileicon(v.path) . '  ' . v.line }, "force") })
     return mru_current_list
   endfunction
 
@@ -2145,7 +2198,8 @@ hook_post_source = '''
     if exists('g:memolist_path')
       let mru_memo_list = s:file_contains_list(g:memolist_path, s:mru_list())
 
-      call map(mru_memo_list, { k, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+      call map(mru_memo_list, { _, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+      call map(mru_memo_list, { _, v -> extend(v, {'line': g:user.function.fileicon(v.path) . '  ' . v.line }, "force") })
     endif
     return mru_memo_list
   endfunction
@@ -2155,7 +2209,8 @@ hook_post_source = '''
     if exists('g:junkfile#directory')
       let mru_junk_list = s:file_contains_list(g:junkfile#directory, s:mru_list())
 
-      call map(mru_junk_list, { k, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+      call map(mru_junk_list, { _, v -> { 'line': fnamemodify(v, ":p:t") , 'path': v } })
+      call map(mru_junk_list, { _, v -> extend(v, {'line': g:user.function.fileicon(v.path) . '  ' . v.line }, "force") })
     endif
 
     return mru_junk_list
@@ -2176,10 +2231,14 @@ hook_post_source = '''
   let g:startify_bookmarks = [
     \ {'g': '~/.gvimrc'},
     \ {'x': '~/.vimrc'},
-    \ {'c': '~/.vim/rc/colorscheme.toml'},
-    \ {'d': '~/.vim/rc/dein.toml'},
-    \ {'z': '~/.vim/rc/dein_lazy.toml'},
     \ {'w': '~/.bashrc'},
+    \ '~/.vim/rc/colorscheme.toml',
+    \ '~/.vim/rc/dein.toml',
+    \ '~/.vim/rc/dein_lazy.toml',
+    \ '~/.vim/rc/vim.toml',
+    \ '~/.vim/rc/vim_lazy.toml',
+    \ '~/.vim/rc/nvim.toml',
+    \ '~/.vim/rc/nvim_lazy.toml',
     \]
 
   " no need depend : write as text (if no-exist , no work)
@@ -2239,7 +2298,7 @@ hook_post_source = '''
   let g:startify_skiplist = s:List.concat([get(g:, 'startify_skiplist',[]), s:special_skip_list, s:help_skip_list])
 
   " let g:startify_fortune_use_unicode=1
-  " autocmd MyAutoGroup User Startified nested setlocal ambiwidth=single
+  " autocmd vimrc_init_core User Startified nested setlocal ambiwidth=single
   " oops: open mru and other keep ambiwidth...
 
   let s:logo = [
@@ -2273,25 +2332,34 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 't9md/vim-choosewin'
-hook_add = '''
-  " use overlay feature
-  let g:choosewin_overlay_enable = 1
+repo = 'wesQ3/vim-windowswap'
 
-  " workaround for the overlay font being broken on mutibyte buffer.
-  " let g:choosewin_overlay_clear_multibyte = 1
-'''
+# [[plugins]]
+# repo = "t9md/vim-choosewin"
+# hook_add = '''
+#   " use overlay feature
+#   let g:choosewin_overlay_enable = 1
+#
+#   " workaround for the overlay font being broken on mutibyte buffer.
+#   " let g:choosewin_overlay_clear_multibyte = 1
+# '''
+# hook_post_source = '''
+#   " invoke with '-' : original
+#   " key bind to ',-'
+#   nmap  <Leader>-  <Plug>(choosewin)
+# '''
+
+[[plugins]]
+repo = 'bignimbus/you-are-here.vim'
 hook_post_source = '''
-  " invoke with '-' : original
-  " key bind to ',-'
-  nmap  <Leader>-  <Plug>(choosewin)
+  nnoremap <silent> <Leader>- :call you_are_here#ToggleFor(3000)<CR>
 '''
 
 # [[plugins]]
 # repo = 'justincampbell/vim-eighties'
 # hook_add = '''
 #   let g:eighties_enabled = 1
-#   autocmd MyAutoGroup VimEnter,VimResized * let g:eighties_minimum_width = min([(&columns * 2 / 3), 60])
+#   autocmd vimrc_init_core VimEnter,VimResized * let g:eighties_minimum_width = min([(&columns * 2 / 3), 60])
 #   let g:eighties_extra_width = 10 " Increase this if you want some extra room
 #   let g:eighties_compute = 1 " Disable this if you just want the minimum + extra
 #   let g:eighties_bufname_additional_patterns = [] " Defaults to [], 'fugitiveblame' is only an example. Takes a comma delimited list of bufnames as strings.
@@ -2473,7 +2541,7 @@ repo = 'LeafCage/taillight.vim'
 hook_add = '''
   " セミコロン末尾の言語を追加
   " JavaScriptは除外(手動で)
-  " autocmd MyAutoGroup FileType c,cpp,java nested TailLight ; /\* \*/
+  " autocmd vimrc_init_core FileType c,cpp,java nested TailLight ; /\* \*/
 '''
 
 [[plugins]]
@@ -2497,7 +2565,7 @@ hook_add = '''
   let g:lsp_diagnostics_enabled = 1  " default 1
 
   let s:float_ok = 0
-  if has('nvim')
+  if g:user.system.nvim
     let s:float_ok = 1
   elseif has('popupwin') || exists('*popup_create')
     let s:float_ok = 1
@@ -2554,7 +2622,7 @@ hook_add = '''
 
   function! s:lsp_user_buffer_enabled() abort
     " option setup
-    if dein#tap('asyncomplete-lsp.vim') && !dein#tap('asyncomplete-omni.vim')
+    if dein#is_sourced('asyncomplete-lsp.vim')
       " use vim-lsp in complete engine asyncomplete and source omni do not
       " load , set omni vim-lsp function.
       setlocal omnifunc=lsp#complete
@@ -2590,7 +2658,7 @@ hook_add = '''
     nmap <silent><buffer> [r         <plug>(lsp-previous-reference)
   endfunction
 
-  augroup vimrc_init-vim-lsp
+  augroup vimrc_init_vim_lsp
     autocmd!
     autocmd User lsp_setup          nested call s:lsp_user_setup()
     autocmd User lsp_buffer_enabled nested call s:lsp_user_buffer_enabled()
@@ -2719,6 +2787,7 @@ hook_add = '''
     \  'workspace_config': {
     \    'yaml': {
     \       'schemas': {
+    \         'https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json' : 'docker-compose.y*ml',
     \       },
     \       'completion': v:true,
     \       'hover': v:true,
@@ -2726,7 +2795,8 @@ hook_add = '''
     \     }
     \   }
     \ }
-  " scheme example  'https://mattn.github.io/efm-langserver/schema.json': '/efm-langserver/config.yaml'
+  " scheme example
+  "  'https://mattn.github.io/efm-langserver/schema.json': '/efm-langserver/config.yaml'
 
   " per filetype
   " let g:lsp_settings_filetype_vim    = ['vimscript-language-server']
@@ -2787,7 +2857,7 @@ hook_add = '''
 hook_post_source = '''
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
 
-  " augroup vimrc_init-asyncomplete
+  " augroup vimrc_init_asyncomplete
   "   autocmd!
   "   " asyncomplete original
   "   " autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
@@ -2841,9 +2911,9 @@ hook_source = '''
 '''
 
 [[plugins]]
-# repo = 'yuki-ycino/asyncomplete-dictionary'
-repo = 'tsuyoshicho/asyncomplete-dictionary'
-rev  = 'develop'
+repo = 'yuki-ycino/asyncomplete-dictionary'
+# repo = 'tsuyoshicho/asyncomplete-dictionary'
+# rev  = 'develop'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:false
@@ -2877,7 +2947,7 @@ hook_source = '''
 
 [[plugins]]
 repo = 'high-moctane/asyncomplete-nextword.vim'
-depends = ['asyncomplete.vim']
+depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
   if v:false
     let $NEXTWORD_DATA_PATH = expand(g:user.dir.dictionary . '/nextword')
@@ -2896,7 +2966,7 @@ hook_source = '''
 
 [[plugins]]
 repo = 'gonzoooooo/asyncomplete-look.vim'
-depends = ['asyncomplete.vim']
+depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
   if v:false
     if executable('look')
@@ -3122,7 +3192,7 @@ hook_add = '''
   call g:user.function.mkdir(g:ctrlp_cache_dir)
 
   " CtrlPのウィンドウ最大高さ
-  autocmd MyAutoGroup VimEnter,VimResized *
+  autocmd vimrc_init_core VimEnter,VimResized *
     \ let g:ctrlp_match_window = 'max:' . string(min([(&lines/3), 20]) - 1)
 
   " 無視するディレクトリ
@@ -3357,6 +3427,8 @@ hook_add = '''
 
 [[plugins]] # w3m,lynx,wwwrenderer-vimのどれかが必要
 repo = 'thinca/vim-ref'
+# repo = 'tsuyoshicho/vim-ref'
+# rev  = 'develop'
 depends = ['wwwrenderer-vim']
 # on_if= 'executable("lynx")' 現在の環境構築ではパスを通してない
 hook_add = '''
@@ -3392,19 +3464,9 @@ repo = 'osyo-manga/quickrun-hook-u-nya-'
 repo = 'mattn/vim-quickrunex'
 
 [[plugins]]
-repo = 'lambdalisue/vim-quickrun-neovim-job'
-
-[[plugins]]
 repo = 'thinca/vim-quickrun'
 depends = ['vim-altercmd', 'vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex']
 hook_add = '''
-  " <Plug>(precious-quickrun-op) in osyo-manga/vim-precious
-  if dein#tap('vim-precious') " after load support : not dein#is_sourced
-    nmap <Leader>o <Plug>(precious-quickrun-op)
-  endif
-
-  " if untype buffer, prev run timing type detect work hook
-  "
   " config
   let g:quickrun_config = get(g:, 'quickrun_config', {})
 
@@ -3504,8 +3566,8 @@ hook_add = '''
       let g:quickrun_config._['runner'] = 'vimproc'
       let g:quickrun_config._['runner/vimproc/sleep'] = 30
       let g:quickrun_config._['runner/vimproc/updatetime'] = 50
-    elseif has('job') || has('nvim')
-      if has('nvim')
+    elseif has('job') || (g:user.system.nvim && dein#tap('vim-quickrun-neovim-job'))
+      if g:user.system.nvim
         let g:quickrun_config._['runner'] = 'neovim_job'
       else
         let g:quickrun_config._['runner'] = 'job'
@@ -3515,9 +3577,9 @@ hook_add = '''
     endif
   endfunction
 
-  augroup vimrc_init-quickrun
+  augroup vimrc_init_quickrun
     autocmd!
-    autocmd VimEnter * nested :call s:runner_setup() | autocmd! vimrc_init-quickrun
+    autocmd VimEnter * nested :call s:runner_setup() | autocmd! vimrc_init_quickrun
   augroup END
 
   " mapping
@@ -3566,6 +3628,10 @@ hook_post_source = '''
 
   call quickrun#module#register(s:clear_hook, 1)
   unlet s:clear_hook
+
+  if dein#is_sourced('vim-precious')
+    nmap <Leader>o <Plug>(precious-quickrun-op)
+  endif
 
   " thanks ycino
   AlterCommand          r[un] QuickRun
@@ -3634,7 +3700,7 @@ hook_add = '''
     \ nr2char(0xf0f6),
     \ ]
 
-  augroup vimrc-init_nerdfont
+  augroup vimrc_init_nerdfont
     autocmd!
     autocmd FileType fern     call glyph_palette#apply()
     autocmd FileType startify call glyph_palette#apply()
@@ -3684,7 +3750,7 @@ hook_add = '''
 [[plugins]]
 repo = 'tpope/vim-fugitive'
 hook_add = '''
-  augroup vimrc_init-fugitive
+  augroup vimrc_init_fugitive
     autocmd!
     " based on https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
     autocmd QuickFixCmdPost Ggrep nested cwindow
@@ -3703,7 +3769,7 @@ hook_add = '''
   call pass#get_startup('g:RHUBARB_TOKEN','Develop/Github')
 '''
 hook_post_source = '''
-  autocmd MyAutoGroup Filetype gitcommit,gitrebase nested
+  autocmd vimrc_init_core Filetype gitcommit,gitrebase nested
     \ setlocal omnifunc=rhubarb#omnifunc
 '''
 
@@ -3742,7 +3808,7 @@ hook_post_source = '''
     nmap <buffer><C-n> <Plug>(auto_git_diff_scroll_down_half)
     nmap <buffer><C-p> <Plug>(auto_git_diff_scroll_up_half)
   endfunction
-  augroup vimrc_init-auto-git-diff
+  augroup vimrc_init_auto_git_diff
     autocmd!
     autocmd FileType gitrebase nested call <SID>setup_auto_git_diff()
   augroup END
@@ -3869,8 +3935,10 @@ hook_add = '''
 '''
 hook_post_source = '''
   " need lightline-buffer
-  set showtabline=2 " 常にタブラインを表示
-  set hidden        " バッファが編集中でもその他のファイルを開けるように
+  " " 常にタブラインを表示
+  " set showtabline=2
+  " " バッファが編集中でもその他のファイルを開けるように
+  " set hidden
 
   " " remap arrow keys
   " nnoremap <silent> <Left>  :bprev<CR>
@@ -3901,13 +3969,20 @@ hook_add = '''
   endif
 '''
 
+[[plugins]]
+repo = 'mkalinski/vim-lightline_tabpagecount'
+depends = ['lightline.vim']
+hook_add = '''
+  let g:lightline_tabpagecount#format = '(w:%d,b:%d)'
+'''
+
 # lightline setting use lightline-delphinus
 # based on https://qiita.com/delphinus/items/af5809b587f2af0a9f7f
 [[plugins]]
 repo = 'delphinus/lightline-delphinus'
 # repo = 'tsuyoshicho/lightline-delphinus'
 # rev  = 'develop'
-depends = ['lightline.vim', 'lightline-buffer', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'vista.vim', 'vim-signify', 'gina.vim', 'StatuslineUpateTimer.vim']
+depends = ['lightline.vim', 'lightline-buffer', 'vim-lightline_tabpagecount', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'vista.vim', 'vim-signify', 'gina.vim', 'StatuslineUpateTimer.vim']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -3948,15 +4023,13 @@ hook_post_source = '''
     \ 'active': {
     \   'left' : [
     \     [ 'mode', 'paste' ],
-    \     [ 'gitbranch', 'signify', 'lsp_count'],
-    \     [ 'filepath' ],
-    \     [ 'filename', 'method', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning']
+    \     [ 'gitbranch', 'filepath', 'filename', 'method' ],
+    \     [ 'signify', 'lsp_count', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning']
     \   ],
     \   'right': [
-    \     [ 'sky_color_clock' ],
-    \     [ 'lineinfo', 'percent', 'anzu', 'submode' ],
-    \     [ 'fileformat', 'fileencoding', 'filetype' ],
-    \     [ 'char_code' ],
+    \     [ 'lineinfo', 'percent',  'sky_color_clock' ],
+    \     [ 'fileformat', 'fileencoding', 'filetype', 'char_code' ],
+    \     [ 'anzu', 'submode' ],
     \   ],
     \ },
     \ 'inactive': {
@@ -4019,6 +4092,13 @@ hook_post_source = '''
     \ },
     \ 'separator': { 'left': nr2char(0xe0b0), 'right': nr2char(0xe0b2) },
     \ 'subseparator': { 'left': nr2char(0xe0b1), 'right': nr2char(0xe0b3) },
+    \ 'tab_component_function': {
+    \   'tabpagecount': 'lightline_tabpagecount#component',
+    \ },
+    \ 'tab': {
+    \   'active'   : ['tabnum', 'filename', 'tabpagecount', 'modified'],
+    \   'inactive' : ['tabnum', 'filename', 'tabpagecount', 'modified'],
+    \ },
     \ 'tabline': {
     \   'left'  : [ [ 'bufferinfo' ],
     \               [ 'separator' ],
@@ -4062,17 +4142,17 @@ hook_add = '''
   " if has('gui_running')
   "   " set background=light
   "   set background=dark
-  "   augroup vimrc_init-night-and-day
+  "   augroup vimrc_init_night_and_day
   "     autocmd!
-  "     autocmd VimEnter * nested colorscheme gruvbox | autocmd! vimrc_init-night-and-day
+  "     autocmd VimEnter * nested colorscheme gruvbox | autocmd! vimrc_init_night_and_day
   "   augroup END
   " else
   "   " set background=light
   "   " icebergはdark固定
   "   set background=dark
-  "   augroup vimrc_init-night-and-day
+  "   augroup vimrc_init_night_and_day
   "     autocmd!
-  "     autocmd VimEnter * nested colorscheme iceberg | autocmd! vimrc_init-night-and-day
+  "     autocmd VimEnter * nested colorscheme iceberg | autocmd! vimrc_init_night_and_day
   "   augroup END
   " endif
 
@@ -4162,11 +4242,19 @@ hook_post_source = '''
 repo = 'tyru/columnskip.vim'
 hook_post_source = '''
   " like tmhedberg/indent-motion
-  map mk <Plug>(columnskip:nonblank:prev)
-  map mj <Plug>(columnskip:nonblank:next)
+  nmap mk <Plug>(columnskip:nonblank:prev)
+  omap mk <Plug>(columnskip:nonblank:prev)
+  xmap mk <Plug>(columnskip:nonblank:prev)
+  nmap mj <Plug>(columnskip:nonblank:next)
+  omap mj <Plug>(columnskip:nonblank:next)
+  xmap mj <Plug>(columnskip:nonblank:next)
 
-  map mK <Plug>(columnskip:first-nonblank:prev)
-  map mJ <Plug>(columnskip:first-nonblank:next)
+  nmap mK <Plug>(columnskip:first-nonblank:prev)
+  omap mK <Plug>(columnskip:first-nonblank:prev)
+  xmap mK <Plug>(columnskip:first-nonblank:prev)
+  nmap mJ <Plug>(columnskip:first-nonblank:next)
+  omap mJ <Plug>(columnskip:first-nonblank:next)
+  xmap mJ <Plug>(columnskip:first-nonblank:next)
 '''
 
 # [[plugins]]
@@ -4179,11 +4267,18 @@ hook_post_source = '''
 #   map <Leader><C-k> <Plug>(edgemotion-k)
 # '''
 
+# [[plugins]]
+# repo = 'bronson/vim-trailing-whitespace'
+# hook_add = '''
+#   " disable
+#   let g:extra_whitespace_ignored_filetypes = copy(g:user.filetype['ignore_whitespace'])
+# '''
+
 [[plugins]]
-repo = 'bronson/vim-trailing-whitespace'
+repo = 'ntpeters/vim-better-whitespace'
 hook_add = '''
-  let g:extra_whitespace_ignored_filetypes =
-    \ ['markdown', 'startify', 'nerdtree', 'tagbar', 'unite', 'fern']
+  " disable
+  let g:better_whitespace_filetypes_blacklist = copy(g:user.filetype['ignore_whitespace'])
 '''
 
 [[plugins]]
@@ -4195,7 +4290,7 @@ hook_post_source = '''
   " https://qiita.com/tmsanrinsha/items/d6c11f2b7788eb24c776
 
   " add non zenspace (UCS spaces)
-  augroup vimrc_init-zenspace
+  augroup vimrc_init_zenspace
     autocmd!
     autocmd VimEnter,WinEnter * nested match ZenSpace /\%u180E\|\%u2000\|\%u2001\|\%u2002\|\%u2003\|\%u2004\|\%u2005\|\%u2006\|\%u2007\|\%u2008\|\%u2009\|\%u200A\|\%u2028\|\%u2029\|\%u202F\|\%u205F\|\%u3000/
   augroup END
@@ -4240,8 +4335,8 @@ hook_add = '''
 '''
 hook_post_source = '''
   " with Goyo
-  autocmd! MyAutoGroup User GoyoEnter Limelight
-  autocmd! MyAutoGroup User GoyoLeave Limelight!
+  autocmd! vimrc_init_core User GoyoEnter Limelight
+  autocmd! vimrc_init_core User GoyoLeave Limelight!
 '''
 
 [[plugins]]
@@ -4293,7 +4388,7 @@ hook_add = '''
 # '''
 # hook_post_source = '''
 #   " based on http://d.hatena.ne.jp/osyo-manga/20140722/1406040828
-#   augroup vimrc_init-indentLine
+#   augroup vimrc_init_indentLine
 #     autocmd!
 #     " precious.vim が filetype を切り替える度に indentLine をリセットする
 #     autocmd User PreciousFileType IndentLinesReset
@@ -4314,7 +4409,7 @@ depends = ['vim-operator-user', 'vim-repeat']
 [[plugins]]
 repo = 'tweekmonster/braceless.vim'
 hook_add = '''
-  augroup vimrc_init-braceless
+  augroup vimrc_init_braceless
     autocmd!
     autocmd FileType python           nested BracelessEnable +indent
     autocmd FileType haml,yaml,coffee nested BracelessEnable +indent +fold +highlight
@@ -4391,6 +4486,11 @@ hook_add = '''
   \  { 'pattern': '\C\<\(TODO\|FIXME\|NOTE\|INFO\)\>', 'regexp': 1 },
   \  { 'pattern': '\C\<\(ToC\|WIP\)\>',                'regexp': 1 },
   \]
+
+  " which key
+  let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+    \  '<Space>'      : '<Space>',
+    \})
 '''
 hook_post_source = '''
   nmap <Space>m <Plug>(quickhl-manual-this)
@@ -4590,8 +4690,9 @@ hook_add = '''
   let g:eft_ignorecase = v:true
 '''
 hook_post_source = '''
-  nmap ; <Plug>(eft-repeat)
-  xmap ; <Plug>(eft-repeat)
+  silent! nunmap [Subleader];
+  nmap [Subleader]; <Plug>(eft-repeat)
+  xmap [Subleader]; <Plug>(eft-repeat)
 
   nmap f <Plug>(eft-f-repeatable)
   xmap f <Plug>(eft-f-repeatable)
@@ -4611,16 +4712,21 @@ hook_post_source = '''
 [[plugins]]
 repo = 'bkad/CamelCaseMotion'
 hook_post_source = '''
-  map <Leader>c [CamelCaseMotion]
   " normal/operator/visual only / no work select
+  nnoremap      [CamelCaseMotion]  <Nop>
+  nmap          <Leader>c          [CamelCaseMotion]
   nmap <silent> [CamelCaseMotion]w <Plug>CamelCaseMotion_w
   nmap <silent> [CamelCaseMotion]b <Plug>CamelCaseMotion_b
   nmap <silent> [CamelCaseMotion]e <Plug>CamelCaseMotion_e
 
+  onoremap      [CamelCaseMotion]  <Nop>
+  omap          <Leader>c          [CamelCaseMotion]
   omap <silent> [CamelCaseMotion]w <Plug>CamelCaseMotion_w
   omap <silent> [CamelCaseMotion]b <Plug>CamelCaseMotion_b
   omap <silent> [CamelCaseMotion]e <Plug>CamelCaseMotion_e
 
+  xnoremap      [CamelCaseMotion]  <Nop>
+  xmap          <Leader>c          [CamelCaseMotion]
   xmap <silent> [CamelCaseMotion]w <Plug>CamelCaseMotion_w
   xmap <silent> [CamelCaseMotion]b <Plug>CamelCaseMotion_b
   xmap <silent> [CamelCaseMotion]e <Plug>CamelCaseMotion_e
@@ -4635,28 +4741,20 @@ hook_post_source = '''
   map <Plug>(smartword-basic-b)  <Plug>CamelCaseMotion_b
   map <Plug>(smartword-basic-e)  <Plug>CamelCaseMotion_e
 
-  " not support ge
-  map w  <Plug>(smartword-w)
-  map b  <Plug>(smartword-b)
-  map e  <Plug>(smartword-e)
-  map ge <Plug>(smartword-ge)
+  nmap w  <Plug>(smartword-w)
+  nmap b  <Plug>(smartword-b)
+  nmap e  <Plug>(smartword-e)
+  nmap ge <Plug>(smartword-ge)
 
   xmap w  <Plug>(smartword-w)
   xmap b  <Plug>(smartword-b)
   xmap e  <Plug>(smartword-e)
   xmap ge <Plug>(smartword-ge)
 
-  " " basic map
-  " map <Leader>w  <Plug>(smartword-w)
-  " map <Leader>b  <Plug>(smartword-b)
-  " map <Leader>e  <Plug>(smartword-e)
-  " map <Leader>ge <Plug>(smartword-ge)
-  " " direct normally
-  " noremap <Leader>w  w
-  " noremap <Leader>b  b
-  " noremap <Leader>e  e
-  " noremap <Leader>ge ge
-
+  omap w  <Plug>(smartword-w)
+  omap b  <Plug>(smartword-b)
+  omap e  <Plug>(smartword-e)
+  omap ge <Plug>(smartword-ge)
 '''
 
 [[plugins]]
@@ -4664,6 +4762,8 @@ repo = 'kana/vim-niceblock'
 
 [[plugins]]
 repo = 'kana/vim-gf-user'
+# repo = 'tsuyoshicho/vim-gf-user'
+# rev  = 'develop'
 
 [[plugins]]
 repo = 'kana/vim-gf-diff'
@@ -4705,33 +4805,49 @@ hook_add = '''
   let g:EasyMotion_space_jump_first = 1
 '''
 hook_post_source = '''
+  " backup leader for nmap
+  let s:save_leader_nmap = maparg('<Leader>', 'n', 0, 1)
+
   " prefix define (use other plugin)
   map <Leader> <Plug>(easymotion-prefix)
+  " select unmap default
+  silent! sunmap <Leader><Leader>
+  " select unmap defined
+  silent! sunmap <Leader>
 
   " <Leader>f{char} to move to {char}
-  map  <Leader>f <Plug>(easymotion-bd-f)
-  nmap <Leader>f <Plug>(easymotion-overwin-f)
+  map    <Leader>f <Plug>(easymotion-bd-f)
+  nmap   <Leader>f <Plug>(easymotion-overwin-f)
+  silent! sunmap <Leader>f
 
   " s{char}{char} to move to {char}{char}
-  " map s <Plug>(easymotion-bd-f2)
-  map ss <Plug>(easymotion-bd-f2)
-  " nmap s <Plug>(easymotion-overwin-f2)
-  nmap ss <Plug>(easymotion-overwin-f2)
+  " s to ss
+  map    ss <Plug>(easymotion-bd-f2)
+  nmap   ss <Plug>(easymotion-overwin-f2)
+  silent! sunmap ss
 
   " Move to line
-  " omap <Leader>L <Plug>(textobj-signjk-lines)
-  " xmap <Leader>L <Plug>(textobj-signjk-lines)
-  map <Leader>L <Plug>(easymotion-bd-jk)
-  nmap <Leader>L <Plug>(easymotion-overwin-line)
+  " omap <Leader>l <Plug>(textobj-signjk-lines)
+  " xmap <Leader>l <Plug>(textobj-signjk-lines)
+  map    <Leader>l <Plug>(easymotion-bd-jk)
+  nmap   <Leader>l <Plug>(easymotion-overwin-line)
+  silent! sunmap <Leader>l
   " JK motions: Line motions
   " map <Leader>j <Plug>(signjk-j)
   " map <Leader>k <Plug>(signjk-k)
-  map <Leader>j <Plug>(easymotion-j)
-  map <Leader>k <Plug>(easymotion-k)
+  map    <Leader>j <Plug>(easymotion-j)
+  map    <Leader>k <Plug>(easymotion-k)
+  silent! sunmap <Leader>j
+  silent! sunmap <Leader>k
 
   " Move to word
-  map  <Leader>w <Plug>(easymotion-bd-w)
-  nmap <Leader>w <Plug>(easymotion-overwin-w)
+  map    <Leader>w <Plug>(easymotion-bd-w)
+  nmap   <Leader>w <Plug>(easymotion-overwin-w)
+  silent! sunmap <Leader>w
+
+  " restore leader for nmap
+  call mapset('n', 0, s:save_leader_nmap)
+  unlet s:save_leader_nmap
 '''
 
 [[plugins]]
@@ -4878,7 +4994,7 @@ hook_add = '''
   function! NearestMethodOrFunction() abort
     return get(b:, 'vista_nearest_method_or_function', '')
   endfunction
-  augroup vimrc_init-vista
+  augroup vimrc_init_vista
     autocmd!
     autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter *
       \ nested call vista#RunForNearestMethodOrFunction()
@@ -4903,7 +5019,7 @@ repo = 'jamessan/vim-gnupg'
 # repo = 'zh4ui/vim-rfc-reader'
 # hook_add = '''
 #   " vim-ref rfcと連携
-#   autocmd MyAutoGroup FileType ref-rfc nested setlocal filetype=rfc
+#   autocmd vimrc_init_core FileType ref-rfc nested setlocal filetype=rfc
 # '''
 
 [[plugins]] # RFC
@@ -4911,7 +5027,7 @@ repo = 'vim-scripts/rfc-syntax'
 # repo = 'dhulihan/vim-rfc'
 hook_add = '''
   " vim-ref rfcと連携
-  autocmd MyAutoGroup FileType ref-rfc nested setlocal filetype=rfc
+  autocmd vimrc_init_core FileType ref-rfc nested setlocal filetype=rfc
 '''
 
 [[plugins]] # vimref
@@ -5182,7 +5298,7 @@ hook_add = '''
   let g:cheatsheet#cheat_file = expand(g:user.dir.vim. '/cheatsheet.md')
   let g:cheatsheet#vsplit = 1
 
-  " augroup vimrc_init-cheatsheet
+  " augroup vimrc_init_cheatsheet
   "   autocmd!
   "   if ale
   "   autocmd BufEnter g:cheatsheet#cheat_file nested ALEDisableBuffer
@@ -5191,9 +5307,15 @@ hook_add = '''
 
 [[plugins]] # detect shebang
 repo = 'vitalk/vim-shebang'
+hook_post_source = '''
+  " map key : map <silent> !# :Shebang<CR>
+  " unmap select-mode
+  silent! sunmap !#
+'''
 
-[[plugins]]
-repo = 'yasuhiroki/github-actions-yaml.vim'
+# not work lsp for filetype
+# [[plugins]]
+# repo = 'yasuhiroki/github-actions-yaml.vim'
 
 [[plugins]]
 repo = 'mattn/vim-maketable'
@@ -5207,7 +5329,7 @@ hook_post_source = '''
 repo = 'dhruvasagar/vim-table-mode'
 depends = ['vim-submode']
 hook_add = '''
-  augroup vimrc_init-vim-table-mode
+  augroup vimrc_init_vim_table_mode
     autocmd!
     autocmd FileType markdown,rst nested if tablemode#IsActive() == 0 | call tablemode#Enable() | endif
   augroup END

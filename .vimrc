@@ -17,7 +17,7 @@ if &compatible
 endif
 
 " コマンドグループ初期化
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd!
 augroup END
 
@@ -48,11 +48,13 @@ set tags=
 let g:mapleader = ','
 let g:maplocalleader  = ';'
 " use \ as , instead
-nnoremap <Subleader> <Nop>
-nmap \ <Subleader>
+nnoremap [Subleader]  <Nop>
+nmap     \            [Subleader]
 " f,tでの移動の逆にする機能が設定されているので、保持はする
-nnoremap <Subleader>, ,
-nnoremap <Subleader>; ;
+nnoremap [Subleader], ,
+nnoremap [Subleader]; ;
+
+" need to set whichkey
 
 " user setting {{{
 let g:user = {
@@ -64,7 +66,7 @@ let g:user = {
 " common function
 let g:user.function = {}
 
-" dll search target glob
+" check and create dir
 function! g:user.function.mkdir(dir) abort " {{{
   if !isdirectory(a:dir)
     call mkdir(a:dir, 'p')
@@ -93,6 +95,17 @@ function! g:user.function.load_setting(loc) abort " {{{
     source `=i`
   endfor
 endfunction " }}}
+
+" visual icon char
+function! g:user.function.fileicon(path) abort
+  let icon = nr2char(0xf15b)
+  if dein#is_sourced('nerdfont.vim')
+    let icon = nerdfont#find(a:path, 0)
+  elseif dein#is_sourced('vim-devicons')
+    let icon = WebDevIconsGetFileTypeSymbol(a:path, 0)
+  endif
+  return icon
+endfunction
 
 " dll setup
 if has('python3_dynamic')
@@ -142,6 +155,18 @@ let g:user.git.name  = g:user.name
 let g:user.git.email = g:user.email
 
 let g:user.plugin = {}
+let g:user.plugin.info   = {}
+let g:user.plugin.exists = {}
+
+" whitchkey mapping preset
+let g:user.plugin.info['whichkey'] = {}
+let g:user.plugin.info.whichkey.mapkey = {}
+
+" set leader and etc
+let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+  \  '<Leader>'      : g:mapleader,
+  \  '<LocalLeader>' : g:maplocalleader,
+  \})
 
 let g:user.rootmarker = {}
 let g:user.rootmarker.dirs = [
@@ -170,6 +195,24 @@ let g:user.rootmarker.fileglob = [
   \  '*.sln',
   \]
 
+let g:user.filetype = {}
+" ignored trailing whitespace marking
+"  special (filer and other functional)
+"  normal filetype
+let g:user.filetype.ignore_whitespace = [
+  \ 'startify',
+  \ 'nerdtree',
+  \ 'tagbar',
+  \ 'unite',
+  \ 'fern',
+  \ 'qf',
+  \ 'diff',
+  \ 'markdown',
+  \]
+
+  " temp enable for help editing
+  " \ 'help',
+
 if s:is_cygwin
   " Git for Windows(MSYS2)にも対応のため、Windowsは手動で強制再設定
   " * $HOMEは定義済み(MSYS2では再定義される)
@@ -184,7 +227,7 @@ endif
 
 let g:user.dir = {}
 let g:user.dir = extend({
-  \  'vim'         : expand($HOME . '/.vim')
+  \  'vim'         : expand($HOME . '/.vim'),
   \}, g:user.dir)
 let g:user.dir = extend({
   \  'undo'        : expand(g:user.dir.vim . '/undo'  ),
@@ -198,15 +241,29 @@ let g:user.dir = extend({
   \  'data_home'   : expand(empty($XDG_DATA_HOME)   ? ($HOME . '/.local/share') : $XDG_DATA_HOME  ),
   \}, g:user.dir)
 
+let g:user.file = {}
+let g:user.file = extend({
+  \  'viminfo'     : expand(g:user.dir.vim . '/info'  ),
+  \}, g:user.file)
+" pre setup viminfo(workaround)
+let &viminfofile = g:user.file.viminfo
+
 " check and mkdir
 call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
 
 let g:user.system = {}
+
+" type
+let g:user.system.nvim = has('nvim') ? v:true : v:false
+
+" platform
 let g:user.system.windows = s:is_windows ? v:true : v:false
 let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
 let g:user.system.mac     = s:is_mac     ? v:true : v:false
 
 unlet s:is_windows s:is_cygwin s:is_mac
+
+" CPU arch
 let g:user.system.arch = 'x86_64' " heuristic
 if exists('$NUMBER_OF_PROCESSORS')
   if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
@@ -228,6 +285,13 @@ elseif executable('uname')
   unlet s:unamem
 endif
 
+let g:user.system.cpunum = 2 " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
+elseif executable('nproc')
+  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
+endif
+
 if g:user.system.windows
   let g:user.dir.tools = expand('c:/tools')
 else
@@ -236,13 +300,6 @@ endif
 let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
 
 let g:user.colorscheme = []
-
-let g:user.system.cpunum = 2 " heuristic
-if exists('$NUMBER_OF_PROCESSORS')
-  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
-elseif executable('nproc')
-  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
-endif
 
 " }}}
 
@@ -288,6 +345,19 @@ let g:dein.file.toml = {
   \  g:dein.dir.rc . '/dein.toml'        : {'lazy': 0},
   \  g:dein.dir.rc . '/dein_lazy.toml'   : {'lazy': 1},
   \}
+if g:user.system.nvim
+  " nvim specific
+  let g:dein.file.toml = extend(g:dein.file.toml, {
+    \  g:dein.dir.rc . '/nvim.toml'      : {'lazy': 0},
+    \  g:dein.dir.rc . '/nvim_lazy.toml' : {'lazy': 1},
+    \ })
+else
+  " non-nvim specific
+  let g:dein.file.toml = extend(g:dein.file.toml, {
+    \  g:dein.dir.rc . '/vim.toml'       : {'lazy': 0},
+    \  g:dein.dir.rc . '/vim_lazy.toml'  : {'lazy': 1},
+    \ })
+endif
 
 " setting for dein
 let g:dein#install_max_processes = g:user.system.cpunum
@@ -309,7 +379,7 @@ endif
 " call source
 call dein#call_hook('source')
 " set post source at non-lazy plugin
-autocmd MyAutoGroup VimEnter * nested call dein#call_hook('post_source')
+autocmd vimrc_init_core VimEnter * nested call dein#call_hook('post_source')
 
 " もし、未インストールものものがあったらインストール
 if (0 == v:vim_did_enter) && dein#check_install()
@@ -480,7 +550,7 @@ set tags+=TAGS
 
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if dein#tap('ctrlp.vim')
+" if dein#is_sourced('ctrlp.vim')
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
@@ -502,7 +572,8 @@ endif
 set history=2000
 
 " mru 200,register 50lines,10KBytes hlsearch disable viminfo file:$HOME/.vim/info
-set viminfo='200,<50,s10,h,rA:,rB:,n$HOME/.vim/info
+" viminfofile already set OK
+set viminfo='200,<50,s10,h,rA:,rB:
 " }}}
 
 " Safety. {{{
@@ -523,14 +594,14 @@ set nowritebackup
 " set noswapfile
 let &directory = g:user.dir.swap . '//'  " // use fullpath
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
-" autocmd MyAutoGroup SwapExists * let v:swapchoice = 'o'
+" autocmd vimrc_init_core SwapExists * let v:swapchoice = 'o'
 
 " Swap
 " from thinca/config
 " setglobal swapfile
 " augroup vimrc-swapfile
 "   autocmd!
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd SwapExists * nested call s:on_SwapExists()
 augroup END
 
@@ -568,7 +639,7 @@ endfunction " }}}
 " 編集中のファイルが変更されたら自動で読み直す
 set autoread
 
-augroup MyAutoGroup
+augroup vimrc_init_core
   " based on https://vim-jp.org/vim-users-jp/2011/03/12/Hack-206.html
   " window move to autoread
   autocmd WinEnter * nested checktime
@@ -591,7 +662,7 @@ set hidden
 " Fileformat. {{{
 
 " Fixed encoding/format
-augroup MyAutoGroup
+augroup vimrc_init_core
   " temp off
   " toml spec. : utf-8 only
   " autocmd BufRead *.toml nested setlocal fileencoding=utf-8
@@ -616,10 +687,10 @@ set hlsearch
 
 function! s:nohl_plugin() abort
   call s:plugin_status_update()
-  if g:user.plugin.quickhl
+  if g:user.plugin.exists.quickhl
     QuickhlManualReset
   endif
-  if g:user.plugin.anzu
+  if g:user.plugin.exists.anzu
     call anzu#clear_search_status()
   endif
 endfunction
@@ -710,7 +781,7 @@ function! s:relativenumber_toggle(mode) abort " {{{
     endif
   endif
 endfunction " }}}
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd WinLeave,InsertEnter * nested call s:relativenumber_toggle('off')
   autocmd WinEnter,InsertLeave * nested call s:relativenumber_toggle('recovery')
 augroup END
@@ -730,7 +801,7 @@ set showcmd
 
 " カレントウィンドウにのみ罫線を引く(ここで制御)
 " based on http://vimblog.hatenablog.com/entry/vimrc_autocmd_examples
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd VimEnter,BufWinEnter,WinEnter * nested
         \ setlocal cursorline cursorcolumn
   autocmd WinLeave                      * nested
@@ -763,7 +834,7 @@ endif
 
 " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 " リサイズしたらウィンドウの境界整理
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd VimResized * nested :wincmd =
 augroup END
 
@@ -814,7 +885,8 @@ function! s:my_tabline() abort "{{{
   return s
 endfunction "}}}
 let &tabline = '%!'.  s:SID_PREFIX() .  'my_tabline()'
-set showtabline=2 " 常にタブラインを表示
+" 常にタブラインを表示
+set showtabline=2
 
 " set statusline (encode,CRLF)
 set statusline=%<%f\ %m%r%h%w%{'['.(&fenc!=''?&fenc:&enc).']['.&ff.']'}%=%l,%c%V%8P
@@ -834,7 +906,7 @@ let &viewdir = g:user.dir.view
 " " ファイル全般に設定
 " " augroup General
 " "  autocmd!
-" augroup MyAutoGroup
+" augroup vimrc_init_core
 "  " 設定の保存と復元
 "  autocmd BufWinLeave * nested silent mkview
 "  autocmd BufWinEnter * nested silent loadview
@@ -848,7 +920,7 @@ set splitbelow
 
 " 基本はタブで開いて、他のタブにあっても既存を使う
 set switchbuf=usetab,newtab
-if dein#tap('QFEnter')
+if dein#is_sourced('QFEnter')
   " QFEnterプラグインがあるなら、その設定を優先
   set switchbuf=
 endif
@@ -863,7 +935,7 @@ set tabpagemax=99
 
 " Cursor Pos. {{{
 " from :help last-position-jump
-autocmd MyAutoGroup BufReadPost * nested
+autocmd vimrc_init_core BufReadPost * nested
   \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
   \ |   exe "normal! g`\""
   \ | endif
@@ -881,7 +953,7 @@ endif
 " }}}
 
 " File Potition. {{{
-" augroup MyAutoGroup
+" augroup vimrc_init_core
 "   autocmd BufEnter,BufReadPost * echo 'buffer pwd:' getcwd(0,0)
 " augroup END
 " }}}
@@ -907,10 +979,10 @@ set nostartofline
 " Command/Find Window. {{{
 
 " cmdwinheight default 7
-autocmd MyAutoGroup VimEnter,VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
+autocmd vimrc_init_core VimEnter,VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
 
 " based on https://qiita.com/monaqa/items/e22e6f72308652fc81e2
-augroup MyAutoGroup
+augroup vimrc_init_core
   " 行数を非表示
   " signcolumn を非表示
   " foldcolumn 0
@@ -936,7 +1008,7 @@ augroup END
 " ft-vim_fold {{{
 " augroup foldmethod-expr
 "   autocmd!
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd InsertEnter * nested if &l:foldmethod ==# 'expr'
   \                   |   let b:foldinfo = [&l:foldmethod, &l:foldexpr]
   \                   |   setlocal foldmethod=manual foldexpr=0
@@ -950,13 +1022,12 @@ augroup END
 " }}}
 
 " Terminal/Shell. {{{
-" if (1 == g:user.system.windows) && (0 == g:user.system.cygwin)
+" if g:user.system.windows && !g:user.system.cygwin
 "   let path_prefix='C:\tools\nyagos'
 "   let exec_name='nyagos.exe'
 "
-"   if has('win64')
-"     let arch='amd64'
-"   else " has('win32')
+"   let arch='amd64'
+"   if g:user.system.arch ==# 'x86'
 "     let arch='386'
 "   endif
 "
@@ -1019,7 +1090,7 @@ set matchpairs&
 " オムニ補完の設定(insertモードでCtrl+oで候補を出す、Ctrl+n Ctrl+pで選択、Ctrl+yで確定)
 " based on https://vim-jp.org/vim-users-jp/2009/11/01/Hack-96.html
 " 注意: この内容は:filetype onよりも後に記述すること。
-autocmd MyAutoGroup FileType * nested if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
+autocmd vimrc_init_core FileType * nested if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
 
 " 補完設定
 " based on https://postd.cc/vim-galore-4/
@@ -1076,7 +1147,7 @@ if exists('+spelloptions')
   set spelloptions=camel
 endif
 let &spellfile = expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')
-autocmd MyAutoGroup VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
+autocmd vimrc_init_core VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
@@ -1137,7 +1208,7 @@ inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 function! s:popup_select(rawchar, ...) abort " {{{
   let result = ''
   call s:plugin_status_update()
-  if g:user.plugin.asyncomplete
+  if g:user.plugin.exists.asyncomplete
     let result = result . asyncomplete#close_popup()
     if a:0
       let result = result . a:1
@@ -1151,7 +1222,7 @@ endfunction " }}}
 function! s:popup_cancel(rawchar, ...) abort " {{{
   let result = ''
   call s:plugin_status_update()
-  if g:user.plugin.asyncomplete
+  if g:user.plugin.exists.asyncomplete
     let result = result . asyncomplete#cancel_popup()
     if a:0
       let result = result . a:1
@@ -1165,7 +1236,7 @@ endfunction " }}}
 function! s:insert_char(rawchar, charname) abort " {{{
   let result = ''
   call s:plugin_status_update()
-  if g:user.plugin.lexima
+  if g:user.plugin.exists.lexima
     let result = result . lexima#expand(a:charname, 'i')
   else
     let result = result . a:rawchar
@@ -1185,7 +1256,7 @@ function! s:imap_setup() abort " {{{
   inoremap <expr><silent> <C-e>
     \ pumvisible() ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
 endfunction " }}}
-autocmd MyAutoGroup VimEnter * nested call s:imap_setup()
+autocmd vimrc_init_core VimEnter * nested call s:imap_setup()
 
 " }}}
 
@@ -1279,7 +1350,7 @@ if !has('gui_running')
 endif
 
 " Restore t_Co for less command after vim quit
-augroup MyAutoGroup
+augroup vimrc_init_core
   if s:saved_t_Co == 8
     autocmd VimLeave * nested let &t_Co = 256
   else
@@ -1289,7 +1360,7 @@ augroup MyAutoGroup
 augroup END
 
 " カラー設定(?)
-augroup MyAutoGroup
+augroup vimrc_init_core
   " vimdiff config
   " http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
   " vimdiffの色設定
@@ -1333,12 +1404,12 @@ augroup END
 " Open Vim internal help by K command default
 " currently K map vim-ref
 set keywordprg=:help
-augroup MyAutoGroup
+augroup vimrc_init_core
   " FileType vim force overwrite
   autocmd FileType vim nested setlocal keywordprg=:help
 augroup END
 
-augroup MyAutoGroup
+augroup vimrc_init_core
   " 行数を非表示
   " signcolumn を非表示
   " foldcolumn 2
@@ -1354,7 +1425,7 @@ augroup END
 
 " from kuuote's vimrc
 " helpのタグ移動を楽にするやつ
-augroup MyAutoGroup
+augroup vimrc_init_core
   autocmd FileType
     \ help nested if &l:buftype ==# 'help'
     \ |             nnoremap <buffer> <CR> <C-]>
@@ -1366,7 +1437,7 @@ augroup END
 
 " Quickfix/Location. {{{
 
-augroup MyAutoGroup
+augroup vimrc_init_core
   " 行数は絶対行
   " signcolumn を非表示
   " foldcolumn 0
@@ -1398,7 +1469,7 @@ elseif executable('grep')
   set grepformat=%f:%l:%m,%f:%l%m,%f\ \ %l%m
 endif
 
-augroup MyAutoGroup
+augroup vimrc_init_core
   " based on
   " https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
   " https://kaworu.jpn.org/kaworu/2008-06-07-1.php
@@ -1464,7 +1535,7 @@ if has('autocmd')
       let &fileencoding=&encoding
     endif
   endfunction " }}}
-  autocmd MyAutoGroup BufReadPost * nested call <SID>au_recheck_fenc()
+  autocmd vimrc_init_core BufReadPost * nested call <SID>au_recheck_fenc()
 endif
 
 " " simplify
@@ -1488,7 +1559,7 @@ set ambiwidth=single    " use single in ambiguous characters
 " FileType detecion. {{{
 " 必要なら独立させる inside '~/.vim/ftdetect/<type>.vim'
 
-augroup MyAutoGroup
+augroup vimrc_init_core
   " ssh config
   autocmd BufNewFile,BufRead */.ssh/conf.d/*.conf nested setf sshconfig
 augroup END
@@ -1511,7 +1582,10 @@ augroup END
 " imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |
 " cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |
 "---------------------------------------------------------------------------"
-
+"
+" basic no use map/vmap
+" because, it map select - not need
+"
 " same key
 "   <C-i> == <Tab>
 "   <C-m> == <Enter>
@@ -1522,7 +1596,7 @@ augroup END
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
 " Tab op key.
 nnoremap    [Tab] <Nop>
-if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#tap('vim-eft')
+if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#is_sourced('vim-eft')
   " overwrite stop : use t
   nmap    t [Tab]
 else
@@ -1538,7 +1612,7 @@ endfor
 nnoremap <silent> [Tab]c :tablast \| tabnew<CR>
 " tc 新しいタブを一番右に作る
 
-if dein#tap('vim-startify')
+if dein#is_sourced('vim-startify')
   nnoremap <silent> [Tab]h :tablast \| tabnew \| Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
@@ -1561,24 +1635,31 @@ nnoremap <C-j> <C-e>j
 nnoremap <C-k> <C-y>k
 
 " 2文字で先頭/末尾移動
-noremap <Space>H 0
-noremap <Space>h ^
-noremap <Space>l g_
-noremap <Space>L $
+nnoremap <Space>H 0
+nnoremap <Space>h ^
+nnoremap <Space>l g_
+nnoremap <Space>L $
+
+" thanks ycino
+"" Move beginning toggle
+nnoremap <silent> <expr> 0 getline('.')[0 : col('.') - 2] =~# '^\s\+$' ? '0' : '^'
 
 " speed save & exit
 nnoremap <space>w :w<CR>
 nnoremap <space>q :q<CR>
 
 " o/O use Add last return
-nnoremap o A<CR>
-" O use original, many pattern are OK
-" nnoremap O
-"
+nmap o A<CR>
+
+" thanks ycino
 " from https://github.com/yukiycino-dotfiles/dotfiles/blob/master/.vimrc
-" " Automatically indent with i and A
-" nnoremap <expr> i len(getline('.')) ? "i" : "cc"
-" nnoremap <expr> A len(getline('.')) ? "A" : "cc"
+"" Automatically indent with i and A
+" fix register : blackhole
+nnoremap <expr> i len(getline('.')) ? "i" : "\"_cc"
+nnoremap <expr> A len(getline('.')) ? "A" : "\"_cc"
+
+" Folding with mouse
+nnoremap <2-RightMouse> zO
 
 " Yでカーソル位置から行末までヤンクする
 " C,Dはc$,d$と等しいのに対してYはなぜかyyとなっている
@@ -1673,7 +1754,7 @@ cnoremap <Down> <C-n>
 
 " prev setting:xxx see yyy
 " let mapleader = ","
-" nnoremap <Subleader> <Nop>
+" nnoremap [Subleader] <Nop>
 " F3 toggle rel-number
 " C-L refresh and hl clear, diff update, syntax resync
 " C-],C-[ tag jump multi/pop
@@ -1687,17 +1768,17 @@ cnoremap <Down> <C-n>
 
 " q readonly is close(small setting)
 " help and other readonly popup window : q is close
-autocmd MyAutoGroup FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
-autocmd MyAutoGroup FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
+autocmd vimrc_init_core FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
+autocmd vimrc_init_core FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
 " command window
 " selective like CmdwinEnter [:\/\?=]
-autocmd MyAutoGroup CmdwinEnter * nested nnoremap <buffer> q <C-w>c
+autocmd vimrc_init_core CmdwinEnter * nested nnoremap <buffer> q <C-w>c
 
-" autocmd MyAutoGroup FileType qf nested nnoremap <buffer> q <C-w>c
+" autocmd vimrc_init_core FileType qf nested nnoremap <buffer> q <C-w>c
 
 " cmdwin other setting
 " remap cr (plugin cr mapping clear)
-autocmd MyAutoGroup CmdwinEnter * nested nnoremap <buffer> <CR> <CR>
+autocmd vimrc_init_core CmdwinEnter * nested nnoremap <buffer> <CR> <CR>
 
 " tc/tn/tb/tx/t1-9 TAB setting
 " }}}
@@ -1819,10 +1900,10 @@ endif
 
 " function {{{
 function! s:plugin_status_update() abort
-  let g:user.plugin['quickhl']      = dein#is_sourced('vim-quickhl')
-  let g:user.plugin['anzu']         = dein#is_sourced('vim-anzu')
-  let g:user.plugin['asyncomplete'] = dein#is_sourced('asyncomplete.vim')
-  let g:user.plugin['lexima']       = dein#is_sourced('lexima.vim')
+  let g:user.plugin.exists['quickhl']      = dein#is_sourced('vim-quickhl')
+  let g:user.plugin.exists['anzu']         = dein#is_sourced('vim-anzu')
+  let g:user.plugin.exists['asyncomplete'] = dein#is_sourced('asyncomplete.vim')
+  let g:user.plugin.exists['lexima']       = dein#is_sourced('lexima.vim')
 endfunction
 
 function! s:plugin_status_update_and_redefine() abort
@@ -1831,7 +1912,7 @@ function! s:plugin_status_update_and_redefine() abort
   endfunction
 endfunction
 
-autocmd MyAutoGroup VimEnter * nested call s:plugin_status_update_and_redefine()
+autocmd vimrc_init_core VimEnter * nested call s:plugin_status_update_and_redefine()
 
 function! s:echo_syntax(status) abort " {{{
   if a:status
@@ -1957,7 +2038,7 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 " }}}
 
 " autocmd {{{
-" augroup MyAutoGroup
+" augroup vimrc_init_core
 "   autocmd CursorMoved * nested call <SID>echo_syntax(get(b:, 'SyntaxEchoStatus', 0))
 " augroup END
 " }}}

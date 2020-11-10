@@ -215,6 +215,19 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'adrian5/oceanic-next-vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'oceanicnext'
+  let s:scheme['lightline']  = 'oceanicnext'
+  let s:scheme['airline']    = 'oceanicnext' " 'default'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'aereal/vim-colors-japanesque'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -393,6 +406,23 @@ hook_add = '''
   let s:scheme['name']       = 'substrata'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'bignimbus/pop-punk.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'pop-punk'
+  let s:scheme['lightline']  = 'pop_punk'
+  let s:scheme['airline']    = 'pop_punk'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+hook_post_source = '''
+  " pop-punk ANSI colors for vim terminal
+  let g:terminal_ansi_colors = pop_punk#AnsiColors()
 '''
 
 [[plugins]] # カラースキーム
@@ -1139,6 +1169,18 @@ hook_add = '''
   let s:scheme['name']       = 'apprentice'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'romgrk/doom-one.vim'
+merged = 0
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'doom-one'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム
