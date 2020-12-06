@@ -663,6 +663,21 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'gruvbox-community/gruvbox'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'gruvbox'
+    let s:scheme['lightline']  = 'gruvbox'
+    let s:scheme['airline']    = 'gruvbox'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
 repo = 'habamax/vim-colors-defminus'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -1028,21 +1043,6 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
-repo = 'morhetz/gruvbox'
-hook_add = '''
-  for s:bg in ['light', 'dark']
-    let s:scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, s:scheme)
-
-    let s:scheme['name']       = 'gruvbox'
-    let s:scheme['lightline']  = 'gruvbox'
-    let s:scheme['airline']    = 'gruvbox'
-    let s:scheme['background'] = s:bg
-    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
-  endfor
-'''
-
-[[plugins]] # カラースキーム
 repo = 'nanotech/jellybeans.vim'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -1194,6 +1194,36 @@ hook_add = '''
   let s:scheme['airline']    = 'forest_night'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " let g:forest_night_enable_italic = 1
+  let g:forest_night_disable_italic_comment = 1
+
+  let g:forest_night_sign_column_background = 'none'
+
+  let g:forest_night_lightline_disable_bold = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/edge'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'edge'
+    let s:scheme['lightline']  = 'edge'
+    let s:scheme['airline']    = 'edge'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+
+  let g:edge_style = 'aura'  " 'default', 'aura', 'neon'
+  " let g:edge_enable_italic = 1
+  let g:edge_disable_italic_comment = 1
+
+  let g:edge_sign_column_background = 'none'
+
+  let g:edge_lightline_disable_bold = 1
 '''
 
 [[plugins]] # カラースキーム
@@ -1210,10 +1240,36 @@ hook_add = '''
     let s:scheme['mode']       = ['termguicolors', 'gui']
   endfor
 
-  " let g:gruvbox_material_background             = 'medium'
-  " let g:gruvbox_material_palette                = 'material'
-  " let g:gruvbox_material_transparent_background =  0
-  " let g:gruvbox_material_cursor_line_contrast   = 'lower'
+  let g:gruvbox_material_background = 'medium' " 'hard', 'medium', 'soft'
+  " let g:gruvbox_material_enable_italic = 1
+  let g:gruvbox_material_disable_italic_comment = 1
+
+  let g:gruvbox_material_sign_column_background = 'none'
+
+   let g:gruvbox_material_lightline_disable_bold = 1
+
+  let g:gruvbox_material_palette = 'material' " 'material', 'mix', 'original'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/sonokai'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'sonokai'
+  let s:scheme['lightline']  = 'sonokai'
+  let s:scheme['airline']    = 'sonokai'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+
+  let g:sonokai_style = 'andromeda' " 'default', 'atlantis', 'andromeda', 'shusia', 'maia'
+  " let g:sonokai_enable_italic = 1
+  let g:sonokai_disable_italic_comment = 1
+
+  let g:sonokai_sign_column_background = 'none'
+
+  let g:sonokai_lightline_disable_bold = 1
 '''
 
 [[plugins]] # カラースキーム

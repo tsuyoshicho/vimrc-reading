@@ -149,6 +149,7 @@ let g:user.location.cityid    = '1850147'
 " Hadano     https://openweathermap.org/city/1863431
 " Sagamihara https://openweathermap.org/city/1853295
 " Shinagawa  https://openweathermap.org/city/1850144
+" Yokohama   https://openweathermap.org/city/1848354
 
 let g:user.git = {}
 let g:user.git.name  = g:user.name
@@ -161,12 +162,30 @@ let g:user.plugin.exists = {}
 " whitchkey mapping preset
 let g:user.plugin.info['whichkey'] = {}
 let g:user.plugin.info.whichkey.mapkey = {}
+let g:user.plugin.info.whichkey.desc = {}
+
+let g:user.plugin.info.whichkey.desc.leader = {}
 
 " set leader and etc
 let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-  \  '<Leader>'      : g:mapleader,
-  \  '<LocalLeader>' : g:maplocalleader,
+  \  '<Leader>'      : { 'rawkey' : g:mapleader     , 'desc' : g:user.plugin.info.whichkey.desc.leader },
+  \  '<LocalLeader>' : { 'rawkey' : g:maplocalleader },
+  \  'g'             : { 'rawkey' : "g"              },
+  \  'z'             : { 'rawkey' : "z"              },
   \})
+
+" vimproc common info
+let g:user.plugin.info['vimproc'] = {}
+function! g:user.plugin.info.vimproc.ok() abort
+  let ret = v:false
+  try
+    silent call vimproc#version()
+    let ret = v:true
+  catch
+  endtry
+
+  return ret
+endfunction
 
 let g:user.rootmarker = {}
 let g:user.rootmarker.dirs = [
@@ -1255,8 +1274,21 @@ function! s:imap_setup() abort " {{{
     \ pumvisible() ? <SID>popup_select("\<C-y>"            ) : "\<C-y>"
   inoremap <expr><silent> <C-e>
     \ pumvisible() ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
+  " need <Esc> before popup cancel, but lexima esc mapped sepcial work...
+  " and it re-map at buffer insert mode
+  call s:plugin_status_update()
+  if g:user.plugin.exists.lexima
+    if exists('g:lexima_map_escape')
+       inoremap <expr><silent> <Plug>(lexima-pre-esc)
+        \  pumvisible() ? <SID>popup_cancel("\<C-e>") : ''
+       execute 'imap <silent> <Esc> <Plug>(lexima-pre-esc)' . g:lexima_map_escape
+    endif
+  else
+    inoremap <expr><silent> <Esc>
+     \ pumvisible() ? <SID>popup_cancel("\<C-e>", "\<Esc>") : "\<Esc>"
+  endif
 endfunction " }}}
-autocmd vimrc_init_core VimEnter * nested call s:imap_setup()
+autocmd vimrc_init_core InsertEnter * nested call s:imap_setup()
 
 " }}}
 
@@ -1569,19 +1601,19 @@ augroup END
 " }}}
 
 " Mappings. {{{
-"---------------------------------------------------------------------------"
-" Commands \ Modes | Normal | Insert | Command | Visual | Select | Operator |
-"------------------|--------|--------|---------|--------|--------|----------|
-" map  / noremap   |    @   |   -    |    -    |   @    |   @    |    @     |
-" nmap / nnoremap  |    @   |   -    |    -    |   -    |   -    |    -     |
-" vmap / vnoremap  |    -   |   -    |    -    |   @    |   @    |    -     |
-" omap / onoremap  |    -   |   -    |    -    |   -    |   -    |    @     |
-" xmap / xnoremap  |    -   |   -    |    -    |   @    |   -    |    -     |
-" smap / snoremap  |    -   |   -    |    -    |   -    |   @    |    -     |
-" map! / noremap!  |    -   |   @    |    @    |   -    |   -    |    -     |
-" imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |
-" cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |
-"---------------------------------------------------------------------------"
+" +---------------------------------------------------------------------------+
+" | Commands \ Modes | Normal | Insert | Command | Visual | Select | Operator |
+" |------------------|--------|--------|---------|--------|--------|----------|
+" | map  / noremap   |    @   |   -    |    -    |   @    |   @    |    @     |
+" | nmap / nnoremap  |    @   |   -    |    -    |   -    |   -    |    -     |
+" | vmap / vnoremap  |    -   |   -    |    -    |   @    |   @    |    -     |
+" | omap / onoremap  |    -   |   -    |    -    |   -    |   -    |    @     |
+" | xmap / xnoremap  |    -   |   -    |    -    |   @    |   -    |    -     |
+" | smap / snoremap  |    -   |   -    |    -    |   -    |   @    |    -     |
+" | map! / noremap!  |    -   |   @    |    @    |   -    |   -    |    -     |
+" | imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |
+" | cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |
+" +---------------------------------------------------------------------------+
 "
 " basic no use map/vmap
 " because, it map select - not need
@@ -1591,6 +1623,10 @@ augroup END
 "   <C-m> == <Enter>
 "   <C-[> == <ESC>
 " see http://rbtnn.hateblo.jp/entry/2014/11/30/174749
+"
+" special mapping
+"  ctrl + space input <NUL> in terminal, remap them.
+" map <NUL> <C-Space>
 
 " ################# キーマップ #######################
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
@@ -1627,6 +1663,8 @@ nnoremap <silent> [Tab]p :tabprevious<CR>
 "矢印キーでは表示行単位で行移動する
 nnoremap <UP>   gk
 nnoremap <DOWN> gj
+inoremap <UP>   <C-O>gk
+inoremap <DOWN> <C-O>gj
 xnoremap <UP>   gk
 xnoremap <DOWN> gj
 
@@ -1666,6 +1704,8 @@ nnoremap <2-RightMouse> zO
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 " thanks lambdalisue and ku/thinca
 xnoremap v <Esc>0v$
+xnoremap V $h
+
 nnoremap Y y$
 
 " x,s でレジスタを汚染しない
@@ -1678,8 +1718,12 @@ xnoremap X "_X
 
 " s,Sでカーソル文字を削除する際レジスタを汚さない設定
 " ビジュアルモードで選択すればヤンクしないcとして使用できる
-nnoremap s "_s
-xnoremap s "_s
+" sは他のプリフィックスにする cl で代用できる(レジスタには残る)
+" nnoremap s "_s
+" xnoremap s "_s
+let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+  \  's'             : { 'rawkey' : "s"              },
+  \})
 nnoremap S "_S
 xnoremap S "_S
 " setup in cutlass(future)
@@ -1718,6 +1762,7 @@ nnoremap <Tab>   >>
 nnoremap <S-Tab> <<
 xnoremap <Tab>   >gv
 xnoremap <S-Tab> <gv
+xnoremap =       =gv
 
 " Switch between the last two files
 " nnoremap <tab><tab> <c-^>

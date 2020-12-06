@@ -64,9 +64,9 @@ hook_post_source = '''
 
 # Core & Util
 [[plugins]]
-# repo = 'vim-jp/vital.vim'
-repo = 'tsuyoshicho/vital.vim'
-rev  = 'develop'
+repo = 'vim-jp/vital.vim'
+# repo = 'tsuyoshicho/vital.vim'
+# rev  = 'develop'
 merged = 0
 hook_post_source = '''
   " vital use
@@ -98,7 +98,8 @@ merged = 0
 hook_post_update = '''
   if g:user.system.windows
     if !g:user.system.cygwin
-      let cmd = 'tools\\update-dll-mingw'
+      " let cmd = 'tools\\update-dll-mingw'
+      let cmd = 'tools\\update-dll-msvc'
     else
       let cmd = 'make -f make_cygwin.mak'
     endif
@@ -142,12 +143,22 @@ hook_post_source = '''
 [[plugins]]
 repo = 'liuchengxu/vim-which-key'
 hook_add = '''
+
+  let g:which_key_fallback_to_native_key=1
+
   " dynamic mapping
-  function s:whichkey_map(mapkey, rawkey) abort
-    let cmdstr = printf('nnoremap <silent> %s :<c-u>WhichKey ''%s''<CR>', a:mapkey, a:rawkey)
-    call execute(cmdstr)
-    " echomsg cmdstr
-    return cmdstr
+  function s:whichkey_map(mapkey, data) abort
+    if v:t_dict ==# type(a:data)
+      if has_key(a:data, 'rawkey')
+        let rawkey = a:data['rawkey']
+        if has_key(a:data, 'desc')
+          let desc = a:data['desc']
+          call which_key#register(rawkey, desc)
+        endif
+        let cmdstr = printf('nnoremap <silent> %s :<c-u>WhichKey "%s"<CR>', a:mapkey, escape(rawkey, '<>'))
+        call execute(cmdstr)
+      endif
+    endif
   endfunction
 
   function! g:user.plugin.info.whichkey.enter() abort
@@ -363,13 +374,15 @@ hook_add = '''
     setlocal signcolumn=yes
 
     " mapping
-    nmap <buffer><silent> <C-m>
-      \ <Plug>(fern-action-open-or-enter)
-      \ <Plug>(fern-wait)
-      \ <Plug>(fern-action-tcd:root)
+    " currently not work(side effect error)
+    " nmap <buffer><silent> <C-m>
+    "  \ <Plug>(fern-action-open-or-enter)
+    "  \ <Plug>(fern-wait)
+    "  \ <Plug>(fern-action-tcd:root)
 
     " define autocmd for buffer
-    autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
+    " currently not work(side effect error)
+    " autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
   endfunction
 
   augroup vimrc_init_fern
@@ -385,6 +398,11 @@ hook_post_source = '''
     endif
     return fnamemodify(expand('%'), ':p:h')
   endfunction
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['F'] = {
+    \  'name' : '+fern',
+    \ }
 
   " conflict workaround : prefix <Leader>F as Fern
   nnoremap <silent> <Leader>Fb :<C-u>Fern bookmark:///<CR>
@@ -438,7 +456,7 @@ hook_add = '''
 
   augroup vimrc_init_fern_funcall
     autocmd!
-    autocmd! FileType fern call s:fern_init_funcall()
+    autocmd FileType fern call s:fern_init_funcall()
   augroup END
 '''
 hook_post_source = '''
@@ -1119,6 +1137,11 @@ hook_add = '''
 repo = 'mattn/emmet-vim'
 hook_add = '''
   let g:user_emmet_mode = 'nv'
+
+  " which key
+  let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+    \  '<C-Y>'         : { 'rawkey' : "<C-Y>"          },
+    \})
 '''
 
 [[plugins]]
@@ -1128,6 +1151,13 @@ repo = 'kana/vim-repeat'
 [[plugins]]
 repo = 'tpope/vim-unimpaired'
 depends = ['vim-repeat']
+hook_add = '''
+  " which key
+  let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+    \  '['             : { 'rawkey' : "["              },
+    \  ']'             : { 'rawkey' : "]"              },
+    \})
+'''
 hook_post_source = '''
   " nmap < [
   " nmap > ]
@@ -1147,6 +1177,8 @@ hook_add = '''
 [[plugins]]
 repo = 'deton/jasegment.vim'
 hook_add = '''
+  let g:jasegment_no_default_key_mappings = 1
+
   let g:jasegment#mecab#cmd = 'mecab'
   let g:jasegment#cabocha#cmd = 'cabocha'
 
@@ -1206,6 +1238,22 @@ hook_add = '''
   endif
 
   let g:jasegment#highlight = 1
+'''
+hook_post_source = '''
+  " temp off
+  " nmap <silent> E  <Plug>JaSegmentMoveNE
+  " nmap <silent> W  <Plug>JaSegmentMoveNW
+  " nmap <silent> B  <Plug>JaSegmentMoveNB
+  " omap <silent> E  <Plug>JaSegmentMoveOE
+  " omap <silent> W  <Plug>JaSegmentMoveOW
+  " omap <silent> B  <Plug>JaSegmentMoveOB
+  " xmap <silent> E  <Plug>JaSegmentMoveVE
+  " xmap <silent> W  <Plug>JaSegmentMoveVW
+  " xmap <silent> B  <Plug>JaSegmentMoveVB
+  omap <silent> aW <Plug>JaSegmentTextObjA
+  omap <silent> iW <Plug>JaSegmentTextObjI
+  xmap <silent> aW <Plug>JaSegmentTextObjVA
+  xmap <silent> iW <Plug>JaSegmentTextObjVI
 '''
 
 # Split/Join
@@ -1449,9 +1497,9 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-# repo = 'kamykn/spelunker.vim'
-repo = 'tsuyoshicho/spelunker.vim'
-rev  = 'develop'
+repo = 'kamykn/spelunker.vim'
+# repo = 'tsuyoshicho/spelunker.vim'
+# rev  = 'develop'
 depends = ['ctrlp.vim']
 hook_add = '''
   " ctrlp ext
@@ -1461,7 +1509,7 @@ hook_add = '''
   " Enable spelunker.vim. (default: 1)
   " 1: enable
   " 0: disable
-  let g:enable_spelunker_vim = 0
+  let g:enable_spelunker_vim = 1
 
   " Enable spelunker.vim on readonly files or buffer. (default: 0)
   " 1: enable
@@ -1528,7 +1576,7 @@ hook_add = '''
 
   " which key
   let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-    \  'Z'      : 'Z',
+    \  'Z'             : { 'rawkey' : "Z"              },
     \})
 '''
 hook_post_source = '''
@@ -1626,6 +1674,13 @@ hook_add = '''
 repo = 'kana/vim-textobj-user'
 
 # special
+#
+# jasentense
+# as/is 拡張
+#
+# jasegment
+# aW/iW 拡張
+#
 # 複数のカッコで処理を実施し、マッチしたものor(listなら)一番内側を使う
 # amb, imb
 [[plugins]]
@@ -1668,6 +1723,12 @@ hook_post_source = '''
   omap imb <Plug>(textobj-multiblock-i)
   xmap amb <Plug>(textobj-multiblock-a)
   xmap imb <Plug>(textobj-multiblock-i)
+
+  " unmap default
+  silent! ounmap asb
+  silent! ounmap isb
+  silent! xunmap asb
+  silent! xunmap isb
 '''
 
 # カッコ系で複数の処理を実施し、マッチしたものor(listなら)一番内側を使う
@@ -1795,24 +1856,40 @@ hook_add = '''
   let g:textobj_jabraces_no_default_key_mappings = 1
 '''
 
-# 関数内
-# af, if
-# # af, if -> aF, iFにマップ (betweenとバッティング)
-# # aF, iFは使わない
-# デフォルトoff
+# 関数ブロック
+# afb/ifb, aFb,iFb
 [[plugins]]
 # repo = 'kana/vim-textobj-function'
 repo = 'tsuyoshicho/vim-textobj-function'
 rev  = 'develop'
 depends = ['vim-textobj-user']
 hook_add = '''
-  " let g:textobj_function_no_default_key_mappings = 1
+  let g:textobj_function_no_default_key_mappings = 1
 '''
 hook_post_source = '''
-  " omap iF <Plug>(textobj-function-i)
-  " omap aF <Plug>(textobj-function-a)
-  " xmap iF <Plug>(textobj-function-i)
-  " xmap aF <Plug>(textobj-function-a)
+  omap ifb <Plug>(textobj-function-i)
+  omap afb <Plug>(textobj-function-a)
+  xmap ifb <Plug>(textobj-function-i)
+  xmap afb <Plug>(textobj-function-a)
+
+  omap iFb <Plug>(textobj-function-I)
+  omap aFb <Plug>(textobj-function-A)
+  xmap iFb <Plug>(textobj-function-I)
+  xmap aFb <Plug>(textobj-function-A)
+'''
+
+# 関数call
+# afc/ifc, aFc,iFc
+[[plugins]]
+repo = 'machakann/vim-textobj-functioncall'
+hook_add = '''
+  let g:textobj_functioncall_no_default_key_mappings = 1
+'''
+hook_post_source = '''
+  omap ifc <Plug>(textobj-functioncall-i)
+  omap afc <Plug>(textobj-functioncall-a)
+  xmap ifc <Plug>(textobj-functioncall-i)
+  xmap afc <Plug>(textobj-functioncall-a)
 '''
 
 # 関数内
@@ -1856,12 +1933,17 @@ depends = ['vim-textobj-user']
 # multiに入れない系
 # word の中の単語を選択
 # a<prefix>w, i<prefix>w
-# prefix = ,w 移動機能もある
+# prefix = <Leader>i 移動機能もある(smartwardで対応してるので利用は不要 w/W/e/E)
 [[plugins]]
 repo = 'h1mesuke/textobj-wiw'
 depends = ['vim-textobj-user']
 hook_add = '''
-  let g:textobj_wiw_default_key_mappings_prefix = ',w'
+  let g:textobj_wiw_default_key_mappings_prefix = '<Leader>i'
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['i'] = {
+    \  'name' : '+textobj-wiw',
+    \ }
 '''
 
 # context内
@@ -1917,10 +1999,13 @@ hook_post_source = '''
 #  'tyru/caw.vim'
 
 # operator:viwなど 選択状態にしてsa/sd/sr+<char>で処理
-# textobj :as, is (自動)/ ab, ib (続けて区切り文字を入力)
+# textobj :ab, ib (自動)/ aq, iq (続けて区切り文字を入力)
 [[plugins]]
 repo = 'machakann/vim-sandwich'
 hook_add = '''
+  " default map off
+  let g:textobj_sandwich_no_default_key_mappings = 1
+
   let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
   let g:sandwich#recipes += [
     \ {
@@ -1975,10 +2060,15 @@ hook_add = '''
     \]
 '''
 hook_post_source = '''
-  omap as <Plug>(textobj-sandwich-auto-a)
-  omap is <Plug>(textobj-sandwich-auto-i)
-  xmap as <Plug>(textobj-sandwich-auto-a)
-  xmap is <Plug>(textobj-sandwich-auto-i)
+  omap ab <Plug>(textobj-sandwich-auto-a)
+  omap ib <Plug>(textobj-sandwich-auto-i)
+  xmap ab <Plug>(textobj-sandwich-auto-a)
+  xmap ib <Plug>(textobj-sandwich-auto-i)
+
+  omap aq <Plug>(textobj-sandwich-query-a)
+  omap iq <Plug>(textobj-sandwich-query-i)
+  xmap aq <Plug>(textobj-sandwich-query-a)
+  xmap iq <Plug>(textobj-sandwich-query-i)
 '''
 
 # viwなど 選択状態にして<c-g>qで処理 強制改行
@@ -2394,19 +2484,28 @@ hook_add = '''
 [[plugins]]
 repo = 'thinca/vim-themis'
 
-# based on https://qiita.com/lighttiger2505/items/96d4cda9074f9719bc82
-[[plugins]]
-repo = 'tpope/vim-dispatch'
-hook_add = '''
-  let g:dispatch_no_maps = 1
-  " need mapping if required
-'''
-
 [[plugins]]
 repo = 'janko-m/vim-test'
-depends = ['vim-dispatch']
+depends = ['vimproc.vim', 'asyncrun.vim']
 hook_add = '''
-  let g:test#strategy = 'dispatch'
+  let g:test#strategy = 'basic'
+
+  " let g:test#strategy = 'asyncrun'
+  let g:test#strategy = 'asyncrun_background'
+  " let g:test#strategy = 'asyncrun_background_term'
+
+  " if g:user.plugin.info.vimproc.ok()
+  "   let g:test#strategy = 'vimproc'
+  " elseif g:user.system.nvim
+  "   let g:test#strategy = 'neovim'
+  " elseif has('terminal')
+  "   let g:test#strategy = 'vimterminal'
+  " endif
+
+  " type specific
+  " Runners available are 'pytest', 'nose', 'nose2', 'djangotest', 'djangonose', 'mamba',
+  "  and Python's built-in unittest as 'pyunit'
+  let g:test#python#runner = 'pytest'
 '''
 
 # Doc & File & Web
@@ -2563,6 +2662,7 @@ hook_add = '''
 
   let g:lsp_auto_enable = 1          " default 1
   let g:lsp_diagnostics_enabled = 1  " default 1
+  let g:lsp_semantic_enabled = 1     " default 0
 
   let s:float_ok = 0
   if g:user.system.nvim
@@ -2860,7 +2960,7 @@ hook_post_source = '''
   " augroup vimrc_init_asyncomplete
   "   autocmd!
   "   " asyncomplete original
-  "   " autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+  "   " autocmd CompleteDone * if pumvisible() == 0 | pclose | endif
   "   " my refine
   "   autocmd CompleteDone * if pumvisible() | pclose | endif
   " augroup END
@@ -3464,8 +3564,12 @@ repo = 'osyo-manga/quickrun-hook-u-nya-'
 repo = 'mattn/vim-quickrunex'
 
 [[plugins]]
+repo = 'heavenshell/vim-quickrun-hook-unittest'
+
+[[plugins]]
 repo = 'thinca/vim-quickrun'
-depends = ['vim-altercmd', 'vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex']
+depends = ['vim-altercmd', 'vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex',
+'vim-quickrun-hook-unittest']
 hook_add = '''
   " config
   let g:quickrun_config = get(g:, 'quickrun_config', {})
@@ -3550,19 +3654,53 @@ hook_add = '''
     endfor
   endif
 
-  function s:vimproc_ok() abort
-    let vimproc = 0
-    try
-      silent call vimproc#version()
-      let vimproc = 1
-    catch
-    endtry
-
-    return vimproc
-  endfunction
+  " unittest
+  let g:quickrun_config['php.unit']         = extend({
+    \ 'command' : 'testrunner',
+    \ 'cmdopt'  : 'phpunit',
+    \}, get(g:quickrun_config, 'php.unit', {}), "keep")
+  let g:quickrun_config['python.unit']      = extend({
+    \ 'command' : 'nosetests',
+    \ 'cmdopt'  : '-v -s',
+    \}, get(g:quickrun_config, 'python.unit', {}), "keep")
+  let g:quickrun_config['python.pytest']    = extend({
+    \ 'command' : 'py.test',
+    \ 'cmdopt'  : '-v',
+    \}, get(g:quickrun_config, 'python.pytest', {}), "keep")
+  " Django unittest
+  let g:quickrun_config['python.django']    = extend({
+    \ 'command' : 'python',
+    \ 'cmdopt'  : 'test --pararell=2 --keepdb -v2',
+    \}, get(g:quickrun_config, 'python.django', {}), "keep")
+  " " pytest-django
+  " let g:quickrun_config['python.django']    = extend({
+  "  \ 'command' : 'python',
+  "  \ 'cmdopt'  : 'test --noinput -- --verbose --reuse-db',
+  "  \ 'test_fw' : 'pytest',
+  "  \}, get(g:quickrun_config, 'python.django', {}), "keep")
+  let g:quickrun_config['ruby.rspec']       = extend({
+    \ 'command' : 'rspec',
+    \ 'cmdopt'  : '-f d',
+    \}, get(g:quickrun_config, 'ruby.rspec', {}), "keep")
+  let g:quickrun_config['ruby.minitest']    = extend({
+    \ 'command' : 'ruby',
+    \}, get(g:quickrun_config, 'ruby.minitest', {}), "keep")
+  let g:quickrun_config['go.test']          = extend({
+    \ 'command' : 'go',
+    \ 'cmdopt'  : 'test -v',
+    \}, get(g:quickrun_config, 'go.test', {}), "keep")
+  let g:quickrun_config['typescript.jest']  = extend({
+    \ 'command' : 'jest',
+    \}, get(g:quickrun_config, 'typescript.jest', {}), "keep")
+  let g:quickrun_config['javascript.mocha'] = extend({
+    \ 'command' : 'mocha',
+    \}, get(g:quickrun_config, 'javascript.mocha', {}), "keep")
+  let g:quickrun_config['javascript.jest']  = extend({
+    \ 'command' : 'jest',
+    \}, get(g:quickrun_config, 'javascript.jest', {}), "keep")
 
   function s:runner_setup() abort
-    if s:vimproc_ok()
+    if g:user.plugin.info.vimproc.ok()
       let g:quickrun_config._['runner'] = 'vimproc'
       let g:quickrun_config._['runner/vimproc/sleep'] = 30
       let g:quickrun_config._['runner/vimproc/updatetime'] = 50
@@ -3580,7 +3718,27 @@ hook_add = '''
   augroup vimrc_init_quickrun
     autocmd!
     autocmd VimEnter * nested :call s:runner_setup() | autocmd! vimrc_init_quickrun
+    " unittest
+    autocmd BufWinEnter,BufNewFile *test.php setlocal filetype=php.unit
+    " Choose UnitTest, py.test or Django.
+    " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.unit
+    autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.pytest
+    " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.django
+    autocmd BufWinEnter,BufNewFile *.t       setlocal filetype=perl.unit
+    autocmd BufWinEnter,BufNewFile *_spec.rb setlocal filetype=ruby.rspec
+    autocmd BufWinEnter,BufNewFile *_test.rb setlocal filetype=ruby.minitest
+    autocmd BufWinEnter,BufNewFile *_test.go setlocal filetype=go.test
+    " TypeScript support only Jest
+    autocmd BufWinEnter,BufNewFile *.spec.ts setlocal filetype=typescript.jest
+    " Choose Mocha or Jest
+    " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.mocha
+    " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.jest
   augroup END
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['q'] = {
+    \  'name' : '+QuickRun',
+    \ }
 
   " mapping
   " thanks lambdalisue
@@ -3630,8 +3788,9 @@ hook_post_source = '''
   unlet s:clear_hook
 
   if dein#is_sourced('vim-precious')
-    nmap <Leader>o <Plug>(precious-quickrun-op)
+    nmap <Leader>qo <Plug>(precious-quickrun-op)
   endif
+  nnoremap <silent> <Leader>qt :QuickRun -mode n -runner job -hook/unittest/enable 1<CR>
 
   " thanks ycino
   AlterCommand          r[un] QuickRun
@@ -3648,6 +3807,9 @@ hook_post_source = '''
     \ g:user.rootmarker.dirs,
     \ g:user.rootmarker.files])
   unlet s:List
+
+  " cooperate with vim-fugitive wrapper
+  command! -bang -nargs=* -complete=file Make AsyncRun -program=make @ <args>
 '''
 
 # UI
@@ -3761,6 +3923,14 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 'skanehira/gh.vim'
+depends = ['vim-pass']
+hook_source = '''
+  " github token
+  call pass#get_startup('g:gh_token','Develop/Github')
+'''
+
+[[plugins]]
 repo = 'tpope/vim-rhubarb'
 depends = ['vim-fugitive','vim-pass']
 # on_if= 'executable("hub")'
@@ -3835,6 +4005,11 @@ hook_post_source = '''
   " highlight                      gui=underlined term=underlined cterm=underlined
   " highlight SignifySignDeleteFirstLine
   " highlight link SignifySignDeleteFirstLine SignifySignDelete
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['h'] = {
+    \  'name' : '+Signify',
+    \ }
 
   nnoremap <silent> <Leader>hp :<C-u>SignifyHunkDiff<cr>
   nnoremap <silent> <Leader>hu :<C-u>SignifyHunkUndo<cr>
@@ -4159,13 +4334,16 @@ hook_add = '''
   " g:nd_themes setting template
   if has('gui_running')
     let g:nd_themes = [
-      \ ['sunrise+0', 'iceberg',          'light', 'iceberg'],
-      \ ['sunset+0',  'tokyonight',       'dark',  'tokyonight'],
+      \ ['sunrise+0',   'iceberg',    'light', 'iceberg'   ],
+      \ ['sunrise+1/2', 'edge',       'light', 'edge'      ],
+      \ ['sunset+0',    'rigel',      'dark',  'rigel'     ],
+      \ ['sunset+1/3',  'tokyonight', 'dark',  'tokyonight'],
+      \ ['sunset+2/3',  'gruvbox',    'dark',  'gruvbox'   ],
       \]
   else
     let g:nd_themes = [
-      \ ['sunrise+0',   'rigel',            'dark',  'rigel'],
-      \ ['sunset+0',    'tokyonight',       'dark',  'tokyonight'],
+      \ ['sunrise+0',   'rigel',      'dark',  'rigel'     ],
+      \ ['sunset+0',    'tokyonight', 'dark',  'tokyonight'],
       \]
   endif
 
@@ -4279,6 +4457,9 @@ repo = 'ntpeters/vim-better-whitespace'
 hook_add = '''
   " disable
   let g:better_whitespace_filetypes_blacklist = copy(g:user.filetype['ignore_whitespace'])
+
+  " strip eof blankline
+  let g:strip_whitelines_at_eof=1
 '''
 
 [[plugins]]
@@ -4335,8 +4516,8 @@ hook_add = '''
 '''
 hook_post_source = '''
   " with Goyo
-  autocmd! vimrc_init_core User GoyoEnter Limelight
-  autocmd! vimrc_init_core User GoyoLeave Limelight!
+  autocmd vimrc_init_core User GoyoEnter Limelight
+  autocmd vimrc_init_core User GoyoLeave Limelight!
 '''
 
 [[plugins]]
@@ -4421,7 +4602,13 @@ repo = 'editorconfig/editorconfig-vim'
 # repo = 'sgur/vim-editorconfig'
 hook_add = '''
   " editorconfig/editorconfig-vim
-  let g:EditorConfig_exclude_patterns = ['fugitive://.\*', 'scp://.\*']
+  let g:EditorConfig_exclude_patterns = [
+    \  'fugitive://.*',
+    \  'scp://.*',
+    \  'fern://.*',
+    \  'gh://.*',
+    \  'readingvimrc://.*',
+    \]
 
   " sgur/vim-editorconfig
   " editorconfig rootがある場合は、そこを起点とした相対処理にする
@@ -4454,20 +4641,19 @@ hook_add = '''
 [[plugins]] # paren match rainbow
 repo = 'luochen1990/rainbow'
 hook_add = '''
-  let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
+  let g:rainbow_active = 1
 
   let g:rainbow_conf = {
     \ 'separately': {
-    \   'cpp': {
-    \     'parentheses': ['start=/(/ end=/)/ fold', 'start=/\[/ end=/\]/ fold', 'start=/\</ end=/\>/ fold','start=/{/ end=/}/ fold'],
-    \   },
-    \   'markdown': {
-    \     'parentheses_options': 'containedin=markdownCode contained',
-    \   },
     \   'vim': {
-    \     'parentheses_options': 'containedin=vimFuncBody',
-    \   },
-    \   'css': 0,
+    \     'parentheses': [
+    \       'start=/(/ end=/)/',
+    \       'start=/\[/ end=/\]/',
+    \       'start=/{/ end=/}/ fold',
+    \       'start=/if/ step=/elseif\|else/ end=/|\?endif/ fold',
+    \      ],
+    \      'parentheses_options': 'containedin=vimFuncBody,vimExecute',
+    \    },
     \ },
     \}
 '''
@@ -4485,11 +4671,12 @@ hook_add = '''
   \  { 'pattern': '\c\<tsuyoshi[._ ]\?cho\>',          'regexp': 1 },
   \  { 'pattern': '\C\<\(TODO\|FIXME\|NOTE\|INFO\)\>', 'regexp': 1 },
   \  { 'pattern': '\C\<\(ToC\|WIP\)\>',                'regexp': 1 },
+  \  { 'pattern': '\C\*\<[A-Z0-9]\+\>\*',              'regexp': 1 },
   \]
 
   " which key
   let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-    \  '<Space>'      : '<Space>',
+    \  '<Space>'       : { 'rawkey' : " "              },
     \})
 '''
 hook_post_source = '''
@@ -4514,6 +4701,8 @@ hook_add = '''
 
   " self process define : need abnormal completion process(like asyncomplete)
   " let g:lexima_accept_pum_with_enter = 0
+
+  let g:lexima_map_escape = '<Plug>(lexima-esc)'
 '''
 hook_post_source = '''
   call lexima#set_default_rules()
@@ -4790,7 +4979,7 @@ hook_add = '''
 
   " if executable('cmigemo')
   " endif
-  " 常に設定
+  " 一応常に設定
   let g:EasyMotion_use_migemo = 1
 
   " smartcase
@@ -4800,54 +4989,61 @@ hook_add = '''
   " use repeat '.'
   let g:EasyMotion_keys='hklyuiopnm,qwertzxcvbasdgjf;'
 
+  " keep cursor colum JK motion
+  let g:EasyMotion_startofline = 0
+
   " Jump to first match with enter & space
   let g:EasyMotion_enter_jump_first = 1
   let g:EasyMotion_space_jump_first = 1
 '''
 hook_post_source = '''
-  " backup leader for nmap
-  let s:save_leader_nmap = maparg('<Leader>', 'n', 0, 1)
-
-  " prefix define (use other plugin)
-  map <Leader> <Plug>(easymotion-prefix)
   " select unmap default
   silent! sunmap <Leader><Leader>
-  " select unmap defined
-  silent! sunmap <Leader>
 
   " <Leader>f{char} to move to {char}
-  map    <Leader>f <Plug>(easymotion-bd-f)
   nmap   <Leader>f <Plug>(easymotion-overwin-f)
-  silent! sunmap <Leader>f
+  xmap   <Leader>f <Plug>(easymotion-bd-f)
+  omap   <Leader>f <Plug>(easymotion-bd-f)
 
   " s{char}{char} to move to {char}{char}
   " s to ss
-  map    ss <Plug>(easymotion-bd-f2)
   nmap   ss <Plug>(easymotion-overwin-f2)
-  silent! sunmap ss
+  xmap   ss <Plug>(easymotion-bd-f2)
+  omap   ss <Plug>(easymotion-bd-f2)
 
   " Move to line
   " omap <Leader>l <Plug>(textobj-signjk-lines)
   " xmap <Leader>l <Plug>(textobj-signjk-lines)
-  map    <Leader>l <Plug>(easymotion-bd-jk)
   nmap   <Leader>l <Plug>(easymotion-overwin-line)
-  silent! sunmap <Leader>l
+  xmap   <Leader>l <Plug>(easymotion-bd-jk)
+  omap   <Leader>l <Plug>(easymotion-bd-jk)
+
   " JK motions: Line motions
   " map <Leader>j <Plug>(signjk-j)
   " map <Leader>k <Plug>(signjk-k)
-  map    <Leader>j <Plug>(easymotion-j)
-  map    <Leader>k <Plug>(easymotion-k)
-  silent! sunmap <Leader>j
-  silent! sunmap <Leader>k
+  nmap   <Leader>j <Plug>(easymotion-j)
+  xmap   <Leader>j <Plug>(easymotion-j)
+  omap   <Leader>j <Plug>(easymotion-j)
+  nmap   <Leader>k <Plug>(easymotion-k)
+  xmap   <Leader>k <Plug>(easymotion-k)
+  omap   <Leader>k <Plug>(easymotion-k)
+  " " Start of Line JK(temp off conflict jplus)
+  " nmap   <Leader>J <Plug>(easymotion-sol-j)
+  " xmap   <Leader>J <Plug>(easymotion-sol-j)
+  " omap   <Leader>J <Plug>(easymotion-sol-j)
+  " nmap   <Leader>K <Plug>(easymotion-sol-k)
+  " xmap   <Leader>K <Plug>(easymotion-sol-k)
+  " omap   <Leader>K <Plug>(easymotion-sol-k)
 
   " Move to word
-  map    <Leader>w <Plug>(easymotion-bd-w)
   nmap   <Leader>w <Plug>(easymotion-overwin-w)
-  silent! sunmap <Leader>w
+  xmap   <Leader>w <Plug>(easymotion-bd-w)
+  omap   <Leader>w <Plug>(easymotion-bd-w)
 
-  " restore leader for nmap
-  call mapset('n', 0, s:save_leader_nmap)
-  unlet s:save_leader_nmap
+  " Move to search
+  nmap   <Leader>n <Plug>(easymotion-bd-n)
+  xmap   <Leader>n <Plug>(easymotion-bd-n)
+  omap   <Leader>n <Plug>(easymotion-bd-n)
 '''
 
 [[plugins]]
@@ -5001,8 +5197,12 @@ hook_add = '''
     autocmd User                                      lsp_server_init
       \ nested call vista#RunForNearestMethodOrFunction()
   augroup END
-'''
-hook_post_source = '''
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['v'] = {
+    \  'name' : '+Vista',
+    \ }
+
   nnoremap <silent> <F8> :Vista!!<CR>
 
   nnoremap <silent> <leader>vv :Vista!!<CR>
@@ -5313,6 +5513,17 @@ hook_post_source = '''
   silent! sunmap !#
 '''
 
+[[plugins]] # detect url
+repo = 'itchyny/vim-highlighturl'
+hook_add = '''
+  " " if enable only ft, use below
+  " let g:highlighturl_enable = 0
+  " augroup vimrc_init_highlighturl
+  "   autocmd!
+  "   autocmd FileType javascript,html call highlighturl#enable_local()
+  " augroup END
+'''
+
 # not work lsp for filetype
 # [[plugins]]
 # repo = 'yasuhiroki/github-actions-yaml.vim'
@@ -5335,6 +5546,11 @@ hook_add = '''
   augroup END
 
   let g:table_mode_map_prefix = '<Leader>T'
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['T'] = {
+    \  'name' : '+TableMode',
+    \ }
 '''
 hook_post_source = '''
   " table move
