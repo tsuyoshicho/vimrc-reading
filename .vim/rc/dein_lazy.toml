@@ -368,6 +368,7 @@ hook_post_update = '''
     let s:cmd = './install.sh'
   endif
   let g:dein#plugin.build = s:cmd
+  unlet s:cmd
 '''
 hook_source = '''
   if (has('popupwin') || exists('*popup_create') || has('nvim-0.4.2'))
@@ -663,6 +664,10 @@ on_cmd = ['Echos']
 [[plugins]]
 repo = 'tweekmonster/helpful.vim'
 on_cmd = ['HelpfulVersion']
+
+[[plugins]]
+repo = 'notomo/helpeek.vim'
+on_cmd = ['Helpeek']
 
 # per filetypes
 # C/C++ use clnagd / lsp for lsp client
@@ -964,9 +969,56 @@ on_ft = ['tsv']
 repo = 'mechatroner/rainbow_csv'
 on_ft = ['csv', 'tsv']
 
-[[plugins]]
-repo = 'ap/vim-css-color'
-on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'vim', 'xdefaults', 'xml', 'yaml']
+[[plugins]] # Colorize
+# repo = 'ap/vim-css-color'
+repo = 'chrisbra/Colorizer'
+on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'sh', 'vim', 'xdefaults', 'xml', 'yaml']
+hook_source = '''
+  let g:colorizer_auto_filetype = join(copy(g:dein#plugin.on_ft), ',')
+'''
+
+# or
+# [[plugins]] # Currently not work in windows
+# repo = 'RRethy/vim-hexokinase'
+# on_ft = (same as other colorize)
+# hook_post_update = '''
+#   " not installed global
+#   if !executable('hexokinase')
+#     if g:user.system.windows
+#       if !g:user.system.cygwin
+#         let s:cmd = 'mingw32-make hexokinase'
+#       else
+#         let s:cmd = 'make hexokinase'
+#       endif
+#     elseif executable('gmake')
+#       let s:cmd = 'gmake hexokinase'
+#     else
+#       let s:cmd = 'make hexokinase'
+#     endif
+#     let g:dein#plugin.build = s:cmd
+#     unlet s:cmd
+#   endif
+# '''
+# hook_source = '''
+#   " custom path if need
+#   if executable('hexokinase')
+#     let g:Hexokinase_executable_path = exepath('hexokinase')
+#   endif
+#
+#   let g:Hexokinase_highlighters = ['foregroundfull']
+#
+#   " All possible values
+#   let g:Hexokinase_optInPatterns = [
+#     \  'full_hex',
+#     \  'rgb',
+#     \  'rgba',
+#     \  'hsl',
+#     \  'hsla',
+#     \  'colour_names',
+#     \]
+#
+#   let g:Hexokinase_ftEnabled = copy(g:dein#plugin.on_ft)
+# '''
 
 [[plugins]]
 repo = 'hail2u/vim-css3-syntax'
@@ -1097,5 +1149,13 @@ on_ft = ['sql']
 [[plugins]]
 repo = 'MTDL9/vim-log-highlighting'
 on_ft = ['log']
+
+[[plugins]]
+repo = 'hashivim/vim-terraform'
+on_ft = ['terraform']
+
+[[plugins]]
+repo = 'itchyny/vim-haskell-indent'
+on_ft = ['haskell']
 
 # EOF

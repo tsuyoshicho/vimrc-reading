@@ -2,7 +2,7 @@
 " vim:fenc=utf-8 ff=unix ft=vim foldmethod=marker
 
 " intro
-" setup {{{
+" vimrc setup {{{
 set encoding=utf-8
 scriptencoding utf-8
 " UTF-8のチェック
@@ -20,50 +20,59 @@ endif
 augroup vimrc_init_core
   autocmd!
 augroup END
-
-" Windows check
-let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-let s:is_cygwin  = has('win32unix')
-let s:is_mac     = has('mac')
-
 " }}}
 
-" plugin manager before setup {{{
-" プラグイン処理前に実施
-" http://qiita.com/andouf/items/bdec492185e3a4f78ae2
-" if s:is_windows
-"   set shellslash
-" endif
-if s:is_windows && exists('+completeslash')
-  set completeslash=slash
-endif
-
-" 初期値削除(プラグインで設定もあるので、ここでやる)
-set tags=
-
-" <Leader>はプラグイン内でマッピングする際に展開してしまうので
-" based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
-" based on https://whileimautomaton.net/2007/04/19221500
-" mapleader (<Leader>) (default is \)
-let g:mapleader = ','
-let g:maplocalleader  = ';'
-" use \ as , instead
-nnoremap [Subleader]  <Nop>
-nmap     \            [Subleader]
-" f,tでの移動の逆にする機能が設定されているので、保持はする
-nnoremap [Subleader], ,
-nnoremap [Subleader]; ;
-
-" need to set whichkey
-
-" user setting {{{
+" user config setup {{{
 let g:user = {
   \  'name'     : 'Tsuyoshi CHO',
   \  'email'    : 'Tsuyoshi.CHO@Gmail.com',
   \  'devemail' : 'Tsuyoshi.CHO+develop@Gmail.com',
   \}
 
-" common function
+" system {{{
+let g:user.system = {}
+
+" type
+let g:user.system.nvim = has('nvim') ? v:true : v:false
+
+" platform
+let g:user.system.windows = has('win32') || has('win64') ? v:true : v:false " let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+let g:user.system.cygwin  = has('win32unix')             ? v:true : v:false " let s:is_cygwin  = has('win32unix')
+let g:user.system.mac     = has('mac')                   ? v:true : v:false " let s:is_mac     = has('mac')
+
+" unlet s:is_windows s:is_cygwin s:is_mac
+
+" CPU arch
+let g:user.system.arch = 'x86_64' " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
+    let g:user.system.arch = 'x86_64'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
+    let g:user.system.arch = 'x86'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'ARM64'
+    let g:user.system.arch = 'arm64'
+  endif
+elseif executable('uname')
+  let s:unamem = systemlist('uname --machine')[0]
+  if s:unamem =~? 'x86_64'
+    let g:user.system.arch = 'x86_64'
+  elseif s:unamem =~? 'i686'
+    let g:user.system.arch = 'x86'
+  elseif s:unamem =~? 'aarch64'
+    let g:user.system.arch = 'arm64'
+  endif
+  unlet s:unamem
+endif
+
+let g:user.system.cpunum = 2 " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
+elseif executable('nproc')
+  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
+endif
+" }}}
+
+" common function {{{
 let g:user.function = {}
 
 " check and create dir
@@ -97,7 +106,7 @@ function! g:user.function.load_setting(loc) abort " {{{
 endfunction " }}}
 
 " visual icon char
-function! g:user.function.fileicon(path) abort
+function! g:user.function.fileicon(path) abort "{{{
   let icon = nr2char(0xf15b)
   if dein#is_sourced('nerdfont.vim')
     let icon = nerdfont#find(a:path, 0)
@@ -105,27 +114,10 @@ function! g:user.function.fileicon(path) abort
     let icon = WebDevIconsGetFileTypeSymbol(a:path, 0)
   endif
   return icon
-endfunction
+endfunction"}}}
+" }}}
 
-" dll setup
-if has('python3_dynamic')
-  " unstable
-  let s:pycmd     = 'python3'
-  let s:pyrelpath = '../lib'
-  let s:pydllglob = 'libpython3*.so'
-  if s:is_windows
-    let s:pycmd     = 'python'
-    let s:pyrelpath = '.'
-    let s:pydllglob = 'python3?*.dll'
-  elseif s:is_mac
-    " unstable
-    let s:pydllglob = 'libpython3*.dylib'
-  endif
-
-  let &pythonthreedll = g:user.function.dllsearch(s:pycmd, s:pyrelpath, s:pydllglob)
-  unlet s:pycmd s:pyrelpath s:pydllglob
-endif
-
+" template {{{
 let g:user.template = {}
 let g:user.template.colorscheme = {
   \ 'name'       : '',
@@ -136,7 +128,9 @@ let g:user.template.colorscheme = {
   \ 'mode'       : [],
   \ }
 let g:user.template['colorscheme_mode'] = ['16', '256', 'termguicolors', 'gui']
+" }}}
 
+" location {{{
 let g:user.location = {}
 let g:user.location.tz        = 'Asia/Tokyo'
 let g:user.location.timeshift = 0
@@ -151,10 +145,17 @@ let g:user.location.cityid    = '1850147'
 " Shinagawa  https://openweathermap.org/city/1850144
 " Yokohama   https://openweathermap.org/city/1848354
 
+
+
+" }}}
+
+" git {{{
 let g:user.git = {}
 let g:user.git.name  = g:user.name
 let g:user.git.email = g:user.email
+" }}}
 
+" plugin {{{
 let g:user.plugin = {}
 let g:user.plugin.info   = {}
 let g:user.plugin.exists = {}
@@ -165,18 +166,11 @@ let g:user.plugin.info.whichkey.mapkey = {}
 let g:user.plugin.info.whichkey.desc = {}
 
 let g:user.plugin.info.whichkey.desc.leader = {}
-
-" set leader and etc
-let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-  \  '<Leader>'      : { 'rawkey' : g:mapleader     , 'desc' : g:user.plugin.info.whichkey.desc.leader },
-  \  '<LocalLeader>' : { 'rawkey' : g:maplocalleader },
-  \  'g'             : { 'rawkey' : "g"              },
-  \  'z'             : { 'rawkey' : "z"              },
-  \})
+let g:user.plugin.info.whichkey.desc.space  = {}
 
 " vimproc common info
 let g:user.plugin.info['vimproc'] = {}
-function! g:user.plugin.info.vimproc.ok() abort
+function! g:user.plugin.info.vimproc.ok() abort "{{{
   let ret = v:false
   try
     silent call vimproc#version()
@@ -185,8 +179,10 @@ function! g:user.plugin.info.vimproc.ok() abort
   endtry
 
   return ret
-endfunction
+endfunction "}}}
+" }}}
 
+" rootmarker {{{
 let g:user.rootmarker = {}
 let g:user.rootmarker.dirs = [
   \  'RCS',
@@ -213,6 +209,7 @@ let g:user.rootmarker.fileglob = [
   \  '*.csproj',
   \  '*.sln',
   \]
+" }}}
 
 let g:user.filetype = {}
 " ignored trailing whitespace marking
@@ -232,7 +229,7 @@ let g:user.filetype.ignore_whitespace = [
   " temp enable for help editing
   " \ 'help',
 
-if s:is_cygwin
+if g:user.system.cygwin
   " Git for Windows(MSYS2)にも対応のため、Windowsは手動で強制再設定
   " * $HOMEは定義済み(MSYS2では再定義される)
   " * $GNUPGHOME はパスがWindows表記であるとして、再設定する
@@ -260,57 +257,6 @@ let g:user.dir = extend({
   \  'data_home'   : expand(empty($XDG_DATA_HOME)   ? ($HOME . '/.local/share') : $XDG_DATA_HOME  ),
   \}, g:user.dir)
 
-let g:user.file = {}
-let g:user.file = extend({
-  \  'viminfo'     : expand(g:user.dir.vim . '/info'  ),
-  \}, g:user.file)
-" pre setup viminfo(workaround)
-let &viminfofile = g:user.file.viminfo
-
-" check and mkdir
-call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
-
-let g:user.system = {}
-
-" type
-let g:user.system.nvim = has('nvim') ? v:true : v:false
-
-" platform
-let g:user.system.windows = s:is_windows ? v:true : v:false
-let g:user.system.cygwin  = s:is_cygwin  ? v:true : v:false
-let g:user.system.mac     = s:is_mac     ? v:true : v:false
-
-unlet s:is_windows s:is_cygwin s:is_mac
-
-" CPU arch
-let g:user.system.arch = 'x86_64' " heuristic
-if exists('$NUMBER_OF_PROCESSORS')
-  if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
-    let g:user.system.arch = 'x86_64'
-  elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
-    let g:user.system.arch = 'x86'
-  elseif $PROCESSOR_ARCHITECTURE =~? 'ARM64'
-    let g:user.system.arch = 'arm64'
-  endif
-elseif executable('uname')
-  let s:unamem = systemlist('uname --machine')[0]
-  if s:unamem =~? 'x86_64'
-    let g:user.system.arch = 'x86_64'
-  elseif s:unamem =~? 'i686'
-    let g:user.system.arch = 'x86'
-  elseif s:unamem =~? 'aarch64'
-    let g:user.system.arch = 'arm64'
-  endif
-  unlet s:unamem
-endif
-
-let g:user.system.cpunum = 2 " heuristic
-if exists('$NUMBER_OF_PROCESSORS')
-  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
-elseif executable('nproc')
-  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
-endif
-
 if g:user.system.windows
   let g:user.dir.tools = expand('c:/tools')
 else
@@ -318,9 +264,85 @@ else
 endif
 let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
 
+let g:user.file = {}
+let g:user.file = extend({
+  \  'viminfo'     : expand(g:user.dir.vim . '/info'  ),
+  \}, g:user.file)
+" pre setup viminfo(workaround)
+let &viminfofile = g:user.file.viminfo
+
+let g:user.file = extend({
+  \  'spell'     : [expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')],
+  \}, g:user.file)
+
+let s:dictfile = expand(g:user.dir.vim . '/dict/look/words', ':p')
+if g:user.system.windows
+  let s:dictfile = expand(g:user.dir.dictionary . '/look/words', ':p')
+endif
+let g:user.file = extend({
+  \  'look'     : [s:dictfile],
+  \}, g:user.file)
+unlet s:dictfile
+
+" check and mkdir
+call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
+
 let g:user.colorscheme = []
 
+" dll setup if need
+if has('python3_dynamic') && v:false
+  " unstable
+  let s:pycmd     = 'python3'
+  let s:pyrelpath = '../lib'
+  let s:pydllglob = 'libpython3*.so'
+  if g:user.system.windows
+    let s:pycmd     = 'python'
+    let s:pyrelpath = '.'
+    let s:pydllglob = 'python3?*.dll'
+  elseif g:user.system.mac
+    " unstable
+    let s:pydllglob = 'libpython3*.dylib'
+  endif
+
+  let &pythonthreedll = g:user.function.dllsearch(s:pycmd, s:pyrelpath, s:pydllglob)
+  unlet s:pycmd s:pyrelpath s:pydllglob
+endif
+
 " }}}
+
+" plugin manager before setup {{{
+" プラグイン処理前に実施
+" http://qiita.com/andouf/items/bdec492185e3a4f78ae2
+" if g:user.system.windows
+"   set shellslash
+" endif
+if g:user.system.windows && exists('+completeslash')
+  set completeslash=slash
+endif
+
+" 初期値削除(プラグインで設定もあるので、ここでやる)
+set tags=
+
+" <Leader>はプラグイン内でマッピングする際に展開してしまうので
+" based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
+" based on https://whileimautomaton.net/2007/04/19221500
+" mapleader (<Leader>) (default is \)
+let g:mapleader = ','
+let g:maplocalleader  = ';'
+" use \ as , instead
+nnoremap [Subleader]  <Nop>
+nmap     \            [Subleader]
+" f,tでの移動の逆にする機能が設定されているので、保持はする
+nnoremap [Subleader], ,
+nnoremap [Subleader]; ;
+
+" set leader and etc
+let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+  \  '<Leader>'      : { 'rawkey' : g:mapleader     , 'desc' : g:user.plugin.info.whichkey.desc.leader },
+  \  '<LocalLeader>' : { 'rawkey' : g:maplocalleader },
+  \  'g'             : { 'rawkey' : "g"              },
+  \  'z'             : { 'rawkey' : "z"              },
+  \})
 
 " plugin
 " dein 設定前の設定
@@ -960,17 +982,6 @@ autocmd vimrc_init_core BufReadPost * nested
   \ | endif
 " }}}
 
-" Cursor Style. {{{
-" from https://github.com/mnishz/dotfiles/blob/0673fc0ecb85501787cc0c002303456e068f3374/.vimrc#L55-L63
-if &term =~# 'xterm'
-  " インサートモードでのカーソル切り替え
-  let &t_ti = &t_ti . "\e[1 q"
-  let &t_SI = &t_SI . "\e[5 q"
-  let &t_EI = &t_EI . "\e[1 q"
-  let &t_te = &t_te . "\e[0 q"
-endif
-" }}}
-
 " File Potition. {{{
 " augroup vimrc_init_core
 "   autocmd BufEnter,BufReadPost * echo 'buffer pwd:' getcwd(0,0)
@@ -1149,13 +1160,7 @@ set wildcharm=<Tab>
 " 辞書
 " see http://nanasi.jp/articles/howto/config/dictionary.html
 
-let s:dictfile = expand(g:user.dir.vim . '/dict/look/words', ':p')
-if g:user.system.windows
-  let s:dictfile = expand(g:user.dir.dictionary . '/look/words', ':p')
-endif
-if filereadable(s:dictfile)
-  let &dictionary = s:dictfile
-endif
+let &dictionary = join(g:user.file.look, ',')
 
 " spell check
 set spell
@@ -1165,7 +1170,7 @@ set spelllang=en_us,cjk
 if exists('+spelloptions')
   set spelloptions=camel
 endif
-let &spellfile = expand(g:user.dir.vim . '/dict/spell.' . &encoding . '.add')
+let &spellfile = join(g:user.file.spell, ',')
 autocmd vimrc_init_core VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
@@ -1309,7 +1314,7 @@ if s:clipboard && (has('gui') || has('xterm_clipboard'))
   set clipboard&
   if g:user.system.windows
     set clipboard^=unnamed
-  elseif has('gui_runnning')
+  elseif has('gui_running')
     " x window system あり
     set clipboard^=unnamedplus
     " autoselectはデフォルト値にある
@@ -1380,6 +1385,23 @@ if !has('gui_running')
     endif
   endif
 endif
+
+" 上でtermを再設定するので、その後で設定
+" Cursor Style. {{{
+" from https://github.com/mnishz/dotfiles/blob/0673fc0ecb85501787cc0c002303456e068f3374/.vimrc#L55-L63
+if &term =~# 'xterm'
+  " インサートモードでのカーソル切り替え
+  let &t_ti = &t_ti . "\e[1 q"
+  let &t_SI = &t_SI . "\e[5 q"
+  let &t_EI = &t_EI . "\e[1 q"
+  let &t_te = &t_te . "\e[0 q"
+endif
+
+if !has('gui_running')
+  " Console italic off
+  set t_ZH=
+endif
+" }}}
 
 " Restore t_Co for less command after vim quit
 augroup vimrc_init_core
@@ -1623,10 +1645,19 @@ augroup END
 "   <C-m> == <Enter>
 "   <C-[> == <ESC>
 " see http://rbtnn.hateblo.jp/entry/2014/11/30/174749
-"
+
 " special mapping
 "  ctrl + space input <NUL> in terminal, remap them.
-" map <NUL> <C-Space>
+if !has('gui_running')
+  " map <NUL> <C-Space>
+  nmap <NUL> <C-Space>
+  xmap <NUL> <C-Space>
+  omap <NUL> <C-Space>
+endif
+
+" from lexima tips, Ctrl-H use backspace
+imap <C-h> <BS>
+cmap <C-h> <BS>
 
 " ################# キーマップ #######################
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
@@ -1683,8 +1714,18 @@ nnoremap <Space>L $
 nnoremap <silent> <expr> 0 getline('.')[0 : col('.') - 2] =~# '^\s\+$' ? '0' : '^'
 
 " speed save & exit
-nnoremap <space>w :w<CR>
-nnoremap <space>q :q<CR>
+nnoremap <space>W :confirm w<CR>
+nnoremap <space>Q :confirm q<CR>
+
+" support <C-w>
+nmap <space>w <c-w>
+" keymap info
+let g:user.plugin.info.whichkey.desc.space['w'] = {
+  \  'name' : '+c-w',
+  \ }
+
+" visual dot repeat
+xnoremap <silent> . :normal .<CR>
 
 " o/O use Add last return
 nmap o A<CR>
@@ -2110,6 +2151,16 @@ call g:user.function.load_setting(g:dein.dir.rc)
 "
 " command! TestRun call <SID>testrun()
 " }}}
+
+" term black
+if has('gui_running')
+  autocmd vimrc_init_core VimEnter,ColorScheme * nested highlight Terminal ctermbg=NONE ctermfg=NONE guibg=Black guifg=LightGrey
+else
+  " not work yet
+  " " background inherit console color style
+  " autocmd vimrc_init_core VimEnter,ColorScheme * nested if &background == 'dark'  | highlight Terminal ctermbg=NONE ctermfg=White | endif
+  " autocmd vimrc_init_core VimEnter,ColorScheme * nested if &background == 'light' | highlight Terminal ctermbg=NONE ctermfg=Black | endif
+endif
 
 " }}}
 " EOF

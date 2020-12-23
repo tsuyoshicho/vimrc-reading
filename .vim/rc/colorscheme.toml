@@ -85,6 +85,18 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'ELouisYoung/vim-better-molokai'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'better-molokai'
+  let s:scheme['lightline']  = 'molokai' " built-in
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'Haron-Prime/Antares'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -502,6 +514,24 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'co1ncidence/mountaineer.vim'
+hook_add = '''
+  for [s:theme, s:lightline, s:bg] in [
+      \  [''        , ''        , 'dark' ],
+      \  ['-grey'   , '_grey '  , 'dark' ],
+      \  ['-light ' , '_light ' , 'light'],
+      \]
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'mountaineer' . s:theme
+    let s:scheme['lightline']  = 'mountaineer' . s:lightline
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
 repo = 'cocopon/iceberg.vim'
 hook_add = '''
   for s:bg in ['light', 'dark']
@@ -737,6 +767,26 @@ hook_add = '''
   " let g:oceanic_material_enable_undercurl = 1
   " let g:oceanic_material_enable_reverse = 1
 '''
+
+# [[plugins]] # カラースキーム
+# repo = 'hzchirs/vim-material'
+# hook_add = '''
+#   for s:bg in ['light', 'dark']
+#     let s:scheme = deepcopy(g:user.template.colorscheme)
+#     call add(g:user.colorscheme, s:scheme)
+#
+#     let s:scheme['name']       = 'vim-material'
+#     let s:scheme['airline']    = 'material'
+#     let s:scheme['background'] = s:bg
+#     let s:scheme['mode']       = ['termguicolors', 'gui']
+#   endfor
+#
+#   " let g:material_style='default'
+#   " " Palenight
+#   " let g:material_style='palenight'
+#   " " Oceanic
+#   " let g:material_style='oceanic'
+# '''
 
 [[plugins]] # カラースキーム
 repo = 'icymind/NeoSolarized'
@@ -1169,6 +1219,17 @@ hook_add = '''
   let s:scheme['name']       = 'apprentice'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'romainl/vim-dichromatic'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'dichromatic'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
 [[plugins]] # カラースキーム

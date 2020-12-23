@@ -98,17 +98,18 @@ merged = 0
 hook_post_update = '''
   if g:user.system.windows
     if !g:user.system.cygwin
-      " let cmd = 'tools\\update-dll-mingw'
-      let cmd = 'tools\\update-dll-msvc'
+      " let s:cmd = 'tools\\update-dll-mingw'
+      let s:cmd = 'tools\\update-dll-msvc'
     else
-      let cmd = 'make -f make_cygwin.mak'
+      let s:cmd = 'make -f make_cygwin.mak'
     endif
   elseif executable('gmake')
-    let cmd = 'gmake'
+    let s:cmd = 'gmake'
   else
-    let cmd = 'make'
+    let s:cmd = 'make'
   endif
-  let g:dein#plugin.build = cmd
+  let g:dein#plugin.build = s:cmd
+  unlet s:cmd
 '''
 
 [[plugins]]
@@ -259,25 +260,36 @@ hook_post_source = '''
   let s:prompt['cmd'] = '>'
   let s:prompt['nix'] = '$'
 
-  let s:starship_config = expand(g:user.dir.config_home . '/starship.toml')
   let s:starship = {}
+  let s:starship_config = expand(g:user.dir.config_home . '/starship.toml')
   if filereadable(s:starship_config)
     let s:TOML = g:V.import('Text.TOML')
-    let s:starship = s:TOML.parse_file(s:starship_config)
-    unlet s:TOML
+    try
+      let s:starship = s:TOML.parse_file(s:starship_config)
+    catch
+    finally
+      unlet s:TOML
+    endtry
   endif
 
-  let s:prompt['starship'] = '❯'
   if has_key(s:starship,'character')
-    if has_key(s:starship.character, 'symbol')
-      let s:prompt['starship'] = s:starship.character.symbol
-    endif
+    let s:pat = '^.*\zs.\ze\].*$'
+
+    let s:prompt['starship_success'] = matchlist(
+      \  get(s:starship.character, 'success_symbol', '❯]'),
+      \  '^.*\zs.\ze\].*$'
+      \)[0]
+
+    let s:prompt['starship_error'] = matchlist(
+      \  get(s:starship.character, 'error_symbol', '❯]'),
+      \  '^.*\zs.\ze\].*$'
+      \)[0]
+
+    unlet s:pat
   endif
 
-  let s:result = '\(' . escape(join(values(s:prompt), '|'), '\|$')  . '\)\s*$'
-
-  let g:empty_prompt#pattern = s:result
-  unlet s:result
+  let g:empty_prompt#pattern = '\(' . escape(join(values(s:prompt), '|'), '\|$')  . '\)\s*$'
+  unlet s:prompt s:starship s:starship_config
 '''
 
 [[plugins]]
@@ -1152,10 +1164,19 @@ repo = 'kana/vim-repeat'
 repo = 'tpope/vim-unimpaired'
 depends = ['vim-repeat']
 hook_add = '''
+  " keymap info
+  let g:user.plugin.info.whichkey.desc['['] = {}
+  let g:user.plugin.info.whichkey.desc[']'] = {}
+  let g:user.plugin.info.whichkey.desc['[']['o'] = {
+    \  'name' : '+option',
+    \ }
+  let g:user.plugin.info.whichkey.desc[']']['o'] = {
+    \  'name' : '+option',
+    \ }
   " which key
   let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-    \  '['             : { 'rawkey' : "["              },
-    \  ']'             : { 'rawkey' : "]"              },
+    \  '['             : { 'rawkey' : "[", 'desc' : g:user.plugin.info.whichkey.desc['['] },
+    \  ']'             : { 'rawkey' : "]", 'desc' : g:user.plugin.info.whichkey.desc[']'] },
     \})
 '''
 hook_post_source = '''
@@ -1819,6 +1840,12 @@ depends = 'vim-textobj-user'
 # az, iz
 [[plugins]]
 repo = 'kana/vim-textobj-fold'
+depends = 'vim-textobj-user'
+
+# CamelCaseやsnake_caseの中の単語単位
+# av, iv
+[[plugins]]
+repo = 'Julian/vim-textobj-variable-segment'
 depends = 'vim-textobj-user'
 
 # 挟まれた単語(指定の直後の文字で囲まれてると判断する)
@@ -2710,7 +2737,7 @@ hook_add = '''
   "        \   )
   "        \ },
   "        \ 'initialization_options': { 'cacheDirectory': '~/tmp/cquery/cache' },
-  "        \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+  "        \ 'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
   "        \ })
   " endif
 
@@ -2738,8 +2765,10 @@ hook_add = '''
         end
       endfor
       if !skip
-        setlocal foldmethod=expr
-        setlocal foldexpr=lsp#ui#vim#folding#foldexpr()
+        setlocal
+          \ foldmethod=expr
+          \ foldexpr=lsp#ui#vim#folding#foldexpr()
+          \ foldtext=lsp#ui#vim#folding#foldtext()
       endif
     endif
 
@@ -2749,6 +2778,7 @@ hook_add = '''
 
     nmap <silent><buffer> gd         <plug>(lsp-definition)
     nmap <silent><buffer> <Leader>K  <plug>(lsp-hover)
+    nmap <silent><buffer> <Leader>A  <plug>(lsp-code-action)
     nmap <silent><buffer> <Leader>md <plug>(lsp-document-diagnostics)
     nmap <silent><buffer> <Leader>mr <plug>(lsp-references)
 
@@ -2867,6 +2897,13 @@ hook_add = '''
       \  'python-ver'  : s:py_ver,
       \}
   endif
+    let g:lsp_settings['pyls-all'] = {
+    \  'workspace_config': {
+    \    'pyls': {
+    \      'configurationSources': ['flake8']
+    \    }
+    \  }
+    \}
 
   let g:lsp_settings['gopls'] = {
     \  'workspace_config': {
@@ -2953,62 +2990,67 @@ hook_add = '''
   " debug
   command! AsyncompleteDebugEnable  let g:asyncomplete_log_file = expand($HOME . '/asyncomplete.log')
   command! AsyncompleteDebugDisable unlet g:asyncomplete_log_file
+
+  augroup vimrc_init_asyncomplete
+    autocmd!
+    " asyncomplete original
+    " autocmd CompleteDone * if pumvisible() == 0 | pclose | endif
+    " my refine
+    " autocmd CompleteDone * if pumvisible() | pclose | endif
+
+    " double popup fix
+    autocmd VimEnter * set completeopt-=popup
+  augroup END
 '''
 hook_post_source = '''
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
-
-  " augroup vimrc_init_asyncomplete
-  "   autocmd!
-  "   " asyncomplete original
-  "   " autocmd CompleteDone * if pumvisible() == 0 | pclose | endif
-  "   " my refine
-  "   autocmd CompleteDone * if pumvisible() | pclose | endif
-  " augroup END
 '''
 
-[[plugins]]
-repo = 'machakann/asyncomplete-ezfilter.vim'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  let g:asyncomplete_preprocessor =
-  \ [function('asyncomplete#preprocessor#ezfilter#filter')]
+# [[plugins]]
+# repo = 'machakann/asyncomplete-ezfilter.vim'
+# depends = ['asyncomplete.vim']
+# merged = 0
+# hook_add = '''
+#   let g:asyncomplete#preprocessor#ezfilter#config = {}
+# '''
+# hook_source = '''
+#   let g:asyncomplete_preprocessor =
+#   \ [function('asyncomplete#preprocessor#ezfilter#filter')]
+#
+#   " https://gist.github.com/mattn/d909c93784aa81d97b82c0896ef38ca8
+#   " " basic fuzzy match
+#   " function! s:fuzzy(lhs, rhs) abort
+#   "   return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
+#   " endfunction
+#   "
+#   " let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+#   "\ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
+#
+#   " osa_filter
+#   " let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+#   "  \ {ctx, items -> ctx.osa_filter(items, 1)}
+#   " Match items case-insensitive
+#   let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+#     \ {ctx, items -> ctx.filter(items)}
+# '''
 
-  let g:asyncomplete#preprocessor#ezfilter#config = {}
-
-  " https://gist.github.com/mattn/d909c93784aa81d97b82c0896ef38ca8
-  " basic fuzzy match
-  function! s:fuzzy(lhs, rhs) abort
-    return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
-  endfunction
-
-  let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-  \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
-
-  " if has python3 advanced match
-  if has('python3')
-    " osa_filter is slow when running in vim script so only set if python3 is enabled
-    let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-    \ {ctx, items -> ctx.osa_filter(items, 1)}
-  endif
-'''
-
-[[plugins]]
-repo = 'machakann/asyncomplete-unicodesymbol.vim'
-depends = ['asyncomplete.vim', 'asyncomplete-ezfilter.vim']
-hook_source = '''
-  if v:false
-    autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#unicodesymbol#get_source_options({
-      \     'name': 'unicodesymbol',
-      \     'whitelist': ['julia'],
-      \     'completor': function('asyncomplete#sources#unicodesymbol#completor'),
-      \   }))
-
-    let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
-      \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
-  endif
-'''
+# [[plugins]]
+# repo = 'machakann/asyncomplete-unicodesymbol.vim'
+# depends = ['asyncomplete.vim', 'asyncomplete-ezfilter.vim']
+# hook_source = '''
+#   if v:false
+#     autocmd User asyncomplete_setup call
+#       \ asyncomplete#register_source(
+#       \   asyncomplete#sources#unicodesymbol#get_source_options({
+#       \     'name': 'unicodesymbol',
+#       \     'allowlist': ['julia', 'text'],
+#       \     'completor': function('asyncomplete#sources#unicodesymbol#completor'),
+#       \   }))
+#
+#     let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
+#       \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
+#   endif
+# '''
 
 [[plugins]]
 repo = 'yuki-ycino/asyncomplete-dictionary'
@@ -3021,7 +3063,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#dictionary#get_source_options({
       \     'name': 'dictionary',
-      \     'whitelist': ['*'],
+      \     'allowlist': ['*'],
       \     'completor': function('asyncomplete#sources#dictionary#completor')
       \   }))
   endif
@@ -3056,7 +3098,7 @@ hook_source = '''
         \ asyncomplete#register_source(
         \   asyncomplete#sources#nextword#get_source_options({
         \     'name': 'nextword',
-        \     'whitelist': ['*'],
+        \     'allowlist': ['*'],
         \     'args': ['-n', '300', '-g'],
         \     'completor': function('asyncomplete#sources#nextword#completor')
         \   }))
@@ -3064,19 +3106,47 @@ hook_source = '''
   endif
 '''
 
+# [[plugins]] # comflict; select one
+# repo = 'htlsne/asyncomplete-look'
+# depends = ['asyncomplete.vim', 'async.vim']
+# hook_source = '''
+#   if v:false
+#     if executable('look')
+#       autocmd User asyncomplete_setup call
+#        \  asyncomplete#register_source({
+#        \    'name': 'look',
+#        \    'allowlist': ['*'],
+#        \    'completor': function('asyncomplete#sources#look#completor'),
+#        \  })
+#     endif
+#     if executable('grep') && (len(g:user.file.spell) > 0)
+#       let g:asc_look_good_words_file = g:user.file.spell[0]
+#       autocmd User asyncomplete_setup call
+#        \  asyncomplete#register_source({
+#        \   'name': 'look_good_words',
+#        \   'allowlist': ['*'],
+#        \   'completor': function('asyncomplete#sources#look#good_words'),
+#        \ })
+#     endif
+#   endif
+# '''
+
 [[plugins]]
 repo = 'gonzoooooo/asyncomplete-look.vim'
+# repo = 'tsuyoshicho/asyncomplete-look.vim'
+# rev  = 'develop'
 depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
-  if v:false
-    if executable('look')
+  if v:true
+    if executable('look') && (len(g:user.file.look) > 0)
+      let g:asyncomplete#sources#look#dict = g:user.file.look[0]
       autocmd User asyncomplete_setup call
-        \ asyncomplete#register_source(
-        \   asyncomplete#sources#look#get_source_options({
-        \     'name': 'look',
-        \     'whitelist': ['*'],
-        \     'completor': function('asyncomplete#sources#look#completor'),
-        \   }))
+       \ asyncomplete#register_source(
+       \   asyncomplete#sources#look#get_source_options({
+       \     'name': 'look',
+       \     'allowlist': ['*'],
+       \     'completor': function('asyncomplete#sources#look#completor'),
+       \   }))
     endif
   endif
 '''
@@ -3090,7 +3160,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#file#get_source_options({
       \     'name': 'file',
-      \     'whitelist': ['*'],
+      \     'allowlist': ['*'],
       \     'priority': 10,
       \     'completor': function('asyncomplete#sources#file#completor')
       \   }))
@@ -3106,8 +3176,8 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#buffer#get_source_options({
       \     'name': 'buffer',
-      \     'whitelist': ['*'],
-      \     'blacklist': ['go','python'],
+      \     'allowlist': ['*'],
+      \     'blocklist': ['go','python'],
       \     'completor': function('asyncomplete#sources#buffer#completor'),
       \     'config': {
       \        'max_buffer_size': 700000,
@@ -3125,7 +3195,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emmet#get_source_options({
       \     'name': 'emmet',
-      \     'whitelist': ['html'],
+      \     'allowlist': ['html', 'css'],
       \     'completor': function('asyncomplete#sources#emmet#completor'),
       \ }))
   endif
@@ -3140,7 +3210,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#tags#get_source_options({
       \     'name': 'tags',
-      \     'whitelist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
+      \     'allowlist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
       \     'completor': function('asyncomplete#sources#tags#completor'),
       \     'config': {
       \       'max_file_size': 350000000,
@@ -3158,7 +3228,7 @@ hook_source = '''
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emoji#get_source_options({
       \     'name': 'emoji',
-      \     'whitelist': ['markdown', 'text'],
+      \     'allowlist': ['*'],
       \     'completor': function('asyncomplete#sources#emoji#completor'),
       \   }))
   endif
@@ -4488,7 +4558,7 @@ hook_post_source = '''
 [[plugins]]
 repo = 'junegunn/limelight.vim'
 hook_add = '''
-  if !has("gui_running")
+  if !has('gui_running')
     " Color name (:help cterm-colors) or ANSI code
     let g:limelight_conceal_ctermfg = 'gray'
     let g:limelight_conceal_ctermfg = 240
@@ -4628,6 +4698,8 @@ hook_add = '''
   \   'author': g:user.name,
   \ },
   \}
+
+  " which key C-Y info set in emmet
 '''
 
 [[plugins]]
@@ -4676,7 +4748,7 @@ hook_add = '''
 
   " which key
   let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-    \  '<Space>'       : { 'rawkey' : " "              },
+    \  '<Space>'       : { 'rawkey' : " " , 'desc' : g:user.plugin.info.whichkey.desc.space },
     \})
 '''
 hook_post_source = '''
@@ -4778,20 +4850,25 @@ hook_post_source = '''
   for s:rule in s:additional_rules
     call lexima#add_rule(s:rule)
   endfor
+  unlet s:rule s:cr_key s:additional_rules
 
   " rule from https://github.com/rinx/dotfiles/blob/master/vimrc
   " markdown
-  call lexima#add_rule({'char': '**', 'input_after': '**', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '**',            'input_after': '**', 'filetype': ['markdown']})
   call lexima#add_rule({'char': '<BS>', 'at': '\*\%#\*', 'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '__', 'input_after': '__', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '_\%#_', 'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '~~', 'input_after': '~~', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '__',            'input_after': '__', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<BS>', 'at': '_\%#_',   'delete': 1, 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '~~',            'input_after': '~~', 'filetype': ['markdown']})
   call lexima#add_rule({'char': '<BS>', 'at': '\~\%#\~', 'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*\*\s.*\%#', 'input': '<CR>* ', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*+\s.*\%#', 'input': '<CR>+ ', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*-\s.*\%#', 'input': '<CR>- ', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<CR>', 'at': '^\s*\*\s.*\%#', 'input': '<CR>*<Space>', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<CR>', 'at': '^\s*+\s.*\%#',  'input': '<CR>+<Space>', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<CR>', 'at': '^\s*-\s.*\%#',  'input': '<CR>-<Space>', 'filetype': ['markdown']})
   " from https://github.com/cohama/.vim/blob/master/dein.toml
   " call lexima#add_rule({'char': '<CR>', 'at': '^```\(\S*\)\%#```', 'input': '<C-y><CR><CR><Esc>kS', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '#',    'at': '^\%#',      'input': '#<Space>',        'filetype': ['markdown']})
+  call lexima#add_rule({'char': '#',    'at': '^#\+ \%#',  'input': '<BS>#<Space>',    'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<BS>', 'at': '^##\+ \%#', 'input': '<BS><BS><Space>', 'filetype': ['markdown']})
+  call lexima#add_rule({'char': '<BS>', 'at': '^# \%#',    'input': '<BS><BS>',        'filetype': ['markdown']})
 
   " vimspec
   " from https://github.com/cohama/.vim/blob/master/dein.toml
@@ -4804,11 +4881,12 @@ hook_post_source = '''
   " ignore stype ["String", "Comment"]
   " vimspec support
   " [] support
-  call lexima#add_rule({'at': '{\%#}', 'char': '<CR>', 'input': '<CR><Bslash> ',
-    \ 'input_after': '<CR><Bslash> ', 'filetype': ['vim', 'vimspec']})
-  call lexima#add_rule({'at': '\[\%#\]', 'char': '<CR>', 'input': '<CR><Bslash> ',
-    \ 'input_after': '<CR><Bslash> ', 'filetype': ['vim', 'vimspec']})
-  call lexima#add_rule({'at': '\\\s.*\%#$', 'char': '<CR>', 'input': '<CR><Bslash> ',
+  " indent fix
+  call lexima#add_rule({'at': '{\%#}',      'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
+    \ 'input_after': '<CR><Bslash>',  'filetype': ['vim', 'vimspec']})
+  call lexima#add_rule({'at': '\[\%#\]',    'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
+    \ 'input_after': '<CR><Bslash>',  'filetype': ['vim', 'vimspec']})
+  call lexima#add_rule({'at': '\\\s.*\%#$', 'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
     \                                 'filetype': ['vim', 'vimspec']})
 
   " http://secret-garden.hatenablog.com/entry/2015/05/21/194914
