@@ -242,7 +242,6 @@ hook_post_source = '''
 # Terminal
 ##############
 [[plugins]]
-# repo = 'kyoh86/vim-editerm'
 repo = 'lambdalisue/edita.vim'
 
 [[plugins]]
@@ -253,6 +252,8 @@ hook_add = '''
   autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: ':', rhs: '<C-w>:'})
   " <Esc> works as <C-w>N
   autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: '<Esc>', rhs: '<C-w>N'})
+  " <CTRL-Tab> works as <C-w>w
+  autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: '<c-tab>', rhs: '<C-w>w'})
 '''
 hook_post_source = '''
   let s:prompt = {}
@@ -289,7 +290,14 @@ hook_post_source = '''
   endif
 
   let g:empty_prompt#pattern = '\(' . escape(join(values(s:prompt), '|'), '\|$')  . '\)\s*$'
-  unlet s:prompt s:starship s:starship_config
+
+  let s:prompt_search_map = 'autocmd TerminalOpen * nested nnoremap <buffer> <silent> <C-Up> ?\(' . escape(join(values(s:prompt), '|'), '\|$') . '\)<CR>n'
+  augroup vimrc_init_empty_prompt
+    autocmd!
+    call execute(escape(s:prompt_search_map, '|'))
+  augroup END
+
+  unlet s:prompt s:starship s:starship_config s:prompt_search_map
 '''
 
 [[plugins]]
@@ -861,7 +869,8 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'tyru/vim-altercmd'
+# repo = 'tyru/vim-altercmd'
+repo = 'tsuyoshicho/vim-altercmd'
 
 # [[plugins]]
 # repo = 'c000/rapidfire.vim'
@@ -1159,6 +1168,9 @@ hook_add = '''
 [[plugins]]
 # repo = 'tpope/vim-repeat'
 repo = 'kana/vim-repeat'
+
+[[plugins]]
+repo = 'haya14busa/vim-metarepeat'
 
 [[plugins]]
 repo = 'tpope/vim-unimpaired'
@@ -2533,6 +2545,11 @@ hook_add = '''
   " Runners available are 'pytest', 'nose', 'nose2', 'djangotest', 'djangonose', 'mamba',
   "  and Python's built-in unittest as 'pyunit'
   let g:test#python#runner = 'pytest'
+
+  " option
+  " let g:test#python#pytest#options = {
+  "  \ 'all': '',
+  "  \}
 '''
 
 # Doc & File & Web
@@ -2646,7 +2663,6 @@ hook_add = '''
   " move to change disable
   let g:precious_enable_switch_CursorMoved = {
   \  "*"    : 0,
-  \  "help" : 1,
   \}
   let g:precious_enable_switch_CursorMoved_i = {
   \  "*" : 0,
@@ -2723,23 +2739,24 @@ hook_add = '''
   " optional
   let g:lsp_item = []
 
-  " efm server
-  " use vim-efm-langserver-settings
-
-  " c/c++ cquery
-  " if executable('cquery')
-  "   call add(g:lsp_item, {
-  "        \ 'name': 'cquery',
-  "        \ 'cmd': {server_info->['cquery']},
-  "        \ 'root_uri': {
-  "        \   server_info->lsp#utils#path_to_uri(
-  "        \     lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'compile_commands.json')
-  "        \   )
-  "        \ },
-  "        \ 'initialization_options': { 'cacheDirectory': '~/tmp/cquery/cache' },
-  "        \ 'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
-  "        \ })
-  " endif
+  " c/c++ ccls
+  if executable('ccls')
+    call add(g:lsp_item, {
+      \  'name': 'ccls',
+      \  'cmd': { server_info -> ['ccls'] },
+      \  'root_uri': { server_info ->
+      \    lsp#utils#path_to_uri(
+      \      lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'compile_commands.json')
+      \    )
+      \  },
+      \  'initialization_options': {
+      \    'highlight': {
+      \      'lsRanges' : v:true
+      \    },
+      \  },
+      \  'allowlist': ['c', 'cpp', 'objc', 'objcpp', 'cc'],
+      \})
+  endif
 
   function! s:lsp_user_setup() abort
     for item in g:lsp_item
@@ -2793,7 +2810,6 @@ hook_add = '''
     autocmd User lsp_setup          nested call s:lsp_user_setup()
     autocmd User lsp_buffer_enabled nested call s:lsp_user_buffer_enabled()
   augroup END
-
 '''
 hook_post_source = '''
   " from https://mattn.kaoriya.net/software/vim/20191231213507.htm
@@ -2830,6 +2846,11 @@ merged = 0
 [[plugins]]
 repo = 'hrsh7th/vim-vsnip-integ'
 depends = ['vim-lsp', 'asyncomplete.vim', 'vim-vsnip']
+
+[[plugins]]
+repo = 'jackguo380/vim-lsp-cxx-highlight'
+merged = 0
+depends = ['vim-lsp']
 
 [[plugins]]
 repo = 'mattn/vim-lsp-settings'
@@ -2881,12 +2902,22 @@ hook_add = '''
     endif
   endif
 
+  " efm-langserver
+  " use vim-efm-langserver-settings
+  " let g:lsp_settings['efm-langserver'] = {}
+  " let g:lsp_settings['efm-langserver']['disabled'] = v:false
+
   " clangd installed?
   " set at cpunum
+  let g:lsp_settings['clangd'] = {}
   if executable(s:clangd_path)
-    let g:lsp_settings['clangd'] = {
-      \  'cmd': [ s:clangd_path, '--background-index', '-j=' . g:user.system.cpunum ],
-      \}
+    let g:lsp_settings['clangd']['cmd'] = [
+      \  s:clangd_path, '--background-index', '-j=' . g:user.system.cpunum
+      \]
+    " if ccls installed, use only ccls.
+    if executable('ccls')
+      let g:lsp_settings['clangd']['disabled'] = v:true
+    endif
   endif
 
   " python3 available?
@@ -2897,7 +2928,7 @@ hook_add = '''
       \  'python-ver'  : s:py_ver,
       \}
   endif
-    let g:lsp_settings['pyls-all'] = {
+  let g:lsp_settings['pyls-all'] = {
     \  'workspace_config': {
     \    'pyls': {
     \      'configurationSources': ['flake8']
@@ -2937,7 +2968,7 @@ hook_add = '''
 
   " per filetype
   " let g:lsp_settings_filetype_vim    = ['vimscript-language-server']
-  let g:lsp_settings_filetype_python = ['pyls-ms']
+  " let g:lsp_settings_filetype_python = ['pyls-all', 'pyright-langserver']
 '''
 hook_post_source = '''
   let s:List     = g:V.import('Data.List')
@@ -3053,7 +3084,7 @@ hook_post_source = '''
 # '''
 
 [[plugins]]
-repo = 'yuki-ycino/asyncomplete-dictionary'
+repo = 'yuki-yano/asyncomplete-dictionary'
 # repo = 'tsuyoshicho/asyncomplete-dictionary'
 # rev  = 'develop'
 depends = ['asyncomplete.vim']
@@ -3330,7 +3361,7 @@ hook_source = '''
 #   nnoremap <silent> <Leader>E :call <SID>emoji_unicode_replace()<CR>
 # '''
 
-# CtrlP
+# CtrlP and other fuzzyfinder/picker
 # other plugin within ctrlp extension
 # - vim-pass
 # - yankround.vim
@@ -3595,6 +3626,13 @@ hook_add = '''
         \ + ['lsp_document_symbol', 'lsp_workspace_symbol']
 '''
 
+[[plugins]]
+repo = 'prabirshrestha/quickpick.vim'
+
+[[plugins]]
+repo = 'prabirshrestha/quickpick-lsp.vim'
+depends = ['vim-lsp', 'quickpick.vim']
+
 [[plugins]] # w3m,lynx,wwwrenderer-vimのどれかが必要
 repo = 'thinca/vim-ref'
 # repo = 'tsuyoshicho/vim-ref'
@@ -3734,7 +3772,7 @@ hook_add = '''
     \ 'cmdopt'  : '-v -s',
     \}, get(g:quickrun_config, 'python.unit', {}), "keep")
   let g:quickrun_config['python.pytest']    = extend({
-    \ 'command' : 'py.test',
+    \ 'command' : 'pytest',
     \ 'cmdopt'  : '-v',
     \}, get(g:quickrun_config, 'python.pytest', {}), "keep")
   " Django unittest
@@ -3787,22 +3825,25 @@ hook_add = '''
 
   augroup vimrc_init_quickrun
     autocmd!
-    autocmd VimEnter * nested :call s:runner_setup() | autocmd! vimrc_init_quickrun
-    " unittest
-    autocmd BufWinEnter,BufNewFile *test.php setlocal filetype=php.unit
-    " Choose UnitTest, py.test or Django.
-    " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.unit
-    autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.pytest
-    " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.django
-    autocmd BufWinEnter,BufNewFile *.t       setlocal filetype=perl.unit
-    autocmd BufWinEnter,BufNewFile *_spec.rb setlocal filetype=ruby.rspec
-    autocmd BufWinEnter,BufNewFile *_test.rb setlocal filetype=ruby.minitest
-    autocmd BufWinEnter,BufNewFile *_test.go setlocal filetype=go.test
-    " TypeScript support only Jest
-    autocmd BufWinEnter,BufNewFile *.spec.ts setlocal filetype=typescript.jest
-    " Choose Mocha or Jest
-    " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.mocha
-    " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.jest
+    autocmd VimEnter * nested :call s:runner_setup()
+
+    " temp off : use Quickrun python.pytest instead
+    " " unittest
+    " autocmd BufWinEnter,BufNewFile *test.php setlocal filetype=php.unit
+    " " Choose UnitTest, py.test or Django.
+    " " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.unit
+    " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.pytest
+    " " autocmd BufWinEnter,BufNewFile test_*.py setlocal filetype=python.django
+    " autocmd BufWinEnter,BufNewFile *.t       setlocal filetype=perl.unit
+    " autocmd BufWinEnter,BufNewFile *_spec.rb setlocal filetype=ruby.rspec
+    " autocmd BufWinEnter,BufNewFile *_test.rb setlocal filetype=ruby.minitest
+    " autocmd BufWinEnter,BufNewFile *_test.go setlocal filetype=go.test
+    " " TypeScript support only Jest
+    " autocmd BufWinEnter,BufNewFile *.spec.ts setlocal filetype=typescript.jest
+    " " Choose Mocha or Jest
+    " " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.mocha
+    " " autocmd BufWinEnter,BufNewFile *.test.js setlocal filetype=javascript.jest
+
   augroup END
 
   " keymap info
@@ -4199,6 +4240,9 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'micchy326/lightline-lsp-progress'
+
+[[plugins]]
 repo = 'tsuyoshicho/lightline-lsp'
 depends = ['lightline.vim']
 hook_add = '''
@@ -4227,7 +4271,7 @@ hook_add = '''
 repo = 'delphinus/lightline-delphinus'
 # repo = 'tsuyoshicho/lightline-delphinus'
 # rev  = 'develop'
-depends = ['lightline.vim', 'lightline-buffer', 'vim-lightline_tabpagecount', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'vista.vim', 'vim-signify', 'gina.vim', 'StatuslineUpateTimer.vim']
+depends = ['lightline.vim', 'lightline-buffer', 'vim-lightline_tabpagecount', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'lightline-lsp-progress', 'vista.vim', 'vim-signify', 'gina.vim', 'StatuslineUpateTimer.vim']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -4269,7 +4313,7 @@ hook_post_source = '''
     \   'left' : [
     \     [ 'mode', 'paste' ],
     \     [ 'gitbranch', 'filepath', 'filename', 'method' ],
-    \     [ 'signify', 'lsp_count', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning']
+    \     [ 'signify', 'lsp_count', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning',  'lsp_status' ]
     \   ],
     \   'right': [
     \     [ 'lineinfo', 'percent',  'sky_color_clock' ],
@@ -4302,6 +4346,7 @@ hook_post_source = '''
     \   'gitgutter':    'lightline#delphinus#components#gitgutter',
     \   'signify':      'lightline#delphinus#components#signify',
     \   'lsp_count':    'lightline#lsp#count',
+    \   'lsp_status':   'lightline_lsp_progress#progress',
     \   'method':       'NearestMethodOrFunction',
     \   'anzu':         'anzu#search_status',
     \   'gitbranch':    'Lightline_components_gina',
@@ -5435,38 +5480,6 @@ hook_post_source = '''
   nnoremap <silent><expr> [fzf]h ':' . <SID>fzf_command('History') . '<CR>'
   nnoremap <silent><expr> [fzf]m ':' . <SID>fzf_command('Mark')    . '<CR>'
 '''
-
-# [[plugins]] # fzf
-# repo = 'yuki-ycino/fzf-preview.vim'
-# depends = ['fzf', 'vim-devicons']
-# hook_add = '''
-#   " filelist preview
-#   if executable('bat')
-#     let g:fzf_preview_command = 'bat --color=always --style=grid {-1}'
-#   else
-#     let g:fzf_preview_command = 'head -100 {-1}'
-#   endif
-#
-#   " filelist command
-#   " let g:fzf_preview_filelist_command
-#   " grep command
-#   " let g:fzf_preview_grep_cmd
-#
-#   " filelist post process
-#   if executable('exa')
-#     let g:fzf_preview_filelist_postprocess_command = 'xargs -d "\n" exa --color=always'
-#   else
-#     let g:fzf_preview_filelist_postprocess_command = ''
-#   endif
-#
-#   " Use vim-devicons
-#   let g:fzf_preview_use_dev_icons = 1
-#
-#   if g:user.system.windows
-#     let g:fzf_preview_use_floating_window = 0
-#     let g:fzf_preview_layout = 'top split new'
-#   endif
-# '''
 
 [[plugins]] # fzf
 repo = 'n04ln/yankee.vim'

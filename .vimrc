@@ -200,6 +200,7 @@ let g:user.rootmarker.files = [
   \  'package.json',
   \  'pom.xml',
   \  'project.clj',
+  \  'setup.cfg',
   \  'Pipfile',
   \  'compile_commands.json',
   \  '.git'
@@ -322,6 +323,10 @@ endif
 
 " 初期値削除(プラグインで設定もあるので、ここでやる)
 set tags=
+
+" fzf env clear
+" let $FZF_DEFAULT_COMMAND=''
+let $FZF_DEFAULT_OPTS=''
 
 " <Leader>はプラグイン内でマッピングする際に展開してしまうので
 " based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
@@ -756,6 +761,9 @@ set ignorecase
 
 " 検索文字列に大文字が含まれている場合は区別して検索する
 set smartcase
+
+" 挿入モードで単語補完するときよしなにやる
+set infercase
 
 " 検索時に最後まで行ったら最初に戻る
 set wrapscan
@@ -1527,8 +1535,9 @@ augroup vimrc_init_core
   " based on
   " https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
   " https://kaworu.jpn.org/kaworu/2008-06-07-1.php
-   " autocmd QuickFixCmdPost * nested cwindow
-   autocmd QuickFixCmdPost make,grep,grepadd,vimgrep,helpgrep nested cwindow
+   " autocmd QuickFixCmdPost make,grep,grepadd,vimgrep,helpgrep nested cwindow
+   autocmd QuickFixCmdPost [^l]* nested cwindow
+   autocmd QuickFixCmdPost l*    nested lwindow
 augroup END
 
 " }}}
@@ -1723,6 +1732,8 @@ nmap <space>w <c-w>
 let g:user.plugin.info.whichkey.desc.space['w'] = {
   \  'name' : '+c-w',
   \ }
+" window jump
+nmap <c-tab> <c-w>w
 
 " visual dot repeat
 xnoremap <silent> . :normal .<CR>

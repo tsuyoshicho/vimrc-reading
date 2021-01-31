@@ -743,6 +743,17 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'habamax/vim-psionic'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'psionic'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'hardcoreplayers/oceanic-material'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
