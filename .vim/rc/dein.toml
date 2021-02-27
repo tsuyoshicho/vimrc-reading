@@ -93,6 +93,16 @@ merged = 0
 depends = ['vital.vim']
 
 [[plugins]]
+repo = 'hrsh7th/vim-vital-vs'
+merged = 0
+depends = ['vital.vim']
+
+# [[plugins]]
+# repo = 'tsuyoshicho/vital-codec'
+# merged = 0
+# depends = ['vital.vim']
+
+[[plugins]]
 repo = 'Shougo/vimproc.vim'
 merged = 0
 hook_post_update = '''
@@ -331,6 +341,9 @@ repo = 'rbtnn/vim-pterm'
 #   let g:multi_cursor_quit_key            = 'g<Esc>'
 # '''
 
+[[plugins]]
+repo = 'KosukeMizuno/vim-cursorholdmark'
+
 # Motion
 ##############
 [[plugins]]
@@ -387,18 +400,20 @@ repo = 'lambdalisue/fern.vim'
 hook_add = '''
   " let g:fern#loglevel = g:fern#DEBUG
 
-  function! s:fern_init() abort
+  function! s:init_fern() abort
     setlocal nonumber
     setlocal norelativenumber
     setlocal foldcolumn=0
     setlocal signcolumn=yes
 
     " mapping
-    " currently not work(side effect error)
-    " nmap <buffer><silent> <C-m>
-    "  \ <Plug>(fern-action-open-or-enter)
-    "  \ <Plug>(fern-wait)
-    "  \ <Plug>(fern-action-tcd:root)
+
+    " from https://github.com/kyoh86/dotfiles/blob/main/nvim/etc/fern.vim
+    nmap <nowait> <buffer> !       <Plug>(fern-action-hidden:toggle)
+    nmap <nowait> <buffer> /       <Plug>(fern-action-include)
+
+    nmap <nowait> <buffer> >       <Plug>(fern-action-expand:in)
+    nmap <nowait> <buffer> <       <Plug>(fern-action-collapse)
 
     " define autocmd for buffer
     " currently not work(side effect error)
@@ -407,7 +422,7 @@ hook_add = '''
 
   augroup vimrc_init_fern
     autocmd!
-    autocmd FileType fern nested call s:fern_init()
+    autocmd FileType fern nested call s:init_fern()
   augroup END
 '''
 hook_post_source = '''
@@ -4241,6 +4256,9 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'micchy326/lightline-lsp-progress'
+hook_add = '''
+  let g:lsp_work_done_progress_enabled = 1
+'''
 
 [[plugins]]
 repo = 'tsuyoshicho/lightline-lsp'
@@ -4452,13 +4470,13 @@ hook_add = '''
       \ ['sunrise+0',   'iceberg',    'light', 'iceberg'   ],
       \ ['sunrise+1/2', 'edge',       'light', 'edge'      ],
       \ ['sunset+0',    'rigel',      'dark',  'rigel'     ],
-      \ ['sunset+1/3',  'tokyonight', 'dark',  'tokyonight'],
+      \ ['sunset+1/3',  'dracula',    'dark',  'dracula'   ],
       \ ['sunset+2/3',  'gruvbox',    'dark',  'gruvbox'   ],
       \]
   else
     let g:nd_themes = [
       \ ['sunrise+0',   'rigel',      'dark',  'rigel'     ],
-      \ ['sunset+0',    'tokyonight', 'dark',  'tokyonight'],
+      \ ['sunset+0',    'dracula',    'dark',  'dracula'   ],
       \]
   endif
 

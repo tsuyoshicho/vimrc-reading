@@ -77,7 +77,7 @@ let g:user.function = {}
 
 " check and create dir
 function! g:user.function.mkdir(dir) abort " {{{
-  if !isdirectory(a:dir)
+  if exists("*mkdir")
     call mkdir(a:dir, 'p')
   endif
 endfunction " }}}
@@ -651,6 +651,13 @@ augroup vimrc_init_core
   autocmd SwapExists * nested call s:on_SwapExists()
 augroup END
 
+" stdin/pipe
+" from https://github.com/airblade/dotvim
+augroup vimrc_init_core
+  " Treat buffers from stdin as scratch.
+  autocmd StdinReadPost * :set buftype=nofile
+augroup END
+
 function! s:on_SwapExists() abort " {{{
   if !filereadable(expand('<afile>'))
     let v:swapchoice = 'd'
@@ -1087,6 +1094,14 @@ set ttyfast
 set timeout
 set ttimeout
 set ttimeoutlen=100
+
+" WinEnter with job mode
+" from https://github.com/peacock0803sz/dotfiles/blob/80eb4c06beb4c5bcd64befbb64c2d8531e608183/.config/nvim/init.vim
+augroup vimrc_init_core
+  autocmd WinEnter * nested if &buftype ==# 'terminal'
+    \                |   silent! exec "normal! A"
+    \                | endif
+augroup END
 
 " }}}
 
@@ -1695,10 +1710,13 @@ endif
 
 nnoremap <silent> [Tab]x :tabclose<CR>
 " tx タブを閉じる
-nnoremap <silent> [Tab]n :tabnext<CR>
+" nnoremap <silent> [Tab]n :tabnext<CR>
+nnoremap <silent><expr> [Tab]n "\<Cmd>tabnext " . string((tabpagenr() + v:count1 - 1) % tabpagenr('$') + 1) . "\<CR>"
 " tn 次のタブ
-nnoremap <silent> [Tab]p :tabprevious<CR>
+" nnoremap <silent> [Tab]p :tabprevious<CR>
+nnoremap <silent><expr> [Tab]p "<Cmd>tabprevious " . string(v:count1) . "\<CR>"
 " tp 前のタブ
+" new method from obcat san
 
 "矢印キーでは表示行単位で行移動する
 nnoremap <UP>   gk

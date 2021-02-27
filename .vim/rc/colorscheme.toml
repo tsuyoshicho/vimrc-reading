@@ -631,6 +631,20 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'dracula/vim'
+name = 'dracula'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'dracula'
+  let s:scheme['lightline']  = 'dracula' " built-in or native
+  let s:scheme['airline']    = 'dracula'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'fcpg/vim-orbital'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -1086,6 +1100,19 @@ hook_add = '''
   call add(g:user.colorscheme, s:scheme)
 
   let s:scheme['name']       = ''
+  let s:scheme['lightline']  = ''
+  let s:scheme['airline']    = ''
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'marcopaganini/termschool-vim-theme'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'termschool'
   let s:scheme['lightline']  = ''
   let s:scheme['airline']    = ''
   let s:scheme['background'] = 'dark'

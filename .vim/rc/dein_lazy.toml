@@ -728,6 +728,10 @@ on_cmd = ['Echos']
 [[plugins]]
 repo = 'tweekmonster/helpful.vim'
 on_cmd = ['HelpfulVersion']
+on_ft = ['help', 'vim']
+hook_source = '''
+  let g:helpful=1
+'''
 
 [[plugins]]
 repo = 'notomo/helpeek.vim'
