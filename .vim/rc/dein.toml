@@ -2818,6 +2818,15 @@ hook_add = '''
     nmap <silent><buffer> [e         <plug>(lsp-previous-diagnostic)
     nmap <silent><buffer> ]r         <plug>(lsp-next-reference)
     nmap <silent><buffer> [r         <plug>(lsp-previous-reference)
+
+    " autocmd
+    augroup vimrc_init_vim_lsp_buffer_enabled
+      autocmd!
+      if &filetype ==# 'go'
+        autocmd BufWritePre <buffer> silent! LspDocumentFormatSync
+        autocmd BufWritePre <buffer> silent! LspCodeActionSync source.organizeImports
+      endif
+    augroup END
   endfunction
 
   augroup vimrc_init_vim_lsp

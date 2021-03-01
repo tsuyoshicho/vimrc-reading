@@ -1008,6 +1008,9 @@ autocmd vimrc_init_core BufReadPost * nested
 " ##############################################################移動系############################################################## {{{
 " Command/Find Window. {{{
 
+" half up/down resizeable
+autocmd vimrc_init_core VimEnter,VimResized * nested set scroll=0
+
 " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 set scrolloff=3
 set sidescrolloff=3
