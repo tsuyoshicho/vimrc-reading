@@ -1,0 +1,34 @@
+# vital lib : merged 0
+
+[[plugins]]
+repo = 'vim-jp/vital.vim'
+# repo = 'tsuyoshicho/vital.vim'
+# rev  = 'develop'
+hook_post_source = '''
+  " vital use
+  let g:V = vital#of('vital')
+
+  " vitalize need vital git repo
+  " need merged=0
+  " let g:vitalizer#vital_dir = ...
+'''
+
+[[plugins]]
+repo = 'lambdalisue/vital-Whisky'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-ArgumentParser'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'LumaKernel/vital-Luv'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'hrsh7th/vim-vital-vs'
+depends = ['vital.vim']
+
+# [[plugins]]
+# repo = 'tsuyoshicho/vital-codec'
+# depends = ['vital.vim']

@@ -36,15 +36,16 @@ let g:user.system = {}
 let g:user.system.nvim = has('nvim') ? v:true : v:false
 
 " platform
-let g:user.system.windows = has('win32') || has('win64') ? v:true : v:false " let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
-let g:user.system.cygwin  = has('win32unix')             ? v:true : v:false " let s:is_cygwin  = has('win32unix')
-let g:user.system.mac     = has('mac')                   ? v:true : v:false " let s:is_mac     = has('mac')
+let g:user.system.windows = has('win32') || has('win64') ? v:true : v:false
+let g:user.system.cygwin  = has('win32unix')             ? v:true : v:false
+let g:user.system.mac     = has('mac')                   ? v:true : v:false
+let g:user.system.unix    = has('unix')                  ? v:true : v:false
 
 " unlet s:is_windows s:is_cygwin s:is_mac
 
 " CPU arch
 let g:user.system.arch = 'x86_64' " heuristic
-if exists('$NUMBER_OF_PROCESSORS')
+if exists('$PROCESSOR_ARCHITECTURE')
   if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
     let g:user.system.arch = 'x86_64'
   elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
@@ -107,7 +108,7 @@ endfunction " }}}
 
 " visual icon char
 function! g:user.function.fileicon(path) abort "{{{
-  let icon = nr2char(0xf15b)
+  let icon = nr2char(0xf15b) " 
   if dein#is_sourced('nerdfont.vim')
     let icon = nerdfont#find(a:path, 0)
   elseif dein#is_sourced('vim-devicons')
@@ -161,7 +162,7 @@ let g:user.plugin.info   = {}
 let g:user.plugin.exists = {}
 
 " whitchkey mapping preset
-let g:user.plugin.info['whichkey'] = {}
+let g:user.plugin.info.whichkey = {}
 let g:user.plugin.info.whichkey.mapkey = {}
 let g:user.plugin.info.whichkey.desc = {}
 
@@ -391,6 +392,17 @@ let g:dein.file.toml = {
   \  g:dein.dir.rc . '/dein.toml'        : {'lazy': 0},
   \  g:dein.dir.rc . '/dein_lazy.toml'   : {'lazy': 1},
   \}
+" group setting
+" vital : merged : 0
+let g:dein.file.toml = extend(g:dein.file.toml, {
+  \  g:dein.dir.rc . '/vital.toml'        : {'merged': 0},
+  \ })
+" vital : if : "deno"
+if executable('deno')
+  let g:dein.file.toml = extend(g:dein.file.toml, {
+    \  g:dein.dir.rc . '/denops.toml'      : {'lazy': 0},
+    \ })
+endif
 if g:user.system.nvim
   " nvim specific
   let g:dein.file.toml = extend(g:dein.file.toml, {
@@ -670,6 +682,8 @@ function! s:on_SwapExists() abort " {{{
   endif
 endfunction " }}}
 
+" from thinca
+" based on https://github.com/thinca/config/blob/124239cc3623b543cfe91e0e62bf06b2481fc86d/dotfiles/dot.vim/vimrc#L719
 command! SwapfileRecovery call s:swapfile_recovery()
 command! SwapfileDelete call s:swapfile_delete()
 
@@ -913,7 +927,8 @@ set listchars=tab:»-,eol:\ ,trail:･,nbsp:⍽,extends:»,precedes:«
 
 " ステータスラインの設定
 " cmdheightは各タブに値が保持されるのでtabdoする必要がある
-tabdo set cmdheight=1
+" -> autocmdで常にやるようにした
+autocmd vimrc_init_core TabNew * nested set cmdheight=1
 set laststatus=2
 
 " Anywhere SID.
@@ -1122,21 +1137,34 @@ augroup END
 "   let &t_SR = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=2\x7\<Esc>\\"
 " endif
 
-" ビジュアルベル
-" set visualbell
-" based on https://postd.cc/vim-galore-4/
-" Disable annoying bells
+" ベル
 " thanks lambdalisue
-set noerrorbells
-set novisualbell t_vb=
-set belloff=all
+" vim  always off
+" gvim overwrite visual on(in .gvimrc)
+if exists('+belloff')
+  set belloff=all
+else
+  set noerrorbells
+  set novisualbell
+  set t_vb=
+endif
 
 " フォーマットを有効にする
+" デフォルトの状態設定
 set formatoptions=tcmBjroq2l]
+
+" ftpluginなどが設定し、その結果はバッファごとなので、個別設定は
+" .vim/after/ftplugin の各ファイル設定に足す (vimrcにどんどんファイルタイプ設
+" 定が足されるのを防ぐ)
+" example base from slack
+" augroup vimrc_init_<filetype>
+"   autocmd!
+"   autocmd FileType * setlocal formatoptions-=r formatoptions-=o
+" augroup END
 
 " reset matchparis
 set matchpairs&
-  \  matchpairs+=<:>
+  \ matchpairs+=<:>
 
 " updatetime need plugin setting
 " let &updatetime=??

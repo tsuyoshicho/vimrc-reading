@@ -1,14 +1,14 @@
 " gvimrc
 " vim:fenc=utf-8 ff=unix ft=vim
 
-set encoding=utf-8
 scriptencoding utf-8
-" UTF-8のチェック
 
 " Windows check
-let s:is_windows = has('win32') || has('win64') " later as historical ==|| has('win16') || has('win95')==
+let s:is_windows = has('win32') || has('win64')
 " Mac check
-let s:is_mac = has('mac')
+let s:is_mac     = has('mac')
+" Unix check
+let s:is_unix    = has('unix')
 
 " see http://qiita.com/janus_wel/items/86082f69190f40df09e8
 " display & information
@@ -42,11 +42,11 @@ endif
 
 " FontとOSごとの設定例
 " based on http://auewe.hatenablog.com/entry/2013/05/06/200425
-if has('unix') || s:is_mac
+if s:is_unix || s:is_mac
   " Unix と Mac の共通設定
 
   " Unix
-  if has('unix')
+  if s:is_unix
     set guifont=Cica:h12,Myrica:h12
     " set printfont=Myrica:h9
     set printfont=Cica:h9
@@ -90,10 +90,11 @@ endif
 
 " Visual bell status update. (bell and visual bell need not opt exists
 " belloff)
-if exists('&belloff')
-  set noerrorbells
-  set visualbell
-  set t_vb=
+if exists('+belloff')
+  set belloff&
 endif
+set noerrorbells
+set visualbell
+set t_vb=
 
 " EOF

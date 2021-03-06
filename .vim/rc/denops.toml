@@ -1,0 +1,12 @@
+# denops need deno
+
+[[plugins]]
+repo = 'vim-denops/denops.vim'
+
+[[plugins]]
+repo = 'vim-denops/denops-deno'
+depends = ['denops.vim']
+
+[[plugins]]
+repo = 'vim-denops/denops-std-deno'
+depends = ['denops.vim']

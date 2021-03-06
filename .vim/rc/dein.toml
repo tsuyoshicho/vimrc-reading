@@ -37,16 +37,15 @@ hook_post_source = '''
 '''
 
 # ToC
-# WIP
-# 1.1 oooOoooO Core / Library
-# 1.2 oooOooOo Terminal
-# 1.3 oooOooOO Motion
-# 1.4          Action
-# 1.4          Filer
-# 1.5          Utils
-# 1.6          Command
-# 1.7          Display
-# 1.8          Colorscheme support
+# Core / Library
+# Terminal
+# Motion
+# Action
+# Filer
+# Utils
+# Command
+# Display
+# Colorscheme support
 # Quick Fix
 # Session
 # Folding
@@ -63,44 +62,8 @@ hook_post_source = '''
 # Edit operation
 
 # Core & Util
-[[plugins]]
-repo = 'vim-jp/vital.vim'
-# repo = 'tsuyoshicho/vital.vim'
-# rev  = 'develop'
-merged = 0
-hook_post_source = '''
-  " vital use
-  let g:V = vital#of('vital')
-
-  " vitalize need vital git repo
-  " need merged=0
-  " let g:vitalizer#vital_dir = ...
-'''
-
-[[plugins]]
-repo = 'lambdalisue/vital-Whisky'
-merged = 0
-depends = ['vital.vim']
-
-[[plugins]]
-repo = 'lambdalisue/vital-ArgumentParser'
-merged = 0
-depends = ['vital.vim']
-
-[[plugins]]
-repo = 'LumaKernel/vital-Luv'
-merged = 0
-depends = ['vital.vim']
-
-[[plugins]]
-repo = 'hrsh7th/vim-vital-vs'
-merged = 0
-depends = ['vital.vim']
-
-# [[plugins]]
-# repo = 'tsuyoshicho/vital-codec'
-# merged = 0
-# depends = ['vital.vim']
+## vital lig              -> vital.toml
+## denops lib and plugins -> denops.toml
 
 [[plugins]]
 repo = 'Shougo/vimproc.vim'
@@ -2379,6 +2342,8 @@ hook_post_source = '''
     \ '~/.vim/rc/colorscheme.toml',
     \ '~/.vim/rc/dein.toml',
     \ '~/.vim/rc/dein_lazy.toml',
+    \ '~/.vim/rc/vital.toml',
+    \ '~/.vim/rc/denops.toml',
     \ '~/.vim/rc/vim.toml',
     \ '~/.vim/rc/vim_lazy.toml',
     \ '~/.vim/rc/nvim.toml',
@@ -2991,8 +2956,9 @@ hook_add = '''
   "  'https://mattn.github.io/efm-langserver/schema.json': '/efm-langserver/config.yaml'
 
   " per filetype
-  " let g:lsp_settings_filetype_vim    = ['vimscript-language-server']
-  " let g:lsp_settings_filetype_python = ['pyls-all', 'pyright-langserver']
+  " let g:lsp_settings_filetype_vim        = ['vimscript-language-server']
+  " let g:lsp_settings_filetype_python     = ['pyls-all', 'pyright-langserver']
+  let g:lsp_settings_filetype_typescript = ['deno', 'typescript-language-server']
 '''
 hook_post_source = '''
   let s:List     = g:V.import('Data.List')
@@ -3596,9 +3562,7 @@ hook_add = '''
 '''
 
 [[plugins]]
-# repo = 'sgur/ctrlp-extensions.vim'
-repo = 'tsuyoshicho/ctrlp-extensions.vim'
-rev  = 'develop'
+repo = 'sgur/ctrlp-extensions.vim'
 depends = ['ctrlp.vim']
 hook_add = '''
   " ['yankring', 'menu', 'cmd']
@@ -3767,14 +3731,28 @@ hook_add = '''
   endif
 
   " typescript
+  let g:quickrun_config['typescript'] = extend({
+    \   'type': executable('ts-node') ? 'typescript/ts-node' :
+    \           executable('tsc')     ? 'typescript/tsc'     :
+    \           executable('deno')    ? 'typescript/deno'    :
+    \           '',
+    \}, get(g:quickrun_config, 'typescript', {}), "keep")
   " from ycino
   " tsc command check run as root
   let g:quickrun_config['typescript/tsc/noemit'] = extend({
-    \ 'command': 'tsc',
-    \ 'exec': ['%C --project . --noEmit --incremental --tsBuildInfoFile .git/.tsbuildinfo'],
-    \ 'outputter' : 'quickfix',
-    \ 'outputter/quickfix/errorformat' : '%+A %#%f %#(%l\,%c): %m,%C%m',
+    \  'command': 'tsc',
+    \  'exec': ['%c --project . --noEmit --incremental --tsBuildInfoFile .git/.tsbuildinfo'],
+    \  'outputter' : 'loclist',
+    \  'outputter/loclist/errorformat' : '%+A %#%f %#(%l\,%c): %m,%C%m',
     \}, get(g:quickrun_config, 'typescript/tsc/noemit', {}), "keep")
+  " deno
+  let g:quickrun_config['typescript/deno'] = extend({
+    \  'command' : 'deno',
+    \  'cmdopt'  : 'run',
+    \  'hook/output_encode/enable'     : 1,
+    \  'hook/output_encode/fileformat' : 'unix',
+    \  'outputter/loclist/errorformat' : '%A%*[^:]: TS%n [%t%*[A-Z]]: %m,%Z    at file:\/\/\/%f:%l:%n,%C    %m,%-GCheck%.%#' ,
+    \}, get(g:quickrun_config, 'typescript/deno', {}), "keep")
 
   " shift jis: 'cp932'
   " shift jis: 'cp65001'
