@@ -1,2 +1,35 @@
+# Neovim compatibility
+## Remote Plugin support
+# roxma/nvim-yarp and roxma/vim-hug-neovim-rpc need pynvim
+# > pip install --upgrade pynvim
+[[plugins]]
+repo = 'roxma/nvim-yarp'
+hook_post_update = '''
+  if g:user.system.windows && g:user.executable('pip')
+    let g:dein#plugin.build = 'pip install --upgrade pynvim'
+  elseif g:user.executable('pip3')
+    let g:dein#plugin.build = 'pip3 install --upgrade pynvim'
+  endif
+'''
+
 [[plugins]]
 repo = 'roxma/vim-hug-neovim-rpc'
+hook_post_update = '''
+  if g:user.system.windows && g:user.executable('pip')
+    let g:dein#plugin.build = 'pip install --upgrade pynvim'
+  elseif g:user.executable('pip3')
+    let g:dein#plugin.build = 'pip3 install --upgrade pynvim'
+  endif
+'''
+
+## checkhealth
+[[plugins]]
+repo = 'rhysd/vim-healthcheck'
+
+# matchfuzzy only in vim
+[[plugins]]
+repo = 'mattn/ctrlp-matchfuzzy'
+depends = ['ctrlp.vim']
+# config in ctrlp.vim
+
+# EOF

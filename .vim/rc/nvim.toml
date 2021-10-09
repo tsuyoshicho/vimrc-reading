@@ -1,2 +1,28 @@
+# Neovim compatibility
+## Remote Plugin support
+# roxma/nvim-yarp (and roxma/vim-hug-neovim-rpc) need pynvim
+# > pip install --upgrade pynvim
+[[plugins]]
+repo = 'roxma/nvim-yarp'
+
+# Neovim specific function treat
 [[plugins]]
 repo = 'lambdalisue/vim-quickrun-neovim-job'
+
+[[plugins]]
+repo = 'statiolake/vim-quickrun-runner-nvimterm'
+
+[[plugins]]
+repo = 'lambdalisue/pastefix.vim'
+
+[[plugins]]
+repo = 'kamykn/popup-menu.nvim'
+
+[[plugins]]
+repo = 'raghur/fruzzy'
+# Denite/CtrlP related
+hook_add = '''
+  let g:fruzzy#usenative = 1
+'''
+
+# EOF

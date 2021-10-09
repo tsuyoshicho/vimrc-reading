@@ -29,6 +29,9 @@ depends = ['vital.vim']
 repo = 'hrsh7th/vim-vital-vs'
 depends = ['vital.vim']
 
-# [[plugins]]
-# repo = 'tsuyoshicho/vital-codec'
-# depends = ['vital.vim']
+[[plugins]]
+repo = 'tsuyoshicho/vital-codec'
+# repo = 'D:\Data\ReposWork\git\vital-codec'
+depends = ['vital.vim']
+
+# EOF

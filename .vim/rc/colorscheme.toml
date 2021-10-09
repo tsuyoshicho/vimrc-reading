@@ -514,24 +514,6 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
-repo = 'co1ncidence/mountaineer.vim'
-hook_add = '''
-  for [s:theme, s:lightline, s:bg] in [
-      \  [''        , ''        , 'dark' ],
-      \  ['-grey'   , '_grey '  , 'dark' ],
-      \  ['-light ' , '_light ' , 'light'],
-      \]
-    let s:scheme = deepcopy(g:user.template.colorscheme)
-    call add(g:user.colorscheme, s:scheme)
-
-    let s:scheme['name']       = 'mountaineer' . s:theme
-    let s:scheme['lightline']  = 'mountaineer' . s:lightline
-    let s:scheme['background'] = s:bg
-    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
-  endfor
-'''
-
-[[plugins]] # カラースキーム
 repo = 'cocopon/iceberg.vim'
 hook_add = '''
   for s:bg in ['light', 'dark']
@@ -1092,18 +1074,15 @@ hook_add = '''
 
 [[plugins]] # カラースキーム
 repo = 'machakann/vim-colorscheme-tatami'
-# " colorscheme : 'tatami'
-# " lightline   : '<none>'
-# " airline     : '<none>'
 hook_add = '''
-  let s:scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, s:scheme)
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
 
-  let s:scheme['name']       = ''
-  let s:scheme['lightline']  = ''
-  let s:scheme['airline']    = ''
-  let s:scheme['background'] = 'dark'
-  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+    let s:scheme['name']       = 'tatami'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 '''
 
 [[plugins]] # カラースキーム
@@ -1159,6 +1138,19 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'nikolvs/vim-sunbather'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'sunbather'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+'''
+
+[[plugins]] # カラースキーム
 repo = 'niuez/lyla.vim'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -1179,6 +1171,28 @@ hook_add = '''
   let s:scheme['name']       = 'noctu'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'pbrisbin/vim-colors-off'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'off'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'plan9-for-vimspace/acme-colors'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'acme'
+  let s:scheme['background'] = 'light'
+  let s:scheme['mode']       = ['256']
 '''
 
 [[plugins]] # カラースキーム

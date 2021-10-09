@@ -4,9 +4,27 @@
 repo = 'vim-denops/denops.vim'
 
 [[plugins]]
-repo = 'vim-denops/denops-deno'
+repo = 'vim-denops/denops-helloworld.vim'
+depends = ['denops.vim']
+
+# this plugin need lazy and before set env
+# [[plugins]] # github status
+# repo = 'yutkat/dps-coding-now.nvim'
+# depends = ['denops.vim','vim-pass']
+# hook_source = '''
+#   " need token into CODING_NOW_GITHUB_TOKEN
+#   call pass#get_startup('$XDG_CACHE_HOME','Develop/Github')
+# '''
+
+#  When deno is nothing, do not load this toml.
+#  load below that is fallback.
+#  ref lambdalisue/edita.vim without denops,deprecated
+[[plugins]]
+repo = 'lambdalisue/guise.vim'
 depends = ['denops.vim']
 
 [[plugins]]
-repo = 'vim-denops/denops-std-deno'
+repo = 'kat0h/dps-bufpreview.vim'
 depends = ['denops.vim']
+
+# EOF

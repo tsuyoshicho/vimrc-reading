@@ -34,6 +34,25 @@ hook_post_source = '''
   else
     command! DeinUpdateStart call dein#update()
   endif
+
+  " toml
+  function! s:dein_toml_setting() abort
+    let Filepath = g:V.import('System.Filepath')
+    let fname = Filepath.realpath(expand("%:p"))
+    " dein toml
+    for toml in keys(g:dein.file.toml) + keys(g:dein.file.toml_nouse)
+      let toml_fname = Filepath.realpath(Filepath.abspath(toml))
+      if fname ==? toml_fname
+        call dein#toml#syntax()
+        return
+      endif
+    endfor
+  endfunction
+
+  augroup vimrc_init_dein
+    autocmd!
+    autocmd FileType toml call s:dein_toml_setting()
+  augroup END
 '''
 
 # ToC
@@ -76,7 +95,7 @@ hook_post_update = '''
     else
       let s:cmd = 'make -f make_cygwin.mak'
     endif
-  elseif executable('gmake')
+  elseif g:user.function.executable('gmake')
     let s:cmd = 'gmake'
   else
     let s:cmd = 'make'
@@ -84,9 +103,6 @@ hook_post_update = '''
   let g:dein#plugin.build = s:cmd
   unlet s:cmd
 '''
-
-[[plugins]]
-repo = 'roxma/nvim-yarp'
 
 [[plugins]]
 repo = 'prabirshrestha/async.vim'
@@ -121,7 +137,7 @@ hook_add = '''
   let g:which_key_fallback_to_native_key=1
 
   " dynamic mapping
-  function s:whichkey_map(mapkey, data) abort
+  function! s:whichkey_map(mapkey, data) abort
     if v:t_dict ==# type(a:data)
       if has_key(a:data, 'rawkey')
         let rawkey = a:data['rawkey']
@@ -214,21 +230,24 @@ hook_post_source = '''
 
 # Terminal
 ##############
+#  ref lambdalisue/guise.vim with denops
+#  This plugin deprecated, without denops fallback
 [[plugins]]
 repo = 'lambdalisue/edita.vim'
+if = '!g:user.function.executable("deno")'
+merged = 0
 
 [[plugins]]
 repo = 'tyru/empty-prompt.vim'
 depends = ['vital.vim']
-hook_add = '''
+hook_post_source = '''
   " : works as <C-w>:
   autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: ':', rhs: '<C-w>:'})
   " <Esc> works as <C-w>N
   autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: '<Esc>', rhs: '<C-w>N'})
   " <CTRL-Tab> works as <C-w>w
   autocmd vimrc_init_core VimEnter * call empty_prompt#map(#{lhs: '<c-tab>', rhs: '<C-w>w'})
-'''
-hook_post_source = '''
+
   let s:prompt = {}
 
   let s:prompt['cmd'] = '>'
@@ -341,6 +360,13 @@ hook_add = '''
 #   noremap <silent> <ScrollWheelUp>   :call comfortable_motion#flick(-40)<CR>
 # '''
 
+[[plugins]]
+repo = 'thinca/vim-poslist'
+hook_post_source = '''
+  nmap <silent> <C-o> <Plug>(poslist-prev-pos)
+  nmap <silent> <C-i> <Plug>(poslist-next-pos)
+'''
+
 # Action
 ##############
 [[plugins]]
@@ -362,7 +388,8 @@ repo = 'lambdalisue/fern.vim'
 # depends = ['memolist.vim', 'junkfile.vim']
 hook_add = '''
   " let g:fern#loglevel = g:fern#DEBUG
-
+'''
+hook_post_source = '''
   function! s:init_fern() abort
     setlocal nonumber
     setlocal norelativenumber
@@ -378,6 +405,11 @@ hook_add = '''
     nmap <nowait> <buffer> >       <Plug>(fern-action-expand:in)
     nmap <nowait> <buffer> <       <Plug>(fern-action-collapse)
 
+    " from https://github.com/koutarn/dotfile/blob/b4f11451f1547cedab051ca547b2f1cc208e0a06/.vim/_config/117-fern.vim
+    nmap <nowait> <buffer> E      <Plug>(fern-action-open:system)
+    " nmap <nowait> <buffer> h      <Plug>(fern-action-collapse)
+    " nmap <nowait> <buffer> l      <Plug>(fern-action-open-or-expand)
+
     " define autocmd for buffer
     " currently not work(side effect error)
     " autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
@@ -387,8 +419,7 @@ hook_add = '''
     autocmd!
     autocmd FileType fern nested call s:init_fern()
   augroup END
-'''
-hook_post_source = '''
+
   " thanks lambdalisue
   function! s:smart_path() abort
     if !empty(&buftype) || bufname('%') =~# '^[^:]\+://'
@@ -430,6 +461,28 @@ repo = 'lambdalisue/fern-hijack.vim'
 depends = ['fern.vim']
 
 [[plugins]]
+repo = 'yuki-yano/fern-preview.vim'
+depends = ['fern.vim']
+hook_post_source = '''
+  function! s:fern_init_preview() abort
+    " Map to your custom function.
+    nmap <silent><buffer> <C-p> <Plug>(fern-action-preview:toggle)
+    nmap <silent><buffer> <C-t> <Plug>(fern-action-preview:auto:toggle)
+    nmap <silent><buffer> <C-d> <Plug>(fern-action-preview:scroll:down:half)
+    nmap <silent><buffer> <C-u> <Plug>(fern-action-preview:scroll:up:half)
+
+    nmap <silent><buffer><expr> <Plug>(fern-quit-or-close-preview)
+      \ fern_preview#smart_preview("\<Plug>(fern-action-preview:close)", ":q\<CR>")
+    nmap <silent><buffer> q     <Plug>(fern-quit-or-close-preview)
+  endfunction
+
+  augroup vimrc_init_fern_preview
+    autocmd!
+    autocmd FileType fern call s:fern_init_preview()
+  augroup END
+'''
+
+[[plugins]]
 repo = 'lambdalisue/fern-comparator-lexical.vim'
 depends = ['fern.vim']
 hook_add = '''
@@ -446,7 +499,7 @@ hook_add = '''
 [[plugins]]
 repo = 'hrsh7th/fern-mapping-call-function.vim'
 depends = ['fern.vim']
-hook_add = '''
+hook_post_source = '''
   function! s:fern_init_funcall() abort
     " Map to your custom function.
     " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
@@ -456,8 +509,7 @@ hook_add = '''
     autocmd!
     autocmd FileType fern call s:fern_init_funcall()
   augroup END
-'''
-hook_post_source = '''
+
   " Add your custom function to mapping.
   " function! s:fern_project_top(helper) abort
   "   let l:node = a:helper.sync.get_current_node()
@@ -474,7 +526,8 @@ repo = 'hrsh7th/fern-mapping-collapse-or-leave.vim'
 depends = ['fern.vim']
 hook_add = '''
   let g:fern#mapping#collapse_or_leave#disable_default_mappings = 1
-
+'''
+hook_post_source = '''
   function! s:fern_init_collapse_or_leave() abort
     nmap <buffer><silent> h
       \ <Plug>(fern-action-collapse-or-leave)
@@ -491,7 +544,7 @@ hook_add = '''
 [[plugins]]
 repo = 'lambdalisue/fern-mapping-project-top.vim'
 depends = ['fern.vim']
-hook_add = '''
+hook_post_source = '''
   function! s:fern_init_project_top() abort
     nmap <buffer><silent> ^ <Plug>(fern-action-project-top)
   endfunction
@@ -533,6 +586,8 @@ hook_add = '''
 
 [[plugins]]
 repo = 'lambdalisue/vim-protocol'
+# repo = 'tsuyoshicho/vim-protocol'
+# rev  = 'develop'
 
 # [[plugins]]
 # repo = 'justinmk/vim-dirvish'
@@ -670,6 +725,9 @@ hook_post_source = '''
 [[plugins]]
 repo = 'thinca/vim-localrc'
 
+# related terminal vim in vim fixing plugin
+#  ref lambdalisue/guise.vim with denops
+#  ref lambdalisue/edita.vim without denops,deprecated
 [[plugins]]
 repo = 'thinca/vim-singleton'
 hook_source = '''
@@ -704,20 +762,44 @@ hook_post_source = '''
   cnoremap <expr> <CR>    ambicmd#expand("\<CR>")
 '''
 
-[[plugins]]
+[[plugins]] # neovim or vim with yarp/rpc
 repo = 'gelguy/wilder.nvim'
-hook_add = '''
+hook_post_update = '''
+  if g:user.system.windows && g:user.executable('pip')
+    let g:dein#plugin.build = 'pip install --upgrade yarp'
+  elseif g:user.executable('pip3')
+    let g:dein#plugin.build = 'pip3 install --upgrade yarp'
+  endif
 '''
 hook_post_source = '''
+  " from Shougo's config https://github.com/Shougo/shougo-s-github/blob/3e4dea0e5c933a0b3d4f2f625d3f4aead727efbc/vim/rc/deinlazy.toml#L555-L585
+  " thanks Shougo & suggest ycino
   " enable
-  call wilder#enable_cmdline_enter()
+  silent! call wilder#enable_cmdline_enter()
 
   cnoremap <expr> <Tab>   wilder#in_context() ? wilder#next()     : "\<Tab>"
   cnoremap <expr> <S-Tab> wilder#in_context() ? wilder#previous() : "\<S-Tab>"
 
-  " only / and ? is enabled by default
-  call wilder#set_option('modes', ['/', '?'])
+  " only / and ? are enabled by default
+  call wilder#set_option('modes', ['/', '?', ':'])
   " : is conflicted to wildmenu option longest:full,full
+
+  " When the cmdline is empty, provide suggestions based on the cmdline history
+  call wilder#set_option('pipeline', [
+        \  wilder#branch(
+        \     [
+        \       wilder#check({_, x -> empty(x)}),
+        \       wilder#history(),
+        \     ],
+        \     wilder#cmdline_pipeline(),
+        \     wilder#search_pipeline(),
+        \  ),
+        \])
+
+  " popupmenu completion
+  call wilder#set_option('renderer', wilder#popupmenu_renderer({
+      \  'highlighter': wilder#basic_highlighter(),
+      \}))
 '''
 
 # search
@@ -742,14 +824,14 @@ hook_add = '''
   \    "noremap" : 1,
   \  }
   \}
-
+'''
+hook_post_source = '''
   augroup vimrc_init_over
     autocmd!
     " Pulses the first match after hitting the enter key
     autocmd User OverCmdLineExecute nested :call search_pulse#Pulse()
   augroup END
-'''
-hook_post_source = '''
+
   nnoremap <silent> <Leader>S :<C-u>OverCommandLine<cr>
 '''
 
@@ -849,6 +931,8 @@ hook_post_source = '''
 [[plugins]]
 # repo = 'tyru/vim-altercmd'
 repo = 'tsuyoshicho/vim-altercmd'
+rev  = 'develop'
+# TODO : I send Fix PR. When merged it then to restore original
 
 # [[plugins]]
 # repo = 'c000/rapidfire.vim'
@@ -909,6 +993,16 @@ repo = 'lifepillar/vim-colortemplate'
 
 [[plugins]]
 repo = 'lambdalisue/vim-findent'
+hook_post_source = '''
+  augroup vimrc_init_findent
+    autocmd!
+    " autocmd FileType c          Findent --no-messages
+    autocmd FileType css        Findent --no-messages
+    autocmd FileType html       Findent --no-messages
+    autocmd FileType javascript Findent --no-messages
+    " autocmd FileType markdown   Findent --no-messages
+  augroup END
+'''
 
 [[plugins]]
 repo = 'rickhowe/diffchar.vim'
@@ -991,7 +1085,7 @@ hook_add = '''
 [[plugins]]
 repo = 'y0za/vim-reading-vimrc'
 # repo = 'tsuyoshicho/vim-reading-vimrc'
-# rev  = 'fix/urlredirect-20201004'
+# rev  = 'develop'
 
 [[plugins]]
 repo = 'thinca/vim-showtime'
@@ -1002,6 +1096,12 @@ repo = 'drmingdrmer/vim-toggle-quickfix'
 hook_post_source = '''
   nmap <C-g><C-o> <Plug>window:quickfix:loop
   autocmd vimrc_init_core FileType qf nested nmap <buffer> q <Plug>window:quickfix:loop
+'''
+
+[[plugins]]
+repo = 'thinca/vim-qfhl'
+hook_add = '''
+  let g:qfhl_startup = 'lazy'
 '''
 
 [[plugins]]
@@ -1511,7 +1611,7 @@ hook_post_source = '''
 repo = 'kamykn/spelunker.vim'
 # repo = 'tsuyoshicho/spelunker.vim'
 # rev  = 'develop'
-depends = ['ctrlp.vim']
+depends = ['ctrlp.vim']  # if exists popup-menu.nvim, use it.
 hook_add = '''
   " ctrlp ext
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
@@ -1571,7 +1671,7 @@ hook_add = '''
 
   " Create own custom autogroup to enable spelunker.vim for specific filetypes.
 
-  " autocmd vimrc_init_core Filetype startify
+  " autocmd vimrc_init_core FileType startify
   "      \ if g:enable_spelunker_vim  | call spelunker#toggle() | endif
 
   " Override highlight group name of incorrectly spelled words. (default:
@@ -1604,7 +1704,7 @@ hook_post_source = '''
 
 [[plugins]] # codic support
 repo = 'tsuyoshicho/codic-web.vim'
-rev  = 'develop'
+# rev  = 'develop'
 depends = ['vim-pass']
 hook_add = '''
   " let g:codicweb_token = '<token>'
@@ -1631,23 +1731,30 @@ hook_post_source = '''
   " nmap d<C-X> <Plug>SpeedDatingNowLocal
 
   " format add
-  SpeedDatingFormat %Y%[/-]%-m%1%-d %_H:%M       " 2000/1/1 10:15
-  SpeedDatingFormat %Y%[/-]%-m%1%-d              " 2000/1/1
-  SpeedDatingFormat %H:%0M                       " 10:15
-  SpeedDatingFormat %Y年%-m月%-d日%?[ ]%_H時%M分 " 2000年1月1日 12時1分
-  SpeedDatingFormat %Y年%-m月%-d日               " 2000年1月1日
-  " SpeedDatingFormat %-m月%-d日%?[ ](%a)         " 1月1日 (月)
-  SpeedDatingFormat %-m月%-d日                   " 1月1日
-  SpeedDatingFormat %H時%0M分%S秒                " 12時1分30秒
-  SpeedDatingFormat %H時%M分                     " 12時1分
-  SpeedDatingFormat %M分%S秒                     " 1分30秒
+  " ISO 8601
+  " SpeedDatingFormat %0Y%%0m%0dT%0H%0M%0S%z        " 20210314T150129+0900
+  SpeedDatingFormat %0Y%-%0m-%0dT%0H:%0M:%0S      " 2021-03-14T15:01:29Z or +09:00
+  " regular format
+  SpeedDatingFormat %0Y%[/-]%0m%1%0d %_H:%M       " 2000/01/01 10:15
+  SpeedDatingFormat %0Y%[/-]%0m%1%0d              " 2000/01/01
+  SpeedDatingFormat %0H:%0M                       " 10:15
+  SpeedDatingFormat %-Y年%-m月%-d日%?[ ]%_H時%M分 " 2000年1月1日 12時1分
+  SpeedDatingFormat %-Y年%-m月%-d日               " 2000年1月1日
+  " SpeedDatingFormat %-m月%-d日%?[ ](%A)           " 1月1日 (月曜日)
+  " SpeedDatingFormat %-m月%-d日%?[ ](%a)           " 1月1日 (月)
+  SpeedDatingFormat %-m月%-d日                    " 1月1日
+  SpeedDatingFormat %0H時%0M分%0S秒               " 12時01分30秒
+  SpeedDatingFormat %0H時%0M分                    " 12時01分
+  SpeedDatingFormat %0M分%0S秒                    " 01分30秒
 '''
 
 [[plugins]] # https://pixe.la/
 repo = 'mattn/vim-pixela'
-# on_if= 'executable("curl")' # check inner and load at start needed
+if = 'g:user.function.executable("curl")'
+merged = 0
 depends = ['open-browser.vim','vim-pass']
-hook_add = '''
+hook_source = '''
+  " 'if' do not stop hook_add, skip hook_source
   " let g:pixela_username = 'tsuyoshicho'
   " let g:pixela_token    = '<token>'
 
@@ -1698,9 +1805,11 @@ repo = 'kana/vim-textobj-user'
 repo = 'osyo-manga/vim-textobj-multiblock'
 depends = ['vim-textobj-user']
 hook_add = '''
+  let g:textobj_multiblock_no_default_key_mappings = 1
+
   " see https://github.com/rinx/dotfiles/blob/master/vimrc
   " tex
-  function s:multiblock_hook_add_tex()
+  function! s:multiblock_hook_add_tex()
     let b:textobj_multiblock_blocks = [
           \ ['\$', '\$', 1],
           \ ['\$\$', '\$\$', 1],
@@ -1708,7 +1817,7 @@ hook_add = '''
   endfunction
 
   " markdown
-  function s:multiblock_hook_add_markdown()
+  function! s:multiblock_hook_add_markdown()
     let b:textobj_multiblock_blocks = [
           \ ['`', '`', 1],
           \ ['```', '```'],
@@ -1716,7 +1825,7 @@ hook_add = '''
   endfunction
 
   " ruby
-  function s:multiblock_hook_add_ruby()
+  function! s:multiblock_hook_add_ruby()
     let b:textobj_multiblock_blocks = [
           \ ['/', '/', 1],
           \ ]
@@ -1724,9 +1833,9 @@ hook_add = '''
 
   augroup vimrc_init_multiblock_hook_add
     autocmd!
-    autocmd FileType tex,latex,plaintex nested call <SID>multiblock_hook_add_tex()
-    autocmd FileType markdown           nested call <SID>multiblock_hook_add_markdown()
-    autocmd FileType ruby               nested call <SID>multiblock_hook_add_ruby()
+    autocmd FileType tex,latex,plaintex nested call s:multiblock_hook_add_tex()
+    autocmd FileType markdown           nested call s:multiblock_hook_add_markdown()
+    autocmd FileType ruby               nested call s:multiblock_hook_add_ruby()
   augroup END
 '''
 hook_post_source = '''
@@ -1734,12 +1843,6 @@ hook_post_source = '''
   omap imb <Plug>(textobj-multiblock-i)
   xmap amb <Plug>(textobj-multiblock-a)
   xmap imb <Plug>(textobj-multiblock-i)
-
-  " unmap default
-  silent! ounmap asb
-  silent! ounmap isb
-  silent! xunmap asb
-  silent! xunmap isb
 '''
 
 # カッコ系で複数の処理を実施し、マッチしたものor(listなら)一番内側を使う
@@ -1824,25 +1927,25 @@ depends = ['vim-textobj-user']
 # al, il
 [[plugins]]
 repo = 'kana/vim-textobj-line'
-depends = 'vim-textobj-user'
+depends =['vim-textobj-user']
 
 # Folding単位
 # az, iz
 [[plugins]]
 repo = 'kana/vim-textobj-fold'
-depends = 'vim-textobj-user'
+depends =['vim-textobj-user']
 
 # CamelCaseやsnake_caseの中の単語単位
 # av, iv
 [[plugins]]
 repo = 'Julian/vim-textobj-variable-segment'
-depends = 'vim-textobj-user'
+depends =['vim-textobj-user']
 
 # 挟まれた単語(指定の直後の文字で囲まれてると判断する)
 # a/<char>, i/<char>
 [[plugins]]
 repo = 'thinca/vim-textobj-between'
-depends = 'vim-textobj-user'
+depends =['vim-textobj-user']
 hook_add = '''
   let g:textobj_between_no_default_key_mappings = 1
 '''
@@ -1875,10 +1978,12 @@ hook_add = '''
 
 # 関数ブロック
 # afb/ifb, aFb,iFb
+# python specific: afp/ifp(function), acp/icp(class) use lazy 'vim-textobj-python'
 [[plugins]]
 # repo = 'kana/vim-textobj-function'
 repo = 'tsuyoshicho/vim-textobj-function'
 rev  = 'develop'
+# TODO : I send Fix PR. When merged it then to restore original
 depends = ['vim-textobj-user']
 hook_add = '''
   let g:textobj_function_no_default_key_mappings = 1
@@ -1962,6 +2067,12 @@ hook_add = '''
     \  'name' : '+textobj-wiw',
     \ }
 '''
+
+# x() 系
+# av, iv で x() 系に対応、他にもある
+[[plugins]]
+repo = 'anyakichi/vim-textobj-xbrackets'
+depends = ['vim-textobj-user']
 
 # context内
 # icx
@@ -2335,20 +2446,17 @@ hook_post_source = '''
 
   let g:startify_files_number = 8
 
+  let s:tomls = keys(g:dein.file.toml) + keys(g:dein.file.toml_nouse)
+  let s:tomls = s:List.map(s:tomls, { v -> fnamemodify(v, ":~")})
+  call sort(s:tomls)
+
   let g:startify_bookmarks = [
-    \ {'g': '~/.gvimrc'},
-    \ {'x': '~/.vimrc'},
-    \ {'w': '~/.bashrc'},
-    \ '~/.vim/rc/colorscheme.toml',
-    \ '~/.vim/rc/dein.toml',
-    \ '~/.vim/rc/dein_lazy.toml',
-    \ '~/.vim/rc/vital.toml',
-    \ '~/.vim/rc/denops.toml',
-    \ '~/.vim/rc/vim.toml',
-    \ '~/.vim/rc/vim_lazy.toml',
-    \ '~/.vim/rc/nvim.toml',
-    \ '~/.vim/rc/nvim_lazy.toml',
-    \]
+    \ {'g': fnamemodify(expand('~/.gvimrc'), ":~")},
+    \ {'x': fnamemodify(expand('~/.vimrc' ), ":~")},
+    \ {'w': fnamemodify(expand('~/.bashrc'), ":~")},
+    \] + s:tomls
+
+  unlet s:tomls
 
   " no need depend : write as text (if no-exist , no work)
   let g:startify_commands = [
@@ -2441,6 +2549,9 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 'itchyny/vim-winfix'
+
+[[plugins]]
 repo = 'wesQ3/vim-windowswap'
 
 # [[plugins]]
@@ -2480,6 +2591,12 @@ hook_add = '''
   let g:netrw_nogx = 1 " disable netrw's gx mapping.
   nmap gx <Plug>(openbrowser-smart-search)
   xmap gx <Plug>(openbrowser-smart-search)
+
+  nmap guo <Plug>(openbrowser-open)
+  vmap guo <Plug>(openbrowser-open)
+
+  nmap guO <Plug>(openbrowser-open-incognito)
+  vmap guO <Plug>(openbrowser-open-incognito)
 '''
 
 [[plugins]]
@@ -2640,9 +2757,16 @@ repo = 'osyo-manga/vim-precious'
 depends = ['context_filetype.vim', 'vim-textobj-user']
 # and support context textobj
 hook_add = '''
+  " dein toml do not need switch
+  let g:precious_enable_switchers = {
+  \  "toml" : {
+  \    "setfiletype" : 0,
+  \  },
+  \}
+
   " move to change disable
   let g:precious_enable_switch_CursorMoved = {
-  \  "*"    : 0,
+  \  "*" : 0,
   \}
   let g:precious_enable_switch_CursorMoved_i = {
   \  "*" : 0,
@@ -2683,9 +2807,10 @@ repo = 'prabirshrestha/vim-lsp'
 hook_add = '''
   let g:lsp_async_completion = 1
 
-  let g:lsp_auto_enable = 1          " default 1
-  let g:lsp_diagnostics_enabled = 1  " default 1
-  let g:lsp_semantic_enabled = 1     " default 0
+  let g:lsp_auto_enable = 1                " default 1
+  let g:lsp_diagnostics_enabled = 1        " default 1
+  let g:lsp_semantic_enabled = 1           " default 0
+  let g:lsp_work_done_progress_enabled = 1 " default 0
 
   let s:float_ok = 0
   if g:user.system.nvim
@@ -2720,7 +2845,7 @@ hook_add = '''
   let g:lsp_item = []
 
   " c/c++ ccls
-  if executable('ccls')
+  if g:user.function.executable('ccls')
     call add(g:lsp_item, {
       \  'name': 'ccls',
       \  'cmd': { server_info -> ['ccls'] },
@@ -2753,19 +2878,26 @@ hook_add = '''
     endif
 
     " use vim built-in/plugin folding
-    let exclude_types = ['markdown','help']
+    let exclude_types = ['markdown','help', 'quickrun']
+    " quickrun lsp exclude need, but do not work...
     if get(g:, 'lsp_fold_enabled', 0)
-      let skip = 0
+      let foldset = v:true
       for filetype_name in split(&filetype, '\.')
         if index(exclude_types, filetype_name) > -1
-          let skip = 1
+          let foldset = v:false
+          break
         end
       endfor
-      if !skip
+      if ('vim' ==?  &filetype) && ('marker' ==? &l:foldmethod)
+        let foldset = v:false
+      endif
+      if foldset
         setlocal
           \ foldmethod=expr
           \ foldexpr=lsp#ui#vim#folding#foldexpr()
           \ foldtext=lsp#ui#vim#folding#foldtext()
+      else
+        echo 'lsp fold skip:' . &filetype
       endif
     endif
 
@@ -2814,18 +2946,20 @@ hook_add = '''
 '''
 hook_post_source = '''
   " Expand
-  imap <expr> <C-b>  vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-b>'
-  smap <expr> <C-b>  vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-b>'
+  imap <expr> <C-b>  vsnip#expandable() ? '<Plug>(vsnip-expand)'         : '<C-b>'
+  smap <expr> <C-b>  vsnip#expandable() ? '<Plug>(vsnip-expand)'         : '<C-b>'
 
- " Expand or jump
-  imap <expr> <C-CR> vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
-  smap <expr> <C-CR> vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
+  " Expand or jump
+  imap <expr> <C-CR> (complete_info(['selected']).selected != -1) ? '<C-y>'
+    \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
+  smap <expr> <C-CR> (complete_info(['selected']).selected != -1) ? '<C-y>'
+    \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
 
   " Jump forward or backward
-  imap <expr> <C-n>  vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
-  smap <expr> <C-n>  vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
-  imap <expr> <C-p>  vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
-  smap <expr> <C-p>  vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
+  imap <expr> <C-n>  vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
+  smap <expr> <C-n>  vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
+  imap <expr> <C-p>  vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
+  smap <expr> <C-p>  vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
 '''
 
 [[plugins]]
@@ -2877,13 +3011,13 @@ hook_add = '''
   " prefer python 3, detect python 3 version
   " 1. use if python is pytnon3
   " 2. use if python3 avaliable
-  if executable('python')
+  if g:user.function.executable('python')
     " check 'python'
     let s:py_path    = exepath('python')
     let s:py_version = system(shellescape(s:py_path) . ' -V')
     let s:py_ver     = trim(matchstr(s:py_version, '\s\zs\S\+'))
     if (empty(s:py_ver) || ('2' ==? strpart(s:py_ver, 0, 1)))
-        \ && executable('python3')
+        \ && g:user.function.executable('python3')
       " 'python' is version2 and exists 'python3'
       let s:py_path    = exepath('python3')
       let s:py_version = system(shellescape(s:py_path) . ' -V')
@@ -2904,7 +3038,7 @@ hook_add = '''
       \  s:clangd_path, '--background-index', '-j=' . g:user.system.cpunum
       \]
     " if ccls installed, use only ccls.
-    if executable('ccls')
+    if g:user.function.executable('ccls')
       let g:lsp_settings['clangd']['disabled'] = v:true
     endif
   endif
@@ -2921,6 +3055,19 @@ hook_add = '''
     \  'workspace_config': {
     \    'pyls': {
     \      'configurationSources': ['flake8']
+    \    }
+    \  }
+    \}
+  " need run pylsp-all/venv/bin/pip install pylsp-mypy
+  let g:lsp_settings['pylsp-all'] = {
+    \  'workspace_config': {
+    \    'pylsp': {
+    \      'configurationSources': ['flake8'],
+    \      'plugins': {
+    \        'pylsp_mypy': {
+    \          'enabled': 1
+    \        }
+    \      }
     \    }
     \  }
     \}
@@ -2957,7 +3104,7 @@ hook_add = '''
 
   " per filetype
   " let g:lsp_settings_filetype_vim        = ['vimscript-language-server']
-  " let g:lsp_settings_filetype_python     = ['pyls-all', 'pyright-langserver']
+  " let g:lsp_settings_filetype_python     = ['pylsp-all', 'pyright-langserver']
   let g:lsp_settings_filetype_typescript = ['deno', 'typescript-language-server']
 '''
 hook_post_source = '''
@@ -2973,6 +3120,7 @@ hook_post_source = '''
 repo = 'tsuyoshicho/vim-efm-langserver-settings'
 # rev  = 'develop'
 depends = ['vim-lsp']
+build = 'go install github.com/mattn/efm-langserver@latest'
 hook_add = '''
   " debug
   " let g:efm_langserver_settings#debug = 1
@@ -3011,7 +3159,8 @@ hook_add = '''
   " debug
   command! AsyncompleteDebugEnable  let g:asyncomplete_log_file = expand($HOME . '/asyncomplete.log')
   command! AsyncompleteDebugDisable unlet g:asyncomplete_log_file
-
+'''
+hook_post_source = '''
   augroup vimrc_init_asyncomplete
     autocmd!
     " asyncomplete original
@@ -3022,10 +3171,16 @@ hook_add = '''
     " double popup fix
     autocmd VimEnter * set completeopt-=popup
   augroup END
-'''
-hook_post_source = '''
+
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
 '''
+
+[[plugins]]
+repo = 'tsufeki/asyncomplete-fuzzy-match'
+depends = ['asyncomplete.vim', 'async.vim']
+if = 'g:user.function.executable("cargo")'
+merged = 0
+build = 'cargo build --release'
 
 # [[plugins]]
 # repo = 'machakann/asyncomplete-ezfilter.vim'
@@ -3060,13 +3215,16 @@ hook_post_source = '''
 # depends = ['asyncomplete.vim', 'asyncomplete-ezfilter.vim']
 # hook_source = '''
 #   if v:false
-#     autocmd User asyncomplete_setup call
-#       \ asyncomplete#register_source(
-#       \   asyncomplete#sources#unicodesymbol#get_source_options({
-#       \     'name': 'unicodesymbol',
-#       \     'allowlist': ['julia', 'text'],
-#       \     'completor': function('asyncomplete#sources#unicodesymbol#completor'),
-#       \   }))
+#     augroup vimrc_init_asyncomplete_unicodesymbol
+#       autocmd!
+#       autocmd User asyncomplete_setup call
+#         \ asyncomplete#register_source(
+#         \   asyncomplete#sources#unicodesymbol#get_source_options({
+#         \     'name': 'unicodesymbol',
+#         \     'allowlist': ['julia', 'text'],
+#         \     'completor': function('asyncomplete#sources#unicodesymbol#completor'),
+#         \   }))
+#     augroup END
 #
 #     let g:asyncomplete#preprocessor#ezfilter#config.unicodesymbol =
 #       \ {ctx, items -> filter(items, 'ctx.match(v:val.menu)')}
@@ -3080,20 +3238,23 @@ repo = 'yuki-yano/asyncomplete-dictionary'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:false
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_dictionary
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#dictionary#get_source_options({
       \     'name': 'dictionary',
       \     'allowlist': ['*'],
       \     'completor': function('asyncomplete#sources#dictionary#completor')
       \   }))
+    augroup END
   endif
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
 depends = ['vim-lsp', 'asyncomplete.vim']
-hook_source = '''
+hook_post_source = '''
   " debug
   if v:false
     autocmd User lsp_setup             echomsg "lsp_setup             execute"
@@ -3110,11 +3271,13 @@ hook_source = '''
 
 [[plugins]]
 repo = 'high-moctane/asyncomplete-nextword.vim'
+if = 'g:user.function.executable("nextword")'
+merged = 0
 depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
   if v:false
-    let $NEXTWORD_DATA_PATH = expand(g:user.dir.dictionary . '/nextword')
-    if executable('nextword')
+    augroup vimrc_init_asyncomplete_nextword
+      autocmd!
       autocmd User asyncomplete_setup call
         \ asyncomplete#register_source(
         \   asyncomplete#sources#nextword#get_source_options({
@@ -3123,16 +3286,18 @@ hook_source = '''
         \     'args': ['-n', '300', '-g'],
         \     'completor': function('asyncomplete#sources#nextword#completor')
         \   }))
-    endif
+    augroup END
   endif
 '''
 
 # [[plugins]] # comflict; select one
 # repo = 'htlsne/asyncomplete-look'
+# if = 'g:user.function.executable("look") || g:user.function.executable("grep")'
+# merged = 0
 # depends = ['asyncomplete.vim', 'async.vim']
-# hook_source = '''
+# hook_post_source = '''
 #   if v:false
-#     if executable('look')
+#     if g:user.function.executable('look')
 #       autocmd User asyncomplete_setup call
 #        \  asyncomplete#register_source({
 #        \    'name': 'look',
@@ -3140,7 +3305,7 @@ hook_source = '''
 #        \    'completor': function('asyncomplete#sources#look#completor'),
 #        \  })
 #     endif
-#     if executable('grep') && (len(g:user.file.spell) > 0)
+#     if g:user.function.executable('grep') && (len(g:user.file.spell) > 0)
 #       let g:asc_look_good_words_file = g:user.file.spell[0]
 #       autocmd User asyncomplete_setup call
 #        \  asyncomplete#register_source({
@@ -3156,18 +3321,24 @@ hook_source = '''
 repo = 'gonzoooooo/asyncomplete-look.vim'
 # repo = 'tsuyoshicho/asyncomplete-look.vim'
 # rev  = 'develop'
+if = 'g:user.function.executable("look")'
+merged = 0
 depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
+  " 'if' do not stop hook_add, skip hook_source
   if v:true
-    if executable('look') && (len(g:user.file.look) > 0)
+    if len(g:user.file.look) > 0
       let g:asyncomplete#sources#look#dict = g:user.file.look[0]
-      autocmd User asyncomplete_setup call
-       \ asyncomplete#register_source(
-       \   asyncomplete#sources#look#get_source_options({
-       \     'name': 'look',
-       \     'allowlist': ['*'],
-       \     'completor': function('asyncomplete#sources#look#completor'),
-       \   }))
+      augroup vimrc_init_asyncomplete_look
+        autocmd!
+        autocmd User asyncomplete_setup call
+        \ asyncomplete#register_source(
+        \   asyncomplete#sources#look#get_source_options({
+        \     'name': 'look',
+        \     'allowlist': ['*'],
+        \     'completor': function('asyncomplete#sources#look#completor'),
+        \   }))
+      augroup END
     endif
   endif
 '''
@@ -3177,7 +3348,9 @@ repo = 'prabirshrestha/asyncomplete-file.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:true
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_file
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#file#get_source_options({
       \     'name': 'file',
@@ -3185,6 +3358,7 @@ hook_source = '''
       \     'priority': 10,
       \     'completor': function('asyncomplete#sources#file#completor')
       \   }))
+    augroup END
   endif
 '''
 
@@ -3193,7 +3367,9 @@ repo = 'prabirshrestha/asyncomplete-buffer.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:true
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_buffer
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#buffer#get_source_options({
       \     'name': 'buffer',
@@ -3204,6 +3380,7 @@ hook_source = '''
       \        'max_buffer_size': 700000,
       \      },
       \ }))
+    augroup END
   endif
 '''
 
@@ -3212,13 +3389,16 @@ repo = 'prabirshrestha/asyncomplete-emmet.vim'
 depends = ['asyncomplete.vim', 'emmet-vim']
 hook_source = '''
   if v:true
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_emmet
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emmet#get_source_options({
       \     'name': 'emmet',
       \     'allowlist': ['html', 'css'],
       \     'completor': function('asyncomplete#sources#emmet#completor'),
       \ }))
+    augroup END
   endif
 '''
 
@@ -3227,7 +3407,9 @@ repo = 'prabirshrestha/asyncomplete-tags.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:false
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_tags
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#tags#get_source_options({
       \     'name': 'tags',
@@ -3237,6 +3419,7 @@ hook_source = '''
       \       'max_file_size': 350000000,
       \     },
       \   }))
+    augroup END
   endif
 '''
 
@@ -3245,13 +3428,16 @@ repo = 'prabirshrestha/asyncomplete-emoji.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
   if v:true
-    autocmd User asyncomplete_setup call
+    augroup vimrc_init_asyncomplete_emoji
+      autocmd!
+      autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emoji#get_source_options({
       \     'name': 'emoji',
       \     'allowlist': ['*'],
       \     'completor': function('asyncomplete#sources#emoji#completor'),
       \   }))
+    augroup END
   endif
 '''
 
@@ -3386,13 +3572,6 @@ hook_add = '''
   autocmd vimrc_init_core VimEnter,VimResized *
     \ let g:ctrlp_match_window = 'max:' . string(min([(&lines/3), 20]) - 1)
 
-  " 無視するディレクトリ
-  " let g:ctrlp_custom_ignore = {
-  "   \ 'dir':  '\v[\/]\.(svn|git|hg|bzr)$',
-  "   \ 'file': '\v\.(exe|so|dll)$',
-  "   \ 'link': 'some_bad_symbolic_links',
-  "   \ }
-
   let g:ctrlp_brief_prompt = 1
   " let g:ctrlp_user_command_async = 1
 
@@ -3402,21 +3581,21 @@ hook_add = '''
   " based on https://qiita.com/0829/items/7053b6e3371592e4fbe6
   " based on https://christina04.hatenablog.com/entry/2014/10/30/100612
   " based on https://postd.cc/how-to-boost-your-vim-productivity/
-  if executable('files')
+  if g:user.function.executable('files')
     let s:fallback_cmd = 'cd %s && files -m ""'
   " ripgrep only support glob -g / -l search and filename only
-  " elseif executable('rg')
+  " elseif g:user.function.executable('rg')
   "   let s:fallback_cmd = 'rg --color never -S -l "" %s'
-  elseif executable('pt')
+  elseif g:user.function.executable('pt')
     let s:fallback_cmd = 'pt --nocolor --nogroup -S -g "" %s'
-  elseif executable('ag')
+  elseif g:user.function.executable('ag')
     let s:fallback_cmd = 'ag -a --nocolor --nogroup -S -g "" %s'
   " jvgrep no support filename match
-  " elseif executable('jvgrep')
+  " elseif g:user.function.executable('jvgrep')
   "   let s:fallback_cmd = 'jvgrep --no-color -Rril "" %s'
   endif
   if exists('s:fallback_cmd')
-    if executable('nkf')
+    if g:user.function.executable('nkf')
       let s:fallback_cmd =  s:fallback_cmd . ' | nkf -w'
     endif
   endif
@@ -3452,11 +3631,26 @@ hook_post_source = '''
     \ g:user.rootmarker.files])
   unlet s:List
 
+  " 無視するディレクトリ
+  let g:ctrlp_custom_ignore = {}
+  let g:ctrlp_custom_ignore['dir'] =
+  \ '\v[\/]('
+  \ . escape(join(g:user.ignore.dirs, '|'), '.')
+  \ . ')$'
+  let g:ctrlp_custom_ignore['file'] =
+  \ '\v\.('
+  \ . escape(join(g:user.ignore.filetype, '|'), '.')
+  \ . ')$'
+
   " matcher
   if dein#is_sourced('ctrlp-matchfuzzy') && exists('*matchfuzzy')
     let g:ctrlp_match_func = {'match' : 'ctrlp_matchfuzzy#matcher'}
     " fastest for built-in function
     let g:ctrlp_lazy_update = 10
+  elseif dein#is_sourced('fruzzy') && g:user.system.nvim
+    let g:ctrlp_match_func = {'match': 'fruzzy#ctrlp#matcher'}
+    " fast but python call small heavy
+    let g:ctrlp_lazy_update = 20
   elseif dein#is_sourced('ctrlp-py-matcher') && has('python3')
     " python2 deprecated
     let g:ctrlp_match_func = {'match' : 'pymatcher#PyMatch'}
@@ -3467,11 +3661,6 @@ hook_post_source = '''
     let g:ctrlp_lazy_update = 50
   endif
 '''
-
-[[plugins]]
-repo = 'mattn/ctrlp-matchfuzzy'
-depends = ['ctrlp.vim']
-# config in ctrlp.vim
 
 [[plugins]]
 repo = 'FelikZ/ctrlp-py-matcher'
@@ -3615,6 +3804,20 @@ hook_add = '''
 '''
 
 [[plugins]]
+repo = 'tsuyoshicho/ctrlp-mr.vim'
+# rev  = 'develop'
+depends = ['ctrlp.vim', 'mr.vim']
+hook_add = '''
+  let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
+        \ + ['mr/mru', 'mr/mrw', 'mr/mrr']
+
+  " " if need, enable
+  " let g:ctrlp_mr_mru_curdir_base  = v:true
+  " let g:ctrlp_mr_mrw_curdir_base  = v:true
+  " let g:ctrlp_mr_mrr_curdir_base  = v:true
+'''
+
+[[plugins]]
 repo = 'prabirshrestha/quickpick.vim'
 
 [[plugins]]
@@ -3626,7 +3829,7 @@ repo = 'thinca/vim-ref'
 # repo = 'tsuyoshicho/vim-ref'
 # rev  = 'develop'
 depends = ['wwwrenderer-vim']
-# on_if= 'executable("lynx")' 現在の環境構築ではパスを通してない
+# if= 'g:user.function.executable("lynx")' 現在の環境構築ではパスを通してない
 hook_add = '''
   " " 自動設定
   " let g:ref_source_webdict_cmd
@@ -3662,10 +3865,15 @@ repo = 'mattn/vim-quickrunex'
 [[plugins]]
 repo = 'heavenshell/vim-quickrun-hook-unittest'
 
+# [[plugins]]
+# repo = 'D:\Data\ReposWork\git\vim-quickrun-progress-job'
+# merged = 0
+# repo = 'tsuyoshicho/vim-quickrun-progress-job'
+# rev  = 'develop'
+
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-depends = ['vim-altercmd', 'vimproc.vim', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex',
-'vim-quickrun-hook-unittest']
+depends = ['vim-altercmd', 'quickrun-hook-u-nya-',  'open-browser.vim', 'vim-quickrunex', 'vim-quickrun-hook-unittest']
 hook_add = '''
   " config
   let g:quickrun_config = get(g:, 'quickrun_config', {})
@@ -3677,7 +3885,7 @@ hook_add = '''
         \  'outputter/error/error'           : 'multi',
         \  'outputter/multi/targets'         : ['loclist', 'popup'],
         \  'outputter/loclist/open_cmd'      : '',
-        \  'outputter/buffer/split'          : ':rightbelow 8sp',
+        \  'outputter/buffer/opener'         : ':rightbelow 8sp',
         \  'outputter/buffer/close_on_empty' : 1,
         \  'outputter/buffer/running_mark'   : '[running...]',
         \  "hook/slash/enable"               : 1,
@@ -3709,22 +3917,22 @@ hook_add = '''
         \}, get(g:quickrun_config, 'ruby', {}), "keep")
 
   " c++
-  if executable('clang++')
+  if g:user.function.executable('clang++')
     let g:quickrun_config['cpp'] = extend({
     \  'type' : 'cpp/clang++',
     \}, get(g:quickrun_config, 'cpp', {}), "keep")
-  elseif executable('g++')
+  elseif g:user.function.executable('g++')
     let g:quickrun_config['cpp'] = extend({
     \  'type' : 'cpp/g++',
     \}, get(g:quickrun_config, 'cpp', {}), "keep")
   endif
 
   " c
-  if executable('clang')
+  if g:user.function.executable('clang')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/clang',
     \}, get(g:quickrun_config, 'c', {}), "keep")
-  elseif executable('gcc')
+  elseif g:user.function.executable('gcc')
     let g:quickrun_config['c'] = extend({
     \  'type' : 'c/gcc',
     \}, get(g:quickrun_config, 'c', {}), "keep")
@@ -3732,9 +3940,9 @@ hook_add = '''
 
   " typescript
   let g:quickrun_config['typescript'] = extend({
-    \   'type': executable('ts-node') ? 'typescript/ts-node' :
-    \           executable('tsc')     ? 'typescript/tsc'     :
-    \           executable('deno')    ? 'typescript/deno'    :
+    \   'type': g:user.function.executable('ts-node') ? 'typescript/ts-node' :
+    \           g:user.function.executable('tsc')     ? 'typescript/tsc'     :
+    \           g:user.function.executable('deno')    ? 'typescript/deno'    :
     \           '',
     \}, get(g:quickrun_config, 'typescript', {}), "keep")
   " from ycino
@@ -3762,6 +3970,7 @@ hook_add = '''
       let g:quickrun_config[s:typename]['hook/output_encode/encoding'] = 'cp932'
       let g:quickrun_config[s:typename]['hook/output_encode/fileformat'] = 'unix'
     endfor
+    unlet s:typename
   endif
 
   " unittest
@@ -3809,8 +4018,10 @@ hook_add = '''
     \ 'command' : 'jest',
     \}, get(g:quickrun_config, 'javascript.jest', {}), "keep")
 
-  function s:runner_setup() abort
-    if g:user.plugin.info.vimproc.ok()
+  function! s:runner_setup() abort
+    if dein#tap('vim-quickrun-progress-job')
+      let g:quickrun_config._['runner'] = 'progress_job'
+    elseif g:user.plugin.info.vimproc.ok()
       let g:quickrun_config._['runner'] = 'vimproc'
       let g:quickrun_config._['runner/vimproc/sleep'] = 30
       let g:quickrun_config._['runner/vimproc/updatetime'] = 50
@@ -3828,6 +4039,10 @@ hook_add = '''
   augroup vimrc_init_quickrun
     autocmd!
     autocmd VimEnter * nested :call s:runner_setup()
+
+    " quickrun lsp exclude need, but do not work...
+    " all foldmethod manual setting
+    autocmd FileType quickrun setlocal foldmethod=manual foldexpr=0
 
     " temp off : use Quickrun python.pytest instead
     " " unittest
@@ -4024,7 +4239,7 @@ hook_add = '''
 
 [[plugins]]
 repo = 'tpope/vim-fugitive'
-hook_add = '''
+hook_post_source = '''
   augroup vimrc_init_fugitive
     autocmd!
     " based on https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
@@ -4046,13 +4261,14 @@ hook_source = '''
 [[plugins]]
 repo = 'tpope/vim-rhubarb'
 depends = ['vim-fugitive','vim-pass']
-# on_if= 'executable("hub")'
+if = 'g:user.function.executable("hub")'
+merged = 0
 hook_add = '''
   " github token
   call pass#get_startup('g:RHUBARB_TOKEN','Develop/Github')
 '''
 hook_post_source = '''
-  autocmd vimrc_init_core Filetype gitcommit,gitrebase nested
+  autocmd vimrc_init_core FileType gitcommit,gitrebase nested
     \ setlocal omnifunc=rhubarb#omnifunc
 '''
 
@@ -4068,11 +4284,11 @@ depends = ['vim-fugitive']
 
 [[plugins]]
 repo = 'cohama/agit.vim'
-# on_if= 'executable("git")'
+# git is installed, need for basic
 
 [[plugins]]
 repo = 'lambdalisue/gina.vim'
-# on_if= 'executable("git")'
+# git is installed, need for basic
 
 [[plugins]]
 repo = 'rhysd/git-messenger.vim'
@@ -4093,7 +4309,7 @@ hook_post_source = '''
   endfunction
   augroup vimrc_init_auto_git_diff
     autocmd!
-    autocmd FileType gitrebase nested call <SID>setup_auto_git_diff()
+    autocmd FileType gitrebase nested call s:setup_auto_git_diff()
   augroup END
 '''
 
@@ -4129,8 +4345,8 @@ hook_post_source = '''
   " nnoremap <silent> <Leader>hs :<cr>    " staging
 '''
 
-[[plugins]]
-repo = 'gotchane/vim-git-commit-prefix'
+# [[plugins]]
+# repo = 'gotchane/vim-git-commit-prefix'
 
 [[plugins]]
 repo = 'rhysd/conflict-marker.vim'
@@ -4169,6 +4385,19 @@ hook_add = '''
   " debug
   " let g:lightline = {}
   " breakadd expr g:lightline
+
+  " Based on https://github.com/itchyny/lightline.vim/issues/228
+  function! LightlineCharcode() abort
+    let line = getline('.')
+    let col = col('.')
+    " return col - 1 < len(line) ? printf('C:%02x', char2nr(matchstr(line[(col - 1):], '^.'))) : 'C: '
+    let codestr = ' <none> '
+    if col - 1 < len(line)
+      let matched_char = matchstr(line[(col - 1):], '^.')
+      let codestr = printf('%s:%6x', matched_char, char2nr(matched_char))
+    endif
+    return codestr
+  endfunction
 '''
 hook_post_source = '''
 '''
@@ -4249,6 +4478,7 @@ hook_add = '''
 
 [[plugins]]
 repo = 'tsuyoshicho/lightline-lsp'
+# rev  = 'develop'
 depends = ['lightline.vim']
 hook_add = '''
   let g:lightline#lsp#server_interval = 60
@@ -4312,13 +4542,15 @@ hook_post_source = '''
     return ''
   endfunction
 
+  "  charcode use LightlineCharcode instead of lightline#delphinus#components#charcode
+
   let g:lightline = {
     \ 'colorscheme': g:lightline_delphinus_colorscheme,
     \ 'active': {
     \   'left' : [
     \     [ 'mode', 'paste' ],
     \     [ 'gitbranch', 'filepath', 'filename', 'method' ],
-    \     [ 'signify', 'lsp_count', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning',  'lsp_status' ]
+    \     [ 'signify', 'lsp_count', 'lsp_ok', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning',  'lsp_status' ]
     \   ],
     \   'right': [
     \     [ 'lineinfo', 'percent',  'sky_color_clock' ],
@@ -4344,13 +4576,14 @@ hook_post_source = '''
     \   'filetype':     'lightline#delphinus#components#filetype',
     \   'fileencoding': 'lightline#delphinus#components#fileencoding',
     \   'mode':         'lightline#delphinus#components#mode',
-    \   'char_code':    'lightline#delphinus#components#charcode',
+    \   'char_code':    'LightlineCharcode',
     \   'lineinfo':     'lightline#delphinus#components#lineinfo',
     \   'percent':      'lightline#delphinus#components#percent',
     \   'currenttag':   'lightline#delphinus#components#currenttag',
     \   'gitgutter':    'lightline#delphinus#components#gitgutter',
     \   'signify':      'lightline#delphinus#components#signify',
     \   'lsp_count':    'lightline#lsp#count',
+    \   'lsp_ok':       'lightline#lsp#ok',
     \   'lsp_status':   'lightline_lsp_progress#progress',
     \   'method':       'NearestMethodOrFunction',
     \   'anzu':         'anzu#search_status',
@@ -4709,7 +4942,7 @@ depends = ['vim-operator-user', 'vim-repeat']
 
 [[plugins]]
 repo = 'tweekmonster/braceless.vim'
-hook_add = '''
+hook_post_source = '''
   augroup vimrc_init_braceless
     autocmd!
     autocmd FileType python           nested BracelessEnable +indent
@@ -4825,105 +5058,118 @@ hook_add = '''
   " let g:lexima_accept_pum_with_enter = 0
 
   let g:lexima_map_escape = '<Plug>(lexima-esc)'
+
+  let g:lexima_ctrlh_as_backspace = 1
 '''
 hook_post_source = '''
+  " initialize default rules
+  call lexima#clear_rules()
   call lexima#set_default_rules()
 
-  let s:cr_key = '<CR>'
-  " suport plantuml,...
-  let s:additional_rules = [
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@enduml',
-        \   'at': '\%(^\s*#.*\)\@<!@startuml\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enduml',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@endgantt',
-        \   'at': '\%(^\s*#.*\)\@<!@startgantt\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endgantt',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@endditaa',
-        \   'at': '\%(^\s*#.*\)\@<!@startditaa\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endditaa',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@enddot',
-        \   'at': '\%(^\s*#.*\)\@<!@startdot\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enddot',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@endsalt',
-        \   'at': '\%(^\s*#.*\)\@<!@startsalt\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endsalt',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@endwbs',
-        \   'at': '\%(^\s*#.*\)\@<!@startwbs\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endwbs',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \ {
-        \   'char': '<CR>',
-        \   'input': s:cr_key,
-        \   'input_after': '<CR>' . '@endmindmap',
-        \   'at': '\%(^\s*#.*\)\@<!@startmindmap\>.*\%#',
-        \   'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endmindmap',
-        \   'filetype': ['plantuml'],
-        \   'syntax': [],
-        \ },
-        \]
+  " add rule set
+  let s:additional_rules = []
 
-  for s:rule in s:additional_rules
-    call lexima#add_rule(s:rule)
-  endfor
-  unlet s:rule s:cr_key s:additional_rules
+  " suport plantuml,...
+  let s:cr_key = '<CR>'
+  let s:additional_rules = s:additional_rules + [
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startuml\>.*\%#',
+  \   'input_after': '<cr>' . '@enduml',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enduml',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startgantt\>.*\%#',
+  \   'input_after': '<cr>' . '@endgantt',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endgantt',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startditaa\>.*\%#',
+  \   'input_after': '<cr>' . '@endditaa',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endditaa',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startdot\>.*\%#',
+  \   'input_after': '<cr>' . '@enddot',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@enddot',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startsalt\>.*\%#',
+  \   'input_after': '<cr>' . '@endsalt',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endsalt',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startwbs\>.*\%#',
+  \   'input_after': '<cr>' . '@endwbs',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endwbs',
+  \   'syntax': [],
+  \ },
+  \ {
+  \   'filetype': ['plantuml'],
+  \   'char': '<cr>',
+  \   'input': s:cr_key,
+  \   'at': '\%(^\s*#.*\)\@<!@startmindmap\>.*\%#',
+  \   'input_after': '<cr>' . '@endmindmap',
+  \   'except': '\c\v^(\s*)\s.*%#\n%(%(\s*|\1\s.+)\n)*\1' . '\@endmindmap',
+  \   'syntax': [],
+  \ },
+  \]
+  unlet s:cr_key
 
   " rule from https://github.com/rinx/dotfiles/blob/master/vimrc
   " markdown
-  call lexima#add_rule({'char': '**',            'input_after': '**', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '\*\%#\*', 'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '__',            'input_after': '__', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '_\%#_',   'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '~~',            'input_after': '~~', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '\~\%#\~', 'delete': 1, 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*\*\s.*\%#', 'input': '<CR>*<Space>', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*+\s.*\%#',  'input': '<CR>+<Space>', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*-\s.*\%#',  'input': '<CR>-<Space>', 'filetype': ['markdown']})
+  let s:additional_rules = s:additional_rules + [
+  \  {'filetype': ['markdown'], 'char': '**', 'input_after': '**'},
+  \  {'filetype': ['markdown'], 'char': '__', 'input_after': '__'},
+  \  {'filetype': ['markdown'], 'char': '~~', 'input_after': '~~'},
+  \  {'filetype': ['markdown'], 'char': '<BS>', 'at': '\*\%#\*', 'delete': 1},
+  \  {'filetype': ['markdown'], 'char': '<BS>', 'at': '_\%#_',   'delete': 1},
+  \  {'filetype': ['markdown'], 'char': '<BS>', 'at': '\~\%#\~', 'delete': 1},
+  \  {'filetype': ['markdown'], 'char': '<CR>', 'at': '^\s*\*\s.*\%#', 'input': '<CR>*<Space>'},
+  \  {'filetype': ['markdown'], 'char': '<CR>', 'at': '^\s*+\s.*\%#',  'input': '<CR>+<Space>'},
+  \  {'filetype': ['markdown'], 'char': '<CR>', 'at': '^\s*-\s.*\%#',  'input': '<CR>-<Space>'},
+  \]
   " from https://github.com/cohama/.vim/blob/master/dein.toml
-  " call lexima#add_rule({'char': '<CR>', 'at': '^```\(\S*\)\%#```', 'input': '<C-y><CR><CR><Esc>kS', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '#',    'at': '^\%#',      'input': '#<Space>',        'filetype': ['markdown']})
-  call lexima#add_rule({'char': '#',    'at': '^#\+ \%#',  'input': '<BS>#<Space>',    'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '^##\+ \%#', 'input': '<BS><BS><Space>', 'filetype': ['markdown']})
-  call lexima#add_rule({'char': '<BS>', 'at': '^# \%#',    'input': '<BS><BS>',        'filetype': ['markdown']})
+  " {'filetype': ['markdown'], 'char': '<CR>', 'at': '^```\(\S*\)\%#```', 'input': '<C-y><CR><CR><Esc>kS'},
+  let s:additional_rules = s:additional_rules + [
+  \  {'filetype': ['markdown'], 'char': '#',    'at': '^\%#',      'input': '#<Space>'       },
+  \  {'filetype': ['markdown'], 'char': '#',    'at': '^#\+ \%#',  'input': '<BS>#<Space>'   },
+  \  {'filetype': ['markdown'], 'char': '<BS>', 'at': '^##\+ \%#', 'input': '<BS><BS><Space>'},
+  \  {'filetype': ['markdown'], 'char': '<BS>', 'at': '^# \%#',    'input': '<BS><BS>'       },
+  \]
 
   " vimspec
   " from https://github.com/cohama/.vim/blob/master/dein.toml
-  call lexima#add_rule({'char': '<CR>', 'at': '^\s*\%(Describe\|Context\|It\|Before\|After\)\s\+.*\%#',
-  \   'input_after': '<CR>End', 'filetype': ['vimspec']})
+  let s:additional_rules = s:additional_rules + [
+  \  {
+  \    'filetype': ['vimspec'],
+  \    'char': '<CR>',
+  \    'at': '^\s*\%(Describe\|Context\|It\|Before\|After\)\s\+.*\%#',
+  \    'input_after': '<CR>End',
+  \  },
+  \]
 
   " vim, vimspec
   " from https://github.com/cohama/.vim/blob/master/dein.toml
@@ -4932,12 +5178,34 @@ hook_post_source = '''
   " vimspec support
   " [] support
   " indent fix
-  call lexima#add_rule({'at': '{\%#}',      'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
-    \ 'input_after': '<CR><Bslash>',  'filetype': ['vim', 'vimspec']})
-  call lexima#add_rule({'at': '\[\%#\]',    'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
-    \ 'input_after': '<CR><Bslash>',  'filetype': ['vim', 'vimspec']})
-  call lexima#add_rule({'at': '\\\s.*\%#$', 'char': '<CR>', 'input': '<CR><Bslash><Space><Space>',
-    \                                 'filetype': ['vim', 'vimspec']})
+  let s:additional_rules = s:additional_rules + [
+  \  {
+  \    'filetype': ['vim', 'vimspec'],
+  \    'char': '<CR>',
+  \    'input': '<CR><Bslash><Space><Space>',
+  \    'at': '{\%#}',
+  \    'input_after': '<CR><Bslash>',
+  \  },
+  \  {
+  \    'filetype': ['vim', 'vimspec'],
+  \    'char': '<CR>',
+  \    'input': '<CR><Bslash><Space><Space>',
+  \    'at': '\[\%#\]',
+  \    'input_after': '<CR><Bslash>',
+  \  },
+  \  {
+  \    'filetype': ['vim', 'vimspec'],
+  \    'char': '<CR>',
+  \    'input': '<CR><Bslash><Space><Space>',
+  \    'at': '\\\s.*\%#$',
+  \  },
+  \]
+
+  " add rule
+  for s:rule in s:additional_rules
+    call lexima#add_rule(s:rule)
+  endfor
+  unlet s:rule s:additional_rules
 
   " http://secret-garden.hatenablog.com/entry/2015/05/21/194914
   " http://secret-garden.hatenablog.com/entry/2015/05/06/211712
@@ -5051,7 +5319,7 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'kana/vim-smartword'
-depends = 'CamelCaseMotion'
+depends =['CamelCaseMotion']
 hook_post_source = '''
   " support CamelCaseMotion combine
   map <Plug>(smartword-basic-w)  <Plug>CamelCaseMotion_w
@@ -5084,11 +5352,11 @@ repo = 'kana/vim-gf-user'
 
 [[plugins]]
 repo = 'kana/vim-gf-diff'
-depends = 'vim-gf-user'
+depends =['vim-gf-user']
 
 [[plugins]]
 repo = 'sgur/vim-gf-autoload'
-depends = 'vim-gf-user'
+depends =['vim-gf-user']
 
 [[plugins]]
 repo = 'haya14busa/vim-signjk-motion'
@@ -5105,7 +5373,7 @@ hook_add = '''
   " Disable default mapping
   let g:EasyMotion_do_mapping = 0
 
-  " if executable('cmigemo')
+  " if g:user.function.executable('cmigemo')
   " endif
   " 一応常に設定
   let g:EasyMotion_use_migemo = 1
@@ -5276,8 +5544,9 @@ hook_post_source = '''
 [[plugins]] # Doxygen and other
 repo = 'kkoomen/vim-doge'
 
-[[plugins]] # PowerShell
-repo = 'PProvost/vim-ps1'
+# [[plugins]] # PowerShell
+# repo = 'PProvost/vim-ps1'
+# imported to vim official
 
 [[plugins]]
 repo = 'liuchengxu/vista.vim'
@@ -5318,6 +5587,7 @@ hook_add = '''
   function! NearestMethodOrFunction() abort
     return get(b:, 'vista_nearest_method_or_function', '')
   endfunction
+
   augroup vimrc_init_vista
     autocmd!
     autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter *
@@ -5593,7 +5863,8 @@ repo = 'reireias/vim-cheatsheet'
 hook_add = '''
   let g:cheatsheet#cheat_file = expand(g:user.dir.vim. '/cheatsheet.md')
   let g:cheatsheet#vsplit = 1
-
+'''
+hook_post_source = '''
   " augroup vimrc_init_cheatsheet
   "   autocmd!
   "   if ale
@@ -5636,11 +5907,6 @@ hook_post_source = '''
 repo = 'dhruvasagar/vim-table-mode'
 depends = ['vim-submode']
 hook_add = '''
-  augroup vimrc_init_vim_table_mode
-    autocmd!
-    autocmd FileType markdown,rst nested if tablemode#IsActive() == 0 | call tablemode#Enable() | endif
-  augroup END
-
   let g:table_mode_map_prefix = '<Leader>T'
 
   " keymap info
@@ -5649,6 +5915,11 @@ hook_add = '''
     \ }
 '''
 hook_post_source = '''
+  augroup vimrc_init_vim_table_mode
+    autocmd!
+    autocmd FileType markdown,rst nested if tablemode#IsActive() == 0 | call tablemode#Enable() | endif
+  augroup END
+
   " table move
   call submode#enter_with('tablemove', 'n', '',  g:table_mode_map_prefix . 'M')
   call submode#map('tablemove', 'n', 'r', 'k', '<Plug>(table-mode-motion-up)'   )

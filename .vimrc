@@ -29,52 +29,21 @@ let g:user = {
   \  'devemail' : 'Tsuyoshi.CHO+develop@Gmail.com',
   \}
 
-" system {{{
-let g:user.system = {}
-
-" type
-let g:user.system.nvim = has('nvim') ? v:true : v:false
-
-" platform
-let g:user.system.windows = has('win32') || has('win64') ? v:true : v:false
-let g:user.system.cygwin  = has('win32unix')             ? v:true : v:false
-let g:user.system.mac     = has('mac')                   ? v:true : v:false
-let g:user.system.unix    = has('unix')                  ? v:true : v:false
-
-" unlet s:is_windows s:is_cygwin s:is_mac
-
-" CPU arch
-let g:user.system.arch = 'x86_64' " heuristic
-if exists('$PROCESSOR_ARCHITECTURE')
-  if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
-    let g:user.system.arch = 'x86_64'
-  elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
-    let g:user.system.arch = 'x86'
-  elseif $PROCESSOR_ARCHITECTURE =~? 'ARM64'
-    let g:user.system.arch = 'arm64'
-  endif
-elseif executable('uname')
-  let s:unamem = systemlist('uname --machine')[0]
-  if s:unamem =~? 'x86_64'
-    let g:user.system.arch = 'x86_64'
-  elseif s:unamem =~? 'i686'
-    let g:user.system.arch = 'x86'
-  elseif s:unamem =~? 'aarch64'
-    let g:user.system.arch = 'arm64'
-  endif
-  unlet s:unamem
-endif
-
-let g:user.system.cpunum = 2 " heuristic
-if exists('$NUMBER_OF_PROCESSORS')
-  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
-elseif executable('nproc')
-  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
-endif
+" command {{{
+let g:user.command = {}
+" cache g:user.function.executable() result
 " }}}
 
 " common function {{{
 let g:user.function = {}
+" check executable file and cache
+function! g:user.function.executable(cmd) abort " {{{
+  if !has_key(g:user.command, a:cmd)
+    let g:user.command[a:cmd] = executable(a:cmd)
+  endif
+
+  return g:user.command[a:cmd]
+endfunction " }}}
 
 " check and create dir
 function! g:user.function.mkdir(dir) abort " {{{
@@ -109,13 +78,53 @@ endfunction " }}}
 " visual icon char
 function! g:user.function.fileicon(path) abort "{{{
   let icon = nr2char(0xf15b) " 
-  if dein#is_sourced('nerdfont.vim')
+  if g:user.plugin.exists['nerdfont.vim']
     let icon = nerdfont#find(a:path, 0)
-  elseif dein#is_sourced('vim-devicons')
+  elseif g:user.plugin.exists['vim-devicons']
     let icon = WebDevIconsGetFileTypeSymbol(a:path, 0)
   endif
   return icon
-endfunction"}}}
+endfunction " }}}
+" }}}
+
+" system information {{{
+" type and platform
+let g:user.system = {
+\  'nvim'    : has('nvim')                  ? v:true : v:false,
+\  'windows' : has('win32') || has('win64') ? v:true : v:false,
+\  'cygwin'  : has('win32unix')             ? v:true : v:false,
+\  'mac'     : has('mac')                   ? v:true : v:false,
+\  'unix'    : has('unix')                  ? v:true : v:false,
+\}
+
+" CPU arch
+let g:user.system.arch = 'x86_64' " heuristic
+if exists('$PROCESSOR_ARCHITECTURE')
+  if $PROCESSOR_ARCHITECTURE =~? 'AMD64'
+    let g:user.system.arch = 'x86_64'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'x86'
+    let g:user.system.arch = 'x86'
+  elseif $PROCESSOR_ARCHITECTURE =~? 'ARM64'
+    let g:user.system.arch = 'arm64'
+  endif
+elseif g:user.function.executable('uname')
+  let s:unamem = systemlist('uname --machine')[0]
+  if s:unamem =~? 'x86_64'
+    let g:user.system.arch = 'x86_64'
+  elseif s:unamem =~? 'i686'
+    let g:user.system.arch = 'x86'
+  elseif s:unamem =~? 'aarch64'
+    let g:user.system.arch = 'arm64'
+  endif
+  unlet s:unamem
+endif
+
+let g:user.system.cpunum = 2 " heuristic
+if exists('$NUMBER_OF_PROCESSORS')
+  let g:user.system.cpunum = str2nr($NUMBER_OF_PROCESSORS)
+elseif g:user.function.executable('nproc')
+  let g:user.system.cpunum = str2nr(systemlist('nproc --all')[0])
+endif
 " }}}
 
 " template {{{
@@ -180,7 +189,7 @@ function! g:user.plugin.info.vimproc.ok() abort "{{{
   endtry
 
   return ret
-endfunction "}}}
+endfunction " }}}
 " }}}
 
 " rootmarker {{{
@@ -213,6 +222,28 @@ let g:user.rootmarker.fileglob = [
   \]
 " }}}
 
+" ignore {{{
+let g:user.ignore = {}
+let g:user.ignore.dirs = [
+  \  'RCS',
+  \  'SCCS',
+  \  'CVS',
+  \  '.git',
+  \  '.svn',
+  \  '.hg',
+  \  '.bzr',
+  \  '_darcs',
+  \  '.venv',
+  \]
+let g:user.ignore.filetype = [
+  \  'exe',
+  \  'dll',
+  \  'so',
+  \  'a',
+  \]
+" }}}
+
+" filetype {{{
 let g:user.filetype = {}
 " ignored trailing whitespace marking
 "  special (filer and other functional)
@@ -230,6 +261,10 @@ let g:user.filetype.ignore_whitespace = [
 
   " temp enable for help editing
   " \ 'help',
+" }}}
+
+" dir {{{
+let g:user.dir = {}
 
 if g:user.system.cygwin
   " Git for Windows(MSYS2)にも対応のため、Windowsは手動で強制再設定
@@ -243,7 +278,6 @@ if g:user.system.cygwin
   let $XDG_DATA_HOME   = expand($HOME . '/.local/share')
 endif
 
-let g:user.dir = {}
 let g:user.dir = extend({
   \  'vim'         : expand($HOME . '/.vim'),
   \}, g:user.dir)
@@ -265,7 +299,13 @@ else
   let g:user.dir.tools = expand($HOME . '/tools')
 endif
 let g:user.dir.dictionary = expand(g:user.dir.tools . '/dictionary')
+let $NEXTWORD_DATA_PATH = expand(g:user.dir.dictionary . '/nextword')
 
+" check and mkdir
+call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
+" }}}
+
+" file {{{
 let g:user.file = {}
 let g:user.file = extend({
   \  'viminfo'     : expand(g:user.dir.vim . '/info'  ),
@@ -285,30 +325,45 @@ let g:user.file = extend({
   \  'look'     : [s:dictfile],
   \}, g:user.file)
 unlet s:dictfile
-
-" check and mkdir
-call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
+" }}}
 
 let g:user.colorscheme = []
 
-" dll setup if need
-if has('python3_dynamic') && v:false
+" python {{{
+" python3 exec and dll setup if need
+if has('python3_compiled') && v:false " now off
   " unstable
-  let s:pycmd     = 'python3'
+  let s:pycmd = 'python3'
   let s:pyrelpath = '../lib'
-  let s:pydllglob = 'libpython3*.so'
+  " let s:pydllglob = 'libpython3*.so'
   if g:user.system.windows
-    let s:pycmd     = 'python'
+    let s:pycmd = 'python'
     let s:pyrelpath = '.'
-    let s:pydllglob = 'python3?*.dll'
+    " let s:pydllglob = 'python3?*.dll'
   elseif g:user.system.mac
     " unstable
-    let s:pydllglob = 'libpython3*.dylib'
+    let s:pycmd = 'python3'
+    let s:pyrelpath = '.' " unknown
+    " let s:pydllglob = 'libpython3*.dylib'
   endif
+  let s:pydllglob = &pythonthreedll
 
   let &pythonthreedll = g:user.function.dllsearch(s:pycmd, s:pyrelpath, s:pydllglob)
   unlet s:pycmd s:pyrelpath s:pydllglob
 endif
+" neovim like variable define need nvim-yarp lib
+if !g:user.system.nvim && has('python3') && v:true " now on
+  let s:pycmd = 'python3'
+  if g:user.system.windows
+    let s:pycmd = 'python'
+  endif
+
+  if executable(s:pycmd)
+    let g:python3_host_prog = exepath(s:pycmd)
+  endif
+  unlet s:pycmd
+endif
+" }}}
 
 " }}}
 
@@ -352,6 +407,7 @@ let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapk
 
 " plugin
 " dein 設定前の設定
+let g:dein#default_options = { 'merged': v:true }
 
 " }}}
 
@@ -386,36 +442,45 @@ if &runtimepath !~# '/dein.vim'
 endif
 
 " 設定開始
-let g:dein.dir.rc                = expand(g:user.dir.vim . '/rc')
-let g:dein.file.toml = {
-  \  g:dein.dir.rc . '/colorscheme.toml' : {'lazy': 0},
-  \  g:dein.dir.rc . '/dein.toml'        : {'lazy': 0},
-  \  g:dein.dir.rc . '/dein_lazy.toml'   : {'lazy': 1},
-  \}
+let g:dein.dir.rc = expand(g:user.dir.vim . '/rc')
+let g:dein.file.toml = {}
+let g:dein.file.toml_nouse = {}
+
+let s:tomls = g:dein.file.toml
+
+call extend(s:tomls, {
+  \  expand(g:dein.dir.rc . '/colorscheme.toml') : {'lazy': 0},
+  \  expand(g:dein.dir.rc . '/dein.toml'       ) : {'lazy': 0},
+  \  expand(g:dein.dir.rc . '/dein_lazy.toml'  ) : {'lazy': 1},
+  \ })
+
 " group setting
 " vital : merged : 0
-let g:dein.file.toml = extend(g:dein.file.toml, {
-  \  g:dein.dir.rc . '/vital.toml'        : {'merged': 0},
+call extend(s:tomls, {
+  \  expand(g:dein.dir.rc . '/vital.toml')       : {'merged': 0},
   \ })
-" vital : if : "deno"
-if executable('deno')
-  let g:dein.file.toml = extend(g:dein.file.toml, {
-    \  g:dein.dir.rc . '/denops.toml'      : {'lazy': 0},
-    \ })
-endif
-if g:user.system.nvim
-  " nvim specific
-  let g:dein.file.toml = extend(g:dein.file.toml, {
-    \  g:dein.dir.rc . '/nvim.toml'      : {'lazy': 0},
-    \  g:dein.dir.rc . '/nvim_lazy.toml' : {'lazy': 1},
-    \ })
-else
-  " non-nvim specific
-  let g:dein.file.toml = extend(g:dein.file.toml, {
-    \  g:dein.dir.rc . '/vim.toml'       : {'lazy': 0},
-    \  g:dein.dir.rc . '/vim_lazy.toml'  : {'lazy': 1},
-    \ })
-endif
+
+" denops : if : "deno"
+let s:tomls = g:user.function.executable('deno') ? g:dein.file.toml : g:dein.file.toml_nouse
+call extend(s:tomls, {
+  \  expand(g:dein.dir.rc . '/denops.toml')      : {'lazy': 0},
+  \ })
+
+" nvim specific
+let s:tomls = g:user.system.nvim ? g:dein.file.toml : g:dein.file.toml_nouse
+call extend(s:tomls, {
+  \  expand(g:dein.dir.rc . '/nvim.toml'     )   : {'lazy': 0},
+  \  expand(g:dein.dir.rc . '/nvim_lazy.toml')   : {'lazy': 1},
+  \ })
+
+" non-nvim specific
+let s:tomls = !g:user.system.nvim ? g:dein.file.toml : g:dein.file.toml_nouse
+call extend(g:dein.file.toml, {
+  \  expand(g:dein.dir.rc . '/vim.toml'     )   : {'lazy': 0},
+  \  expand(g:dein.dir.rc . '/vim_lazy.toml')   : {'lazy': 1},
+  \ })
+
+unlet s:tomls
 
 " setting for dein
 let g:dein#install_max_processes = g:user.system.cpunum
@@ -434,11 +499,6 @@ if dein#load_state(g:dein.dir.plugins)
   call dein#save_state()
 endif
 
-" call source
-call dein#call_hook('source')
-" set post source at non-lazy plugin
-autocmd vimrc_init_core VimEnter * nested call dein#call_hook('post_source')
-
 " もし、未インストールものものがあったらインストール
 if (0 == v:vim_did_enter) && dein#check_install()
   call dein#install()
@@ -450,6 +510,11 @@ if len(s:removed_plugins) > 0
   call dein#recache_runtimepath()
 endif
 unlet s:removed_plugins
+
+" call source
+call dein#call_hook('source')
+" set post source at non-lazy plugin
+autocmd vimrc_init_core VimEnter * nested call dein#call_hook('post_source')
 " }}}
 
 " plugin manager after setup {{{
@@ -608,7 +673,7 @@ set tags+=TAGS
 
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if dein#is_sourced('ctrlp.vim')
+" if dein#is_available('ctrlp.vim')
 "   " ctrlp
 "   nnoremap <C-]> :CtrlPTag<CR>
 " endif
@@ -752,26 +817,25 @@ set hlsearch
 " nnoremap <silent> <C-l> <C-l>:nohlsearch<CR>
 " based on https://postd.cc/vim-galore-4/
 
-function! s:nohl_plugin() abort
-  call s:plugin_status_update()
-  if g:user.plugin.exists.quickhl
+function! s:nohl_plugin() abort " {{{
+  if g:user.plugin.exists['vim-quickhl']
     QuickhlManualReset
   endif
-  if g:user.plugin.exists.anzu
+  if g:user.plugin.exists['vim-anzu']
     call anzu#clear_search_status()
   endif
-endfunction
+endfunction " }}}
 
-function! s:nohl_update() abort
-  call s:plugin_status_update()
+function! s:nohl_update() abort " {{{
   diffupdate
   syntax sync fromstart
   redraw!
-endfunction
+endfunction " }}}
 
-" nohlsearch は autocmd/user funcから呼べない(消えない)ため直にマッピングする
-nnoremap <silent> <C-L>         :<C-u>nohlsearch<CR>:call <SID>nohl_plugin()<CR>:call <SID>nohl_update()<CR><C-L>
-nnoremap <silent> <Leader><C-L> :<C-u>nohlsearch<CR>:call <SID>nohl_update()<CR><C-L>
+" nohlsearch は autocmd/userfuncから呼べない(消えない)ため直にマッピングする
+" <Leader><C-L>でプラグインも消すほうに切り替える
+nnoremap <silent> <Leader><C-L> :<C-u>nohlsearch<CR>:call <SID>nohl_plugin()<CR>:call <SID>nohl_update()<CR><C-L>
+nnoremap <silent> <C-L>         :<C-u>nohlsearch<CR>:call <SID>nohl_update()<CR><C-L>
 " }}}
 
 " 検索文字列入力時に順次対象文字列にヒットさせる
@@ -794,10 +858,12 @@ set wrapscan
 
 " search with magic/very magic...
 " https://vim-jp.slack.com/archives/C03C4RC9F/p1553041020188200
-nnoremap /  /\v
-nnoremap g/ /
-" nnoremap * *N / use plugin
-" nnoremap g* g*N / use plugin
+" " search with very magic -> off
+" nnoremap /  /\v
+" nnoremap g/ /
+" " use plugin -> off
+" nnoremap *  *N
+" nnoremap g* g*N
 
 " }}}
 " }}}
@@ -954,7 +1020,7 @@ function! s:my_tabline() abort "{{{
   endfor
   let s .= '%#TabLineFill#%T%=%#TabLine#'
   return s
-endfunction "}}}
+endfunction " }}}
 let &tabline = '%!'.  s:SID_PREFIX() .  'my_tabline()'
 " 常にタブラインを表示
 set showtabline=2
@@ -991,7 +1057,7 @@ set splitbelow
 
 " 基本はタブで開いて、他のタブにあっても既存を使う
 set switchbuf=usetab,newtab
-if dein#is_sourced('QFEnter')
+if dein#is_available('QFEnter')
   " QFEnterプラグインがあるなら、その設定を優先
   set switchbuf=
 endif
@@ -1060,6 +1126,9 @@ augroup END
 " }}}
 
 " Folding. {{{
+
+set foldlevelstart=99
+
 " overwrite at plugin
 " set foldenable
 " set foldcolumn=1
@@ -1117,8 +1186,8 @@ set ttimeoutlen=100
 " from https://github.com/peacock0803sz/dotfiles/blob/80eb4c06beb4c5bcd64befbb64c2d8531e608183/.config/nvim/init.vim
 augroup vimrc_init_core
   autocmd WinEnter * nested if &buftype ==# 'terminal'
-    \                |   silent! exec "normal! A"
-    \                | endif
+    \                     |   silent! exec "normal! A"
+    \                     | endif
 augroup END
 
 " }}}
@@ -1165,6 +1234,7 @@ set formatoptions=tcmBjroq2l]
 " reset matchparis
 set matchpairs&
   \ matchpairs+=<:>
+  \ matchpairs+=「:」,（:）,『:』,【:】,〈:〉,《:》,〔:〕,｛:｝
 
 " updatetime need plugin setting
 " let &updatetime=??
@@ -1205,11 +1275,16 @@ set isfname&
 " see https://itchyny.hatenablog.com/entry/2014/12/25/090000
 set pumheight=10
 set pumwidth=20
-set wildmenu
-set wildmode=longest:full,full
 set wildignorecase
-" add char/charm need wilder.nvim
+" wildmenu
+" wildmenu and wilder plugin setup at VimEnter
+set wildchar=<Tab>
 set wildcharm=<Tab>
+" add wildchar/wildcharm need wilder.nvim
+if !dein#is_available('wilder.nvim')
+  set wildmenu
+  set wildmode=longest:full,full
+endif
 
 " 辞書
 " see http://nanasi.jp/articles/howto/config/dictionary.html
@@ -1285,8 +1360,7 @@ inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 
 function! s:popup_select(rawchar, ...) abort " {{{
   let result = ''
-  call s:plugin_status_update()
-  if g:user.plugin.exists.asyncomplete
+  if g:user.plugin.exists['asyncomplete.vim']
     let result = result . asyncomplete#close_popup()
     if a:0
       let result = result . a:1
@@ -1299,8 +1373,7 @@ endfunction " }}}
 
 function! s:popup_cancel(rawchar, ...) abort " {{{
   let result = ''
-  call s:plugin_status_update()
-  if g:user.plugin.exists.asyncomplete
+  if g:user.plugin.exists['asyncomplete.vim']
     let result = result . asyncomplete#cancel_popup()
     if a:0
       let result = result . a:1
@@ -1313,8 +1386,7 @@ endfunction " }}}
 
 function! s:insert_char(rawchar, charname) abort " {{{
   let result = ''
-  call s:plugin_status_update()
-  if g:user.plugin.exists.lexima
+  if g:user.plugin.exists['lexima.vim']
     let result = result . lexima#expand(a:charname, 'i')
   else
     let result = result . a:rawchar
@@ -1323,35 +1395,36 @@ function! s:insert_char(rawchar, charname) abort " {{{
 endfunction " }}}
 
 function! s:imap_setup() abort " {{{
-  inoremap <expr><silent> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr><silent> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-  inoremap <expr><silent> <CR>
-    \ pumvisible() ? <SID>popup_select("\<C-y>"            ) : <SID>insert_char("\<CR>",    '<' . 'CR'    . '>')
-  inoremap <expr><silent> <Space>
-    \ pumvisible() ? <SID>popup_cancel("\<C-e>", "\<Space>") : <SID>insert_char("\<Space>", '<' . 'Space' . '>')
-  inoremap <expr><silent> <C-y>
-    \ pumvisible() ? <SID>popup_select("\<C-y>"            ) : "\<C-y>"
-  inoremap <expr><silent> <C-e>
-    \ pumvisible() ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
-  " need <Esc> before popup cancel, but lexima esc mapped sepcial work...
-  " and it re-map at buffer insert mode
-  call s:plugin_status_update()
-  if g:user.plugin.exists.lexima
+  inoremap <expr><silent><buffer> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+  inoremap <expr><silent><buffer> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+  inoremap <expr><silent><buffer> <CR>    pumvisible()
+    \ ? <SID>popup_select("\<C-y>"            )
+    \ : <SID>insert_char("\<CR>",    '<' . 'CR'    . '>')
+  inoremap <expr><silent><buffer> <Space> pumvisible()
+    \ ? <SID>popup_cancel("\<C-e>", "\<Space>")
+    \ : <SID>insert_char("\<Space>", '<' . 'Space' . '>')
+  inoremap <expr><silent><buffer> <C-y>   pumvisible()
+    \ ? <SID>popup_select("\<C-y>"            ) : "\<C-y>"
+  inoremap <expr><silent><buffer> <C-e>   pumvisible()
+    \ ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
+  " popup cancel need before <Esc>, but lexima esc mapped sepcial work...
+  " build special method with `g:lexima_map_escape` (lexima escape process mapping)
+  if g:user.plugin.exists['lexima.vim']
     if exists('g:lexima_map_escape')
-       inoremap <expr><silent> <Plug>(lexima-pre-esc)
-        \  pumvisible() ? <SID>popup_cancel("\<C-e>") : ''
-       execute 'imap <silent> <Esc> <Plug>(lexima-pre-esc)' . g:lexima_map_escape
+       inoremap <expr><silent><buffer> <Plug>(lexima-pre-esc)   pumvisible()
+        \ ? <SID>popup_cancel("\<C-e>") : ''
+       execute 'imap <silent><buffer> <Esc> <Plug>(lexima-pre-esc)' . g:lexima_map_escape
     endif
   else
-    inoremap <expr><silent> <Esc>
-     \ pumvisible() ? <SID>popup_cancel("\<C-e>", "\<Esc>") : "\<Esc>"
+    inoremap <expr><silent><buffer> <Esc> pumvisible()
+      \ ? <SID>popup_cancel("\<C-e>", "\<Esc>") : "\<Esc>"
   endif
 endfunction " }}}
 autocmd vimrc_init_core InsertEnter * nested call s:imap_setup()
 
 " }}}
 
-" Configs for default scripts. {{{
+" Config for default scripts. {{{
 " let g:lisp_rainbow = 1
 " let g:lisp_instring = 1
 " let g:lispsyntax_clisp = 1
@@ -1563,16 +1636,16 @@ augroup END
 
 " Grep. {{{
 " 外部grepに使うプログラム設定
-if executable('jvgrep')
+if g:user.function.executable('jvgrep')
   set grepprg=jvgrep\ --no-color\ -inCRrI
   set grepformat=%f:%l:%c:%m
-elseif executable('pt')
+elseif g:user.function.executable('pt')
   set grepprg=pt\ --nocolor\ --nogroup\ --column\ --output-encode\ euc\ -e\ -S
   set grepformat=%f:%l:%c:%m
-elseif executable('ag')
+elseif g:user.function.executable('ag')
   set grepprg=ag\ -a\ --vimgrep\ -S
   set grepformat=%f:%l:%c:%m
-elseif executable('grep')
+elseif g:user.function.executable('grep')
   set grepprg=grep\ -Hnr\ -I\ --exclude-dir=.svn\ --exclude-dir=.git\ --exclude-dir=CVS
   set grepformat=%f:%l:%m,%f:%l%m,%f\ \ %l%m
 endif
@@ -1678,20 +1751,20 @@ augroup END
 " }}}
 
 " Mappings. {{{
-" +---------------------------------------------------------------------------+
-" | Commands \ Modes | Normal | Insert | Command | Visual | Select | Operator |
-" |------------------|--------|--------|---------|--------|--------|----------|
-" | map  / noremap   |    @   |   -    |    -    |   @    |   @    |    @     |
-" | nmap / nnoremap  |    @   |   -    |    -    |   -    |   -    |    -     |
-" | vmap / vnoremap  |    -   |   -    |    -    |   @    |   @    |    -     |
-" | omap / onoremap  |    -   |   -    |    -    |   -    |   -    |    @     |
-" | xmap / xnoremap  |    -   |   -    |    -    |   @    |   -    |    -     |
-" | smap / snoremap  |    -   |   -    |    -    |   -    |   @    |    -     |
-" | map! / noremap!  |    -   |   @    |    @    |   -    |   -    |    -     |
-" | imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |
-" | cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |
-" +---------------------------------------------------------------------------+
-"
+"-------------------------------------------------------------------------------------------------|
+" Commands \ Modes | Normal | Insert | Command | Visual | Select | Operator | Terminal | Lang-Arg |
+" map  / noremap   |    @   |   -    |    -    |   @    |   @    |    @     |    -     |    -     |
+" nmap / nnoremap  |    @   |   -    |    -    |   -    |   -    |    -     |    -     |    -     |
+" map! / noremap!  |    -   |   @    |    @    |   -    |   -    |    -     |    -     |    -     |
+" imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |    -     |    -     |
+" cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |    -     |    -     |
+" vmap / vnoremap  |    -   |   -    |    -    |   @    |   @    |    -     |    -     |    -     |
+" xmap / xnoremap  |    -   |   -    |    -    |   @    |   -    |    -     |    -     |    -     |
+" smap / snoremap  |    -   |   -    |    -    |   -    |   @    |    -     |    -     |    -     |
+" omap / onoremap  |    -   |   -    |    -    |   -    |   -    |    @     |    -     |    -     |
+" tmap / tnoremap  |    -   |   -    |    -    |   -    |   -    |    -     |    @     |    -     |
+" lmap / lnoremap  |    -   |   @    |    @    |   -    |   -    |    -     |    -     |    @     |
+"-------------------------------------------------------------------------------------------------"
 " basic no use map/vmap
 " because, it map select - not need
 "
@@ -1711,14 +1784,17 @@ if !has('gui_running')
 endif
 
 " from lexima tips, Ctrl-H use backspace
-imap <C-h> <BS>
+if !dein#is_available('lexima.vim')
+  " this setting in lexima setup
+  imap <C-h> <BS>
+endif
 cmap <C-h> <BS>
 
 " ################# キーマップ #######################
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
 " Tab op key.
 nnoremap    [Tab] <Nop>
-if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#is_sourced('vim-eft')
+if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#is_available('vim-eft')
   " overwrite stop : use t
   nmap    t [Tab]
 else
@@ -1729,12 +1805,13 @@ endif
 for s:n in range(1, 9)
   execute 'nnoremap <silent> [Tab]' . s:n  ':<C-u>tabnext'. s:n .'<CR>'
 endfor
+unlet s:n
 " t1 で1番左のタブ、t2 で1番左から2番目のタブにジャンプ
 
 nnoremap <silent> [Tab]c :tablast \| tabnew<CR>
 " tc 新しいタブを一番右に作る
 
-if dein#is_sourced('vim-startify')
+if dein#is_available('vim-startify')
   nnoremap <silent> [Tab]h :tablast \| tabnew \| Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
@@ -1770,6 +1847,10 @@ nnoremap <Space>L $
 " thanks ycino
 "" Move beginning toggle
 nnoremap <silent> <expr> 0 getline('.')[0 : col('.') - 2] =~# '^\s\+$' ? '0' : '^'
+
+" thanks monaqa
+"" code input advanced in insert mode
+inoremap <C-v>u <C-r>=nr2char(0x)<Left>
 
 " speed save & exit
 nnoremap <space>W :confirm w<CR>
@@ -1931,15 +2012,15 @@ autocmd vimrc_init_core CmdwinEnter * nested nnoremap <buffer> <CR> <CR>
 
 " plugin設定 {{{
 " Turn off default plugins. {{{
-" let g:loaded_2html_plugin = 1
-" let g:loaded_gzip = 1
-" let g:loaded_rrhelper = 1
-" let g:loaded_tar = 1
-" let g:loaded_tarPlugin = 1
-" let g:loaded_vimballPlugin = 1
-" let g:loaded_zip = 1
-" let g:loaded_zipPlugin = 1
-" let g:loaded_matchparen = 1
+let g:loaded_2html_plugin = 1
+let g:loaded_gzip = 1
+let g:loaded_rrhelper = 1
+let g:loaded_tar = 1
+let g:loaded_tarPlugin = 1
+let g:loaded_vimballPlugin = 1
+let g:loaded_zip = 1
+let g:loaded_zipPlugin = 1
+let g:loaded_matchparen = 1
 " }}}
 
 " syntax/ftplugin/indent and other buildin plugin {{{
@@ -2045,20 +2126,21 @@ endif
 " プラグイン化を考えること
 
 " function {{{
-function! s:plugin_status_update() abort
-  let g:user.plugin.exists['quickhl']      = dein#is_sourced('vim-quickhl')
-  let g:user.plugin.exists['anzu']         = dein#is_sourced('vim-anzu')
-  let g:user.plugin.exists['asyncomplete'] = dein#is_sourced('asyncomplete.vim')
-  let g:user.plugin.exists['lexima']       = dein#is_sourced('lexima.vim')
-endfunction
-
-function! s:plugin_status_update_and_redefine() abort
-  call s:plugin_status_update()
-  function! s:plugin_status_update() abort
-  endfunction
-endfunction
-
-autocmd vimrc_init_core VimEnter * nested call s:plugin_status_update_and_redefine()
+function! s:plugin_status_update() abort " {{{
+  " these plugins need non-lazy
+  let plugins = [
+  \  'vim-quickhl',
+  \  'vim-anzu',
+  \  'asyncomplete.vim',
+  \  'lexima.vim',
+  \  'nerdfont.vim',
+  \  'vim-devicons',
+  \]
+  for plugin_name in plugins
+    let g:user.plugin.exists[plugin_name] = dein#is_sourced(plugin_name)
+  endfor
+endfunction " }}}
+autocmd vimrc_init_core VimEnter * nested call s:plugin_status_update()
 
 function! s:echo_syntax(status) abort " {{{
   if a:status

@@ -7,7 +7,7 @@ on_cmd = ['PromptlineSnapshot']
 # [[plugins]] # cargoが必要
 # repo = 'tsufeki/asyncomplete-fuzzy-match'
 # depends = ['asyncomplete.vim']
-# on_if= 'executable("cargo")'
+# on_if= 'g:user.function.executable("cargo")'
 # build = 'cargo build --release'
 
 [[plugins]]
@@ -49,7 +49,7 @@ hook_source = '''
 
 [[plugins]] # cmigemoが必要
 repo = 'haya14busa/vim-migemo'
-on_if= 'executable("cmigemo")'
+on_if = 'g:user.function.executable("cmigemo")'
 depends = ['vital.vim']
 hook_post_source = '''
   let s:Filepath = g:V.import('System.Filepath')
@@ -84,7 +84,7 @@ hook_post_source = '''
 repo = 'yuki-yano/fzf-preview.vim'
 # rev  = 'release/rpc'
 rev  = 'feature/windows_compatibility'
-on_if= 'executable("fzf") && executable("node")'
+on_if = 'g:user.function.executable("fzf") && g:user.function.executable("node")'
 depends = ['fzf', 'fzf.vim', 'vim-devicons']
 hook_add = '''
   " filelist preview
@@ -96,21 +96,21 @@ hook_add = '''
 
     let g:fzf_binary_preview_command = 'echo binary'
     let g:fzf_preview_if_binary_command = '( ver > nul )'
-    if executable('file')
+    if g:user.function.executable('file')
       let g:fzf_preview_if_binary_command = '( file --mime {} | findstr binary > nul )'
     endif
 
-    " currently fall back safe pattern
-    if executable('false')
+    " currently fallback safe pattern
+    if g:user.function.executable('false')
       let g:fzf_preview_if_binary_command = 'false'
     endif
   endif
 
-  if executable('bat')
+  if g:user.function.executable('bat')
     let g:fzf_preview_command = 'bat --color always --style grid {-1}'
-  elseif executable('head')
+  elseif g:user.function.executable('head')
     let g:fzf_preview_command = 'head -100 {-1}'
-  elseif executable('cat')
+  elseif g:user.function.executable('cat')
     let g:fzf_preview_command = 'cat {-1}'
   else
     if g:user.system.windows
@@ -126,13 +126,13 @@ hook_add = '''
   " " let g:fzf_preview_grep_cmd
 
   " ! should not be escaped
-  if executable('rg')
+  if g:user.function.executable('rg')
     let g:fzf_preview_filelist_command = 'rg --files --hidden --follow --no-messages --glob "!.git/*" --glob !"* *"'
     let g:fzf_preview_directory_files_command = 'rg --files --hidden --follow --no-messages -g !"* *"'
   endif
 
   " " filelist post process
-  " if executable('exa')
+  " if g:user.function.executable('exa')
   "   let g:fzf_preview_filelist_postprocess_command = 'xargs -d "\n" exa --color=always'
   " else
   "   let g:fzf_preview_filelist_postprocess_command = ''
@@ -146,11 +146,11 @@ hook_add = '''
 
 [[plugins]] # WebAPIのライブラリ curlが必要
 repo = 'mattn/webapi-vim'
-on_if= 'executable("curl")'
+on_if = 'g:user.function.executable("curl")'
 
 [[plugins]]
 repo = 'mbbill/undotree'
-on_if= 'has("persistent_undo")'
+on_if = 'has("persistent_undo")'
 hook_post_source = '''
   nnoremap <silent> <F6> :UndotreeToggle<CR>
 '''
@@ -158,12 +158,12 @@ hook_post_source = '''
 # dirvish
 # [[plugins]]
 # repo = 'bounceme/remote-viewer'
-# on_if= 'executable("ssh") || executable("curl")'
+# on_if= 'g:user.function.executable("ssh") || g:user.function.executable("curl")'
 # depends = ['vim-dirvish']
 
 # [[plugins]]
 # repo = 'kristijanhusak/vim-dirvish-git'
-# on_if= 'executable("git")'
+# # git is installed, need for basic
 # depends = ['vim-dirvish']
 # hook_source = '''
 #  let g:dirvish_git_show_ignored = 1
@@ -171,7 +171,7 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'deton/eblook.vim'
-on_if= 'executable("eblook")'
+on_if = 'g:user.function.executable("eblook")'
 hook_source = '''
   " 'book'    辞書ディレクトリ。(eblookのbookコマンドの引数)
   " 'name'    辞書名。(eblookのselectコマンドの引数)
@@ -194,9 +194,10 @@ hook_source = '''
   augroup vimrc_init_eblook
     autocmd!
     autocmd FileType
-      \ eblook nested setlocal nonumber norelativenumber
-      \ |             setlocal signcolumn=no
-      \ |             setlocal foldcolumn=0
+      \ eblook nested setlocal nonumber
+      \                        norelativenumber
+      \                        signcolumn=no
+      \                        foldcolumn=0
     " autocmd VimEnter,VimResized *
     "   \ let g:eblook_entrywin_height   = min([max([(&lines/6),  4]),  8]) - 1
     " autocmd VimEnter,VimResized *
@@ -358,15 +359,15 @@ hook_post_source = '''
 [[plugins]]
 repo = 'tyru/open-browser-github.vim'
 depends = ['open-browser.vim']
-on_if= 'executable("hub")'
+on_if = 'g:user.function.executable("hub")'
 
 [[plugins]]
 repo = 'iberianpig/tig-explorer.vim'
-on_if= 'executable("tig")'
+on_if = 'g:user.function.executable("tig")'
 
 [[plugins]]
 repo = 'ConradIrwin/vim-bracketed-paste'
-on_if= '!has("patch-8.0.0210")'
+on_if = '!has("patch-8.0.0210")'
 
 # Doc & File & Web
 
@@ -386,7 +387,7 @@ hook_post_source = '''
 
 [[plugins]]
 repo = 'miyakogi/seiya.vim'
-on_if= '!has("gui_running")'
+on_if = '!has("gui_running")'
 hook_source = '''
   " let g:seiya_auto_enable=1
 '''
@@ -395,7 +396,7 @@ hook_source = '''
 # [[plugins]]
 # repo = 'liuchengxu/vim-clap'
 # on_event = ['VimEnter']
-# on_if= '(executable("cargo") && has("python3"))'
+# on_if= 'g:user.function.executable("cargo") && has("python3")'
 # build = ':Clap install-binary'
 #
 # [[plugins]]
@@ -423,7 +424,7 @@ hook_source = '''
 # LeaderF
 [[plugins]]
 repo = 'Yggdroot/LeaderF'
-on_if = 'has("python3")'
+if = 'has("python3")'
 depends = ['vital.vim', 'vim-devicons']
 hook_post_update = '''
   if g:user.system.windows
@@ -447,13 +448,13 @@ hook_source = '''
   let g:Lf_CacheDirectory = expand(g:user.dir.cache_home . '/leaderf')
   call g:user.function.mkdir(g:Lf_CacheDirectory)
 
-  if executable('jvgrep')
+  if g:user.function.executable('jvgrep')
     let g:Lf_DefaultExternalTool = 'jvgrep'
     let g:Lf_ExternalCommand = 'jvgrep --no-color -Rril "" "%s"'
-  elseif executable('pt')
+  elseif g:user.function.executable('pt')
     let g:Lf_DefaultExternalTool = 'pt'
     let g:Lf_ExternalCommand = 'pt --nocolor --nogroup -S -l "" "%s"'
-  elseif executable('ag')
+  elseif g:user.function.executable('ag')
     let g:Lf_DefaultExternalTool = 'ag'
     let g:Lf_ExternalCommand = 'ag -a --nocolor --nogroup -S -l "" %s'
   else
@@ -461,7 +462,7 @@ hook_source = '''
   endif
 
   " overwrite external command if files exists
-  if executable('files')
+  if g:user.function.executable('files')
     let g:Lf_ExternalCommand = 'cd "%s" && files -H=0 -a -m ""'
   endif
 
@@ -572,7 +573,7 @@ on_source = ['splitjoin.vim']
 # Quick Fix
 [[plugins]]
 repo = 'thinca/vim-qfreplace'
-on_ft= ['qf']
+on_ft = ['qf']
 hook_source = '''
   " keymap start preview
   augroup vimrc_init_qfreplace
@@ -585,7 +586,7 @@ hook_source = '''
 repo = 'bfrg/vim-qf-preview'
 # repo = 'tsuyoshicho/vim-qf-preview'
 # rev  = 'fix/keymap'
-on_ft= ['qf']
+on_ft = ['qf']
 hook_source = '''
   " keymap start preview
   augroup vimrc_init_vim_qf_preview
@@ -596,7 +597,7 @@ hook_source = '''
 
 [[plugins]]
 repo = 'jceb/vim-hier'
-on_ft= ['qf']
+on_ft = ['qf']
 
 [[plugins]]
 repo = 'thinca/vim-partedit'
@@ -606,7 +607,7 @@ on_cmd = ['Partedit', 'ParteditEnd']
 # repo = 'soramugi/auto-ctags.vim'
 repo = 'tsuyoshicho/auto-ctags.vim'
 rev  = 'feature/asyncprocess'
-on_if= 'executable("ctags")'
+on_if = 'g:user.function.executable("ctags")'
 hook_source = '''
   " in .ctags
   let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes', '--extra=+f']
@@ -654,7 +655,7 @@ hook_source = '''
 
 [[plugins]] # Twitter
 repo = 'twitvim/twitvim'
-on_if= '(executable("curl") && executable("openssl"))'
+on_if = 'g:user.function.executable("curl") && g:user.function.executable("openssl")'
 hook_source = '''
   let g:twitvim_force_ssl = 1
   let g:twitvim_count = 40
@@ -730,7 +731,7 @@ repo = 'tweekmonster/helpful.vim'
 on_cmd = ['HelpfulVersion']
 on_ft = ['help', 'vim']
 hook_source = '''
-  let g:helpful=1
+  let g:helpful = 1
 '''
 
 [[plugins]]
@@ -741,7 +742,7 @@ on_cmd = ['Helpeek']
 # C/C++ use clnagd / lsp for lsp client
 # [[plugins]]
 # repo = 'rhysd/vim-clang-format'
-# on_if= 'executable("clang-format")'
+# on_if = 'g:user.function.executable("clang-format")'
 # hook_source = '''
 #   let g:clang_format#auto_formatexpr = 1
 # '''
@@ -790,7 +791,7 @@ hook_source = '''
 # [[plugins]] # RFC
 # repo = 'mhinz/vim-rfc'
 # depends = ['rfc-syntax']
-# on_if= 'has("ruby")'
+# on_if = 'has("ruby")'
 
 [[plugins]] # toml syntax
 repo = 'cespare/vim-toml'
@@ -817,7 +818,9 @@ on_ft = ['markdown']
 [[plugins]]
 # repo = 'mzlogin/vim-markdown-toc'
 repo = 'tsuyoshicho/vim-markdown-toc'
-rev  = 'pr-merged'
+rev  = 'develop'
+# rev  = 'pr-merged'
+# TODO : I send Fix PR. When merged it then to restore original
 on_ft = ['markdown','mdx']
 hook_source = '''
   let g:vmt_auto_update_on_save = 1
@@ -841,26 +844,29 @@ hook_source = '''
   let g:markdown_fold_override_foldtext = 0
 '''
 
+# deno's plugin 'kat0h/dps-bufpreview.vim' conflict command
+# When deno exists, disable it
 [[plugins]]
 repo = 'skanehira/preview-markdown.vim'
+if = '!g:user.function.executable('deno')'
 on_ft = ['markdown']
 hook_source = '''
   " open window vartical when value is 1
   let g:preview_markdown_vertical = 1
   " use specified command to parse markdown, default is mdr
-  if executable('mdcat')
+  if g:user.function.executable('mdcat')
     let g:preview_markdown_parser = 'mdcat'
   endif
 '''
 
 [[plugins]] # need pdftotext
 repo = 'makerj/vim-pdf'
-on_if= 'executable("pdftotext")'
+on_if = 'g:user.function.executable("pdftotext")'
 
 [[plugins]] # need pandoc,asciidoctor,java,xdg-open
 repo = 'iwataka/minidown.vim'
 on_ft = ['markdown','asciidoc','rst','textile']
-on_if= 'executable("pandoc")'
+on_if = 'g:user.function.executable("pandoc")'
 hook_post_source = '''
   let g:minidown_pandoc_from = extend({
       \ 'markdown': 'markdown+pipe_tables+raw_html+fenced_code_blocks+gfm_auto_identifiers+ascii_identifiers+backtick_code_blocks+autolink_bare_uris+intraword_underscores+strikeout+hard_line_breaks+emoji+shortcut_reference_links+angle_brackets_escapable+smart+yaml_metadata_block',
@@ -883,7 +889,7 @@ on_ft = ['review']
 repo = 'aklt/plantuml-syntax'
 on_ft = ['plantuml']
 hook_source = '''
-  if g:user.system.windows && executable('plantumlc.exe')
+  if g:user.system.windows && g:user.function.executable('plantumlc')
     let g:plantuml_executable_script = 'plantumlc -tsvg'
   endif
 '''
@@ -895,8 +901,8 @@ rev  = 'feature/aggressive'
 depends = ['plantuml-syntax']
 on_ft = ['plantuml']
 hook_source = '''
-  if g:user.system.windows && executable('plantumlc.exe')
-    let s:bin_path = fnamemodify(system('where plantumlc.exe'), ":p")
+  if g:user.system.windows && g:user.function.executable('plantumlc')
+    let s:bin_path = fnamemodify(system('where plantumlc'), ":p")
     let s:lib_path = fnamemodify(s:bin_path, ":p:h") . '/../lib/plantuml/tools/plantuml.jar'
 
     let g:slumlord_plantuml_jar_path = fnamemodify(s:lib_path, ":p")
@@ -918,14 +924,14 @@ hook_source = '''
 [[plugins]]
 # repo = 'weirongxu/plantuml-previewer.vim'
 repo = 'tsuyoshicho/plantuml-previewer.vim'
-# rev  = 'develop'
-rev  = 'fix/vitalupdate-windowsopen'
+rev  = 'develop'
+# TODO : I send Fix PR. When merged it then to restore original
 depends = ['open-browser.vim']
 on_ft = ['plantuml']
-on_if= 'executable("dot") && executable("java")'
+on_if = 'g:user.function.executable("dot") && g:user.function.executable("java")'
 hook_source = '''
-  if g:user.system.windows && executable('plantumlc.exe')
-    let s:bin_path = exepath('plantumlc.exe')
+  if g:user.system.windows && g:user.function.executable('plantumlc')
+    let s:bin_path = exepath('plantumlc')
     let s:lib_path = fnamemodify(s:bin_path, ":p:h:h") . '/lib/plantuml/tools/plantuml.jar'
 
     let g:plantuml_previewer#plantuml_jar_path = fnamemodify(s:lib_path, ":p")
@@ -1042,7 +1048,7 @@ on_ft = ['csv', 'tsv']
 repo = 'chrisbra/Colorizer'
 on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'sh', 'vim', 'xdefaults', 'xml', 'yaml']
 hook_source = '''
-  let g:colorizer_auto_filetype = join(copy(g:dein#plugin.on_ft), ',')
+  let g:colorizer_auto_filetype = join(g:dein#plugin.on_ft, ',')
 '''
 
 # or
@@ -1051,14 +1057,14 @@ hook_source = '''
 # on_ft = (same as other colorize)
 # hook_post_update = '''
 #   " not installed global
-#   if !executable('hexokinase')
+#   if !g:user.function.executable('hexokinase')
 #     if g:user.system.windows
 #       if !g:user.system.cygwin
 #         let s:cmd = 'mingw32-make hexokinase'
 #       else
 #         let s:cmd = 'make hexokinase'
 #       endif
-#     elseif executable('gmake')
+#     elseif g:user.function.executable('gmake')
 #       let s:cmd = 'gmake hexokinase'
 #     else
 #       let s:cmd = 'make hexokinase'
@@ -1069,7 +1075,7 @@ hook_source = '''
 # '''
 # hook_source = '''
 #   " custom path if need
-#   if executable('hexokinase')
+#   if g:user.function.executable('hexokinase')
 #     let g:Hexokinase_executable_path = exepath('hexokinase')
 #   endif
 #
@@ -1116,18 +1122,20 @@ on_ft = ['python']
 repo = 'aliev/vim-compiler-python'
 on_ft = ['python']
 
-[[plugins]] # need 'pip install doq'
+[[plugins]]
 repo = 'heavenshell/vim-pydocstring'
 # repo = 'tsuyoshicho/vim-pydocstring'
 # rev  = 'develop'
 on_ft = ['python']
 hook_post_update = '''
-  if !executable('doq')
-    echomsg 'need doq command, please run "pip install doq"'
+  if g:user.system.windows && g:user.function.executable('pip')
+    let g:dein#plugin.build = 'pip install --upgrade doq'
+  elseif g:user.function.executable('pip3')
+    let g:dein#plugin.build = 'pip3 install --upgrade doq'
   endif
 '''
 hook_source = '''
-  if executable('doq')
+  if g:user.function.executable('doq')
     let g:pydocstring_doq_path = 'doq'
   endif
 
@@ -1136,6 +1144,32 @@ hook_source = '''
   augroup vimrc_init_pydocstring
     autocmd!
     autocmd FileType python nested nmap <silent> <buffer> <LocalLeader><C-l> <Plug>(pydocstring)
+  augroup END
+'''
+
+[[plugins]]
+repo = 'bps/vim-textobj-python'
+depends = ['vim-textobj-user']
+on_ft = ['python']
+hook_add = '''
+  let g:textobj_python_no_default_key_mappings = 1
+
+  augroup vimrc_init_textobj_python
+    autocmd!
+    autocmd FileType python call textobj#user#map('python', {
+    \   'class': {
+    \     'select-a': '<buffer>acp',
+    \     'select-i': '<buffer>icp',
+    \     'move-n': '<buffer>]cp',
+    \     'move-p': '<buffer>[cp',
+    \   },
+    \   'function': {
+    \     'select-a': '<buffer>afp',
+    \     'select-i': '<buffer>ifp',
+    \     'move-n': '<buffer>]fp',
+    \     'move-p': '<buffer>[fp',
+    \   }
+    \ })
   augroup END
 '''
 
