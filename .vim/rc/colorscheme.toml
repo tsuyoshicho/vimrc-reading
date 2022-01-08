@@ -1,6 +1,10 @@
 # colorscheme
 # repo a-z(username) sorted.
 # but support plugin(only lightline/airline) are stored to original below.
+# catalog
+# - https://colorswat.ch/vim/
+# - https://vimcolorschemes.com/
+# - http://vimcolors.com/
 
 [[plugins]] # カラースキーム
 repo = 'AlessandroYorba/Alduin'
@@ -421,6 +425,25 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'ayu-theme/ayu-vim'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'ayu'
+    " need variant
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+
+  " variant
+  " let g:ayucolor="light"  " for light version of theme
+  " let g:ayucolor="mirage" " for mirage version of theme
+  let g:ayucolor="dark"   " for dark version of theme
+'''
+
+[[plugins]] # カラースキーム
 repo = 'bignimbus/pop-punk.vim'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -446,9 +469,24 @@ hook_add = '''
   let s:scheme['name']       = 'moonfly'
   let s:scheme['lightline']  = 'moonfly'
   let s:scheme['background'] = 'dark'
-  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
-  " 16 need
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+  " :terminal support
   " let g:moonflyTerminalColors = 0
+'''
+
+[[plugins]] # カラースキーム
+repo = 'bluz71/vim-nightfly-guicolors'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'nightfly'
+  let s:scheme['lightline']  = 'nightfly'
+  let s:scheme['airline']    = 'nightfly'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+  " :terminal support
+  " let g:nightflyTerminalColors = 0
 '''
 
 [[plugins]] # カラースキーム
@@ -526,6 +564,20 @@ hook_add = '''
     let s:scheme['background'] = s:bg
     let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
   endfor
+'''
+
+[[plugins]] # カラースキーム
+repo = 'cseelus/vim-colors-lucid'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'lucid'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+
+  " " more traditional lightline
+  " let g:lightline#colorscheme#github_light#faithful = 0
 '''
 
 [[plugins]] # カラースキーム
@@ -750,6 +802,18 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'haishanh/night-owl.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'night-owl'
+  let s:scheme['lightline']  = 'nightowl'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'hardcoreplayers/oceanic-material'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -910,6 +974,22 @@ hook_add = '''
 
   " let g:lucius_contrast     = 'normal'
   " let g:lucius_contrast_bg  = 'normal'
+'''
+
+[[plugins]] # カラースキーム
+repo = 'joshdick/onedark.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'onedark'
+  let s:scheme['lightline']  = 'onedark'
+  let s:scheme['airline']    = 'onedark'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+
+  " 16 or 256
+  let g:onedark_termcolors = 256
 '''
 
 [[plugins]] # カラースキーム
@@ -1150,17 +1230,21 @@ hook_add = '''
   endfor
 '''
 
-[[plugins]] # カラースキーム
-repo = 'niuez/lyla.vim'
-hook_add = '''
-  let s:scheme = deepcopy(g:user.template.colorscheme)
-  call add(g:user.colorscheme, s:scheme)
-
-  let s:scheme['name']       = 'lyla'
-  let s:scheme['airline']    = 'lyla'
-  let s:scheme['background'] = 'dark'
-  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
-'''
+# buggy
+# [[plugins]] # カラースキーム
+# repo = 'niuez/lyla.vim'
+# hook_add = '''
+#   let s:scheme = deepcopy(g:user.template.colorscheme)
+#   call add(g:user.colorscheme, s:scheme)
+#
+#   let s:scheme['name']       = 'lyla'
+#   let s:scheme['airline']    = 'lyla'
+#   let s:scheme['background'] = 'dark'
+#   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+#
+#   " setup background
+#   let g:lyla_bg_is_none = v:false
+# '''
 
 [[plugins]] # カラースキーム
 repo = 'noahfrederick/vim-noctu'
@@ -1202,6 +1286,19 @@ hook_add = '''
   call add(g:user.colorscheme, s:scheme)
 
   let s:scheme['name']       = 'monokai_pro'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'pineapplegiant/spaceduck'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'spaceduck'
+  let s:scheme['lightline']  = 'spaceduck'
+  let s:scheme['airline']    = 'spaceduck'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
@@ -1297,23 +1394,16 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
-repo = 'sainnhe/vim-color-forest-night'
+# repo = 'romgrk/github-light.vim'
+repo = 'kuuote/github-light.vim'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
   call add(g:user.colorscheme, s:scheme)
 
-  let s:scheme['name']       = 'forest-night'
-  let s:scheme['lightline']  = 'forest_night'
-  let s:scheme['airline']    = 'forest_night'
-  let s:scheme['background'] = 'dark'
+  let s:scheme['name']       = 'github-light'
+  let s:scheme['lightline']  = 'github_light'
+  let s:scheme['background'] = 'light'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
-
-  " let g:forest_night_enable_italic = 1
-  let g:forest_night_disable_italic_comment = 1
-
-  let g:forest_night_sign_column_background = 'none'
-
-  let g:forest_night_lightline_disable_bold = 1
 '''
 
 [[plugins]] # カラースキーム
@@ -1337,6 +1427,29 @@ hook_add = '''
   let g:edge_sign_column_background = 'none'
 
   let g:edge_lightline_disable_bold = 1
+'''
+
+[[plugins]] # カラースキーム
+repo = 'sainnhe/everforest'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'everforest'
+    let s:scheme['lightline']  = 'everforest'
+    let s:scheme['airline']    = 'everforest'
+    let s:scheme['background'] = s:bg
+    let s:scheme['mode']       = ['termguicolors', 'gui']
+  endfor
+
+  let g:everforest_background = 'medium'  " 'hard', 'medium', 'soft'
+  " let g:everforest_enable_italic = 1
+  let g:everforest_disable_italic_comment  = 1
+
+  let g:everforest_sign_column_background = 'none'
+
+  let g:everforest_lightline_disable_bold = 1
 '''
 
 [[plugins]] # カラースキーム
@@ -1492,6 +1605,30 @@ hook_add = '''
   let s:scheme['name']       = 'deep-space'
   let s:scheme['lightline']  = 'deepspace'
   let s:scheme['airline']    = 'deep_space'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'ulwlu/elly.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'elly'
+  let s:scheme['lightline']  = 'elly'
+  let s:scheme['airline']    = 'elly'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'vim-scripts/candy.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'candy'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''

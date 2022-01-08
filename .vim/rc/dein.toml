@@ -34,8 +34,10 @@ hook_post_source = '''
   else
     command! DeinUpdateStart call dein#update()
   endif
-
-  " toml
+'''
+[plugins.ftplugin]
+toml = '''
+  " dein toml settings
   function! s:dein_toml_setting() abort
     let Filepath = g:V.import('System.Filepath')
     let fname = Filepath.realpath(expand("%:p"))
@@ -48,11 +50,7 @@ hook_post_source = '''
       endif
     endfor
   endfunction
-
-  augroup vimrc_init_dein
-    autocmd!
-    autocmd FileType toml call s:dein_toml_setting()
-  augroup END
+  call s:dein_toml_setting()
 '''
 
 # ToC
@@ -390,36 +388,6 @@ hook_add = '''
   " let g:fern#loglevel = g:fern#DEBUG
 '''
 hook_post_source = '''
-  function! s:init_fern() abort
-    setlocal nonumber
-    setlocal norelativenumber
-    setlocal foldcolumn=0
-    setlocal signcolumn=yes
-
-    " mapping
-
-    " from https://github.com/kyoh86/dotfiles/blob/main/nvim/etc/fern.vim
-    nmap <nowait> <buffer> !       <Plug>(fern-action-hidden:toggle)
-    nmap <nowait> <buffer> /       <Plug>(fern-action-include)
-
-    nmap <nowait> <buffer> >       <Plug>(fern-action-expand:in)
-    nmap <nowait> <buffer> <       <Plug>(fern-action-collapse)
-
-    " from https://github.com/koutarn/dotfile/blob/b4f11451f1547cedab051ca547b2f1cc208e0a06/.vim/_config/117-fern.vim
-    nmap <nowait> <buffer> E      <Plug>(fern-action-open:system)
-    " nmap <nowait> <buffer> h      <Plug>(fern-action-collapse)
-    " nmap <nowait> <buffer> l      <Plug>(fern-action-open-or-expand)
-
-    " define autocmd for buffer
-    " currently not work(side effect error)
-    " autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
-  endfunction
-
-  augroup vimrc_init_fern
-    autocmd!
-    autocmd FileType fern nested call s:init_fern()
-  augroup END
-
   " thanks lambdalisue
   function! s:smart_path() abort
     if !empty(&buftype) || bufname('%') =~# '^[^:]\+://'
@@ -445,6 +413,32 @@ hook_post_source = '''
     nnoremap <silent> <Leader>Fj :<C-u>Fern <C-r>=expand(g:junkfile#directory)<CR> -drawer -toggle -reveal=%<CR>
   endif
 '''
+[plugins.ftplugin]
+fern = '''
+  " fern setup
+  setlocal nonumber
+  setlocal norelativenumber
+  setlocal foldcolumn=0
+  setlocal signcolumn=yes
+
+  " mapping
+
+  " from https://github.com/kyoh86/dotfiles/blob/main/nvim/etc/fern.vim
+  nmap <nowait> <buffer> !       <Plug>(fern-action-hidden:toggle)
+  nmap <nowait> <buffer> /       <Plug>(fern-action-include)
+
+  nmap <nowait> <buffer> >       <Plug>(fern-action-expand:in)
+  nmap <nowait> <buffer> <       <Plug>(fern-action-collapse)
+
+  " from https://github.com/koutarn/dotfile/blob/b4f11451f1547cedab051ca547b2f1cc208e0a06/.vim/_config/117-fern.vim
+  nmap <nowait> <buffer> E      <Plug>(fern-action-open:system)
+  " nmap <nowait> <buffer> h      <Plug>(fern-action-collapse)
+  " nmap <nowait> <buffer> l      <Plug>(fern-action-open-or-expand)
+
+  " define autocmd for buffer
+  " currently not work(side effect error)
+  " autocmd BufEnter <buffer> call feedkeys("\<Plug>(fern-action-tcd:root)")
+'''
 
 [[plugins]]
 # repo = 'lambdalisue/fern-renderer-devicons.vim'
@@ -463,23 +457,18 @@ depends = ['fern.vim']
 [[plugins]]
 repo = 'yuki-yano/fern-preview.vim'
 depends = ['fern.vim']
-hook_post_source = '''
-  function! s:fern_init_preview() abort
-    " Map to your custom function.
-    nmap <silent><buffer> <C-p> <Plug>(fern-action-preview:toggle)
-    nmap <silent><buffer> <C-t> <Plug>(fern-action-preview:auto:toggle)
-    nmap <silent><buffer> <C-d> <Plug>(fern-action-preview:scroll:down:half)
-    nmap <silent><buffer> <C-u> <Plug>(fern-action-preview:scroll:up:half)
+[plugins.ftplugin]
+fern = '''
+  " fern setup
+  " Map to your custom function.
+  nmap <silent><buffer> <C-p> <Plug>(fern-action-preview:toggle)
+  nmap <silent><buffer> <C-t> <Plug>(fern-action-preview:auto:toggle)
+  nmap <silent><buffer> <C-d> <Plug>(fern-action-preview:scroll:down:half)
+  nmap <silent><buffer> <C-u> <Plug>(fern-action-preview:scroll:up:half)
 
-    nmap <silent><buffer><expr> <Plug>(fern-quit-or-close-preview)
-      \ fern_preview#smart_preview("\<Plug>(fern-action-preview:close)", ":q\<CR>")
-    nmap <silent><buffer> q     <Plug>(fern-quit-or-close-preview)
-  endfunction
-
-  augroup vimrc_init_fern_preview
-    autocmd!
-    autocmd FileType fern call s:fern_init_preview()
-  augroup END
+  nmap <silent><buffer><expr> <Plug>(fern-quit-or-close-preview)
+    \ fern_preview#smart_preview("\<Plug>(fern-action-preview:close)", ":q\<CR>")
+  nmap <silent><buffer> q     <Plug>(fern-quit-or-close-preview)
 '''
 
 [[plugins]]
@@ -500,16 +489,6 @@ hook_add = '''
 repo = 'hrsh7th/fern-mapping-call-function.vim'
 depends = ['fern.vim']
 hook_post_source = '''
-  function! s:fern_init_funcall() abort
-    " Map to your custom function.
-    " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
-  endfunction
-
-  augroup vimrc_init_fern_funcall
-    autocmd!
-    autocmd FileType fern call s:fern_init_funcall()
-  augroup END
-
   " Add your custom function to mapping.
   " function! s:fern_project_top(helper) abort
   "   let l:node = a:helper.sync.get_current_node()
@@ -520,6 +499,12 @@ hook_post_source = '''
 
   " call fern#mapping#call_function#add('project_top', function('s:fern_project_top'))
 '''
+[plugins.ftplugin]
+fern = '''
+  " fern setup
+  " Map to your custom function.
+  " nmap <silent><buffer><Tab> <Plug>(fern-action-call-function:project_top)
+'''
 
 [[plugins]]
 repo = 'hrsh7th/fern-mapping-collapse-or-leave.vim'
@@ -527,32 +512,22 @@ depends = ['fern.vim']
 hook_add = '''
   let g:fern#mapping#collapse_or_leave#disable_default_mappings = 1
 '''
-hook_post_source = '''
-  function! s:fern_init_collapse_or_leave() abort
-    nmap <buffer><silent> h
-      \ <Plug>(fern-action-collapse-or-leave)
-      \ <Plug>(fern-wait)
-      \ <Plug>(fern-action-tcd:root)
-  endfunction
-
-  augroup vimrc_init_fern_collapse_or_leave
-    autocmd!
-    autocmd FileType fern nested call s:fern_init_collapse_or_leave()
-  augroup END
+[plugins.ftplugin]
+fern = '''
+  " fern setup
+  nmap <buffer><silent> h
+    \ <Plug>(fern-action-collapse-or-leave)
+    \ <Plug>(fern-wait)
+    \ <Plug>(fern-action-tcd:root)
 '''
 
 [[plugins]]
 repo = 'lambdalisue/fern-mapping-project-top.vim'
 depends = ['fern.vim']
-hook_post_source = '''
-  function! s:fern_init_project_top() abort
-    nmap <buffer><silent> ^ <Plug>(fern-action-project-top)
-  endfunction
-
-  augroup vimrc_init_fern_project_top
-    autocmd!
-    autocmd FileType fern nested call s:fern_init_project_top()
-  augroup END
+[plugins.ftplugin]
+fern = '''
+  " fern setup
+  nmap <buffer><silent> ^ <Plug>(fern-action-project-top)
 '''
 
 [[plugins]]
@@ -765,10 +740,11 @@ hook_post_source = '''
 [[plugins]] # neovim or vim with yarp/rpc
 repo = 'gelguy/wilder.nvim'
 hook_post_update = '''
-  if g:user.system.windows && g:user.executable('pip')
+  " yarp is lib,do not use pipx
+  if g:user.system.windows && g:user.function.executable('pip')
     let g:dein#plugin.build = 'pip install --upgrade yarp'
-  elseif g:user.executable('pip3')
-    let g:dein#plugin.build = 'pip3 install --upgrade yarp'
+  elseif g:user.function.executable('pip3')
+    let g:dein#plugin.build = 'pip3 install --user --upgrade yarp'
   endif
 '''
 hook_post_source = '''
@@ -1098,30 +1074,6 @@ hook_post_source = '''
   autocmd vimrc_init_core FileType qf nested nmap <buffer> q <Plug>window:quickfix:loop
 '''
 
-[[plugins]]
-repo = 'thinca/vim-qfhl'
-hook_add = '''
-  let g:qfhl_startup = 'lazy'
-'''
-
-[[plugins]]
-repo = 'itchyny/vim-qfedit'
-
-[[plugins]]
-repo = 'yssl/QFEnter'
-hook_add = '''
-  " ctrlp like
-  let g:qfenter_keymap = {}
-  let g:qfenter_keymap.open       = ['<CR>', '<2-LeftMouse>']
-  let g:qfenter_keymap.vopen      = ['<C-v>']
-  let g:qfenter_keymap.hopen      = ['<C-CR>', '<C-s>', '<C-x>']
-  let g:qfenter_keymap.topen      = ['<C-t>']
-  let g:qfenter_keymap.open_keep  = ['<Leader><CR>',  '<Leader><2-LeftMouse>']
-  let g:qfenter_keymap.vopen_keep = ['<Leader><C-v>']
-  let g:qfenter_keymap.hopen_keep = ['<Leader><C-CR>', '<Leader><C-s>', '<Leader><C-x>']
-  let g:qfenter_keymap.topen_keep = ['<Leader><C-t>']
-'''
-
 # Session
 # 'tpope/vim-obsession'
 # 'dhruvasagar/vim-prosession'
@@ -1249,6 +1201,20 @@ repo = 'kana/vim-repeat'
 
 [[plugins]]
 repo = 'haya14busa/vim-metarepeat'
+hook_add = '''
+  let g:meterepeat#default_mapping = 0
+'''
+hook_post_source = '''
+  " default
+  " map  g. <Plug>(metarepeat)
+  " nmap go <Plug>(metarepeat-preset-occurence)
+
+  " apply
+  nmap g. <Plug>(metarepeat)
+  xmap g. <Plug>(metarepeat)
+  nmap go <Plug>(metarepeat-preset-occurence)
+'''
+
 
 [[plugins]]
 repo = 'tpope/vim-unimpaired'
@@ -2082,6 +2048,10 @@ depends = ['vim-textobj-user']
 # a%, i%
 # at vim-matchup
 
+# カッコなしブロックの処理
+# aB, iB
+# at braceless.vim
+
 # swap可能なオブジェクト(引数や配列メンバなどの,区切りデータ)
 # a,, i,,
 # at vim-swap
@@ -2131,7 +2101,12 @@ hook_post_source = '''
 [[plugins]]
 repo = 'machakann/vim-sandwich'
 hook_add = '''
-  " default map off
+  " which_key s
+  let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
+    \  's'             : { 'rawkey' : "s"              },
+    \})
+
+  " default textobj map off
   let g:textobj_sandwich_no_default_key_mappings = 1
 
   let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
@@ -2363,17 +2338,16 @@ hook_post_source = '''
   endif
 
   function! s:skip_filter(path) abort
-    if exists('g:startify_skiplist')
-      for regexp in g:startify_skiplist
-        try
-          if a:path =~# regexp
-            return 0
-          endif
-        catch
-          call s:warn('Pattern '. string(regexp) .' threw an exception. Read :help g:startify_skiplist')
-        endtry
-      endfor
-    endif
+    for regexp in get(g:, 'startify_skiplist', [])
+      let regexp = '\c' . regexp
+      try
+        if a:path =~# regexp
+          return 0
+        endif
+      catch
+        call s:warn('Pattern '. string(regexp) .' threw an exception. Read :help g:startify_skiplist')
+      endtry
+    endfor
     return 1
   endfunction
 
@@ -2482,37 +2456,31 @@ hook_post_source = '''
 
   " ignore MRU file
   " Git and other special files
-  let s:special_skip_list = [
-        \  s:Filepath.separator() . '.git' . s:Filepath.separator(),
+  let s:special_skiplist = [
+        \  escape(s:Filepath.separator() . '.git' . s:Filepath.separator(),                                '\'),
+        \  escape(s:Filepath.abspath(s:Filepath.realpath(g:user.dir.dictionary)) . s:Filepath.separator(), '\') . '.*$',
         \ 'fugitiveblame$',
         \]
 
   " Vim help files
   " s:position
-  let s:dein_path = fnamemodify(s:Filepath.realpath(
-        \    g:dein.dir.plugins . s:Filepath.separator() .
-        \    '.cache' . s:Filepath.separator() .
-        \    '.vimrc' . s:Filepath.separator() .
-        \    '.dein'
-        \  ), ":p:~")
-  let s:dein_relpath = s:String.replace_first(s:dein_path, '~' . s:Filepath.separator(), '')
-
   let s:position = [
-        \  s:Filepath.abspath(resolve($VIMRUNTIME)) . s:Filepath.separator(),
-        \ 'runtime'                               . s:Filepath.separator(),
-        \ 'bundle'  . s:Filepath.separator() . '.*' . s:Filepath.separator(),
-        \ 'plugged' . s:Filepath.separator() . '.*' . s:Filepath.separator(),
-        \ s:dein_relpath,
+        \ s:Filepath.abspath(resolve($VIMRUNTIME))                                 . s:Filepath.separator(),
+        \ 'runtime'                                                                . s:Filepath.separator(),
+        \ 'bundle'                                 . s:Filepath.separator() . '.*' . s:Filepath.separator(),
+        \ 'plugged'                                . s:Filepath.separator() . '.*' . s:Filepath.separator(),
+        \ s:Filepath.abspath(g:dein.dir.plugins)   . s:Filepath.separator() . '.*' . s:Filepath.separator(),
         \]
-  let s:helpfiles = ['.*\.txt', '.*\.jax']
+  let s:helpfiles = ['.*\.txt$', '.*\.??x$']
 
-  let s:help_skip_list = []
+  let s:help_skiplist = []
   for s:helpfile in s:helpfiles
-    let s:help_skip_list = s:List.concat([s:help_skip_list, s:List.map(s:position,
+    let s:help_skiplist = s:List.concat([s:help_skiplist, s:List.map(s:position,
           \ { v ->  escape(v . 'doc' . s:Filepath.separator(), '\') . s:helpfile })])
   endfor
 
-  let g:startify_skiplist = s:List.concat([get(g:, 'startify_skiplist',[]), s:special_skip_list, s:help_skip_list])
+  let g:startify_skiplist = s:special_skiplist + s:help_skiplist
+  unlet s:special_skiplist s:help_skiplist s:helpfile
 
   " let g:startify_fortune_use_unicode=1
   " autocmd vimrc_init_core User Startified nested setlocal ambiwidth=single
@@ -2593,10 +2561,10 @@ hook_add = '''
   xmap gx <Plug>(openbrowser-smart-search)
 
   nmap guo <Plug>(openbrowser-open)
-  vmap guo <Plug>(openbrowser-open)
+  xmap guo <Plug>(openbrowser-open)
 
   nmap guO <Plug>(openbrowser-open-incognito)
-  vmap guO <Plug>(openbrowser-open-incognito)
+  xmap guO <Plug>(openbrowser-open-incognito)
 '''
 
 [[plugins]]
@@ -2841,6 +2809,39 @@ hook_add = '''
   " server setup
   " mainly setting use vim-lsp-settings plugin
 
+  " more settings from https://qiita.com/ryicoh/items/6d51232f37ebfa6a41b2
+  " before setup let g:lsp_diagnostics_echo_cursor
+  let g:lsp_diagnostics_echo_delay = 50
+
+  " before setup let g:lsp_diagnostics_float_cursor
+  let g:lsp_diagnostics_float_delay = 50
+
+  " let g:lsp_diagnostics_highlights_enabled = 1
+  let g:lsp_diagnostics_highlights_delay = 50
+  let g:lsp_diagnostics_highlights_insert_mode_enabled = 0
+
+  " let g:lsp_diagnostics_signs_enabled = 1
+  let g:lsp_diagnostics_signs_delay = 50
+  let g:lsp_diagnostics_signs_insert_mode_enabled = 0
+
+  if g:user.system.nvim
+    " let g:lsp_diagnostics_virtual_text_enabled = 1
+    let g:lsp_diagnostics_virtual_text_delay = 50
+    let g:lsp_diagnostics_virtual_text_prefix = "🍔 "
+  endif
+
+  " let g:lsp_completion_documentation_enabled = 1
+  let g:lsp_completion_documentation_delay = 40
+
+  " let g:lsp_document_highlight_enabled = 1
+  let g:lsp_document_highlight_delay = 100
+
+  " let g:lsp_document_code_action_signs_enabled = 1
+  let g:lsp_document_code_action_signs_delay = 100
+
+  " before setting folding
+  " more setting done
+
   " optional
   let g:lsp_item = []
 
@@ -2934,8 +2935,8 @@ hook_add = '''
 '''
 hook_post_source = '''
   " from https://mattn.kaoriya.net/software/vim/20191231213507.htm
-  command! LspDebugEnable  let lsp_log_verbose=1 | let lsp_log_file=expand($HOME . '/lsp.log')
-  command! LspDebugDisable let lsp_log_verbose=0 | unlet lsp_log_file
+  command! LspDebugEnable  let g:lsp_log_verbose=1 | let    g:lsp_log_file=expand($HOME . '/lsp.log')
+  command! LspDebugDisable let g:lsp_log_verbose=0 | unlet! g:lsp_log_file
 '''
 
 [[plugins]]
@@ -2951,9 +2952,11 @@ hook_post_source = '''
 
   " Expand or jump
   imap <expr> <C-CR> (complete_info(['selected']).selected != -1) ? '<C-y>'
-    \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
+   \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
   smap <expr> <C-CR> (complete_info(['selected']).selected != -1) ? '<C-y>'
-    \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
+   \ : (vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>')
+  " imap <expr> <C-CR> vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
+  " smap <expr> <C-CR> vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-CR>'
 
   " Jump forward or backward
   imap <expr> <C-n>  vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
@@ -3106,6 +3109,10 @@ hook_add = '''
   " let g:lsp_settings_filetype_vim        = ['vimscript-language-server']
   " let g:lsp_settings_filetype_python     = ['pylsp-all', 'pyright-langserver']
   let g:lsp_settings_filetype_typescript = ['deno', 'typescript-language-server']
+
+  " deno support settings
+  let g:markdown_fenced_languages = get(g:, 'markdown_fenced_languages', [])
+  \ + ['ts=typescript']
 '''
 hook_post_source = '''
   let s:List     = g:V.import('Data.List')
@@ -3159,6 +3166,31 @@ hook_add = '''
   " debug
   command! AsyncompleteDebugEnable  let g:asyncomplete_log_file = expand($HOME . '/asyncomplete.log')
   command! AsyncompleteDebugDisable unlet g:asyncomplete_log_file
+
+  " default preprocessor:sort by priority from help
+  " when use asyncomplete-fuzzy-match or other preprocessor, disable it
+  if v:true
+    function! s:sort_by_priority_preprocessor(options, matches) abort
+      let l:items = []
+      for [l:source_name, l:matches] in items(a:matches)
+        for l:item in l:matches['items']
+          if stridx(l:item['word'], a:options['base']) == 0
+            let l:item['priority'] =
+                \ get(asyncomplete#get_source_info(l:source_name), 'priority', 0)
+            call add(l:items, l:item)
+          endif
+        endfor
+      endfor
+
+      " modify : priority 0 is highest, large number more low.
+      " default : 0 - hightest
+      let l:items = sort(l:items, {a, b -> a['priority'] - b['priority']})
+
+      call asyncomplete#preprocess_complete(a:options, l:items)
+    endfunction
+
+    let g:asyncomplete_preprocessor = [function('s:sort_by_priority_preprocessor')]
+  endif
 '''
 hook_post_source = '''
   augroup vimrc_init_asyncomplete
@@ -3175,40 +3207,13 @@ hook_post_source = '''
   imap     <c-space>      <Plug>(asyncomplete_force_refresh)
 '''
 
-[[plugins]]
-repo = 'tsufeki/asyncomplete-fuzzy-match'
-depends = ['asyncomplete.vim', 'async.vim']
-if = 'g:user.function.executable("cargo")'
-merged = 0
-build = 'cargo build --release'
-
+# now fuzz match native support in Vim8, disable it
 # [[plugins]]
-# repo = 'machakann/asyncomplete-ezfilter.vim'
-# depends = ['asyncomplete.vim']
+# repo = 'tsufeki/asyncomplete-fuzzy-match'
+# depends = ['asyncomplete.vim', 'async.vim']
+# if = 'g:user.function.executable("cargo") && !exists("*matchfuzzypos")'
 # merged = 0
-# hook_add = '''
-#   let g:asyncomplete#preprocessor#ezfilter#config = {}
-# '''
-# hook_source = '''
-#   let g:asyncomplete_preprocessor =
-#   \ [function('asyncomplete#preprocessor#ezfilter#filter')]
-#
-#   " https://gist.github.com/mattn/d909c93784aa81d97b82c0896ef38ca8
-#   " " basic fuzzy match
-#   " function! s:fuzzy(lhs, rhs) abort
-#   "   return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
-#   " endfunction
-#   "
-#   " let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-#   "\ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
-#
-#   " osa_filter
-#   " let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-#   "  \ {ctx, items -> ctx.osa_filter(items, 1)}
-#   " Match items case-insensitive
-#   let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-#     \ {ctx, items -> ctx.filter(items)}
-# '''
+# build = 'cargo build --release'
 
 # [[plugins]]
 # repo = 'machakann/asyncomplete-unicodesymbol.vim'
@@ -3232,29 +3237,10 @@ build = 'cargo build --release'
 # '''
 
 [[plugins]]
-repo = 'yuki-yano/asyncomplete-dictionary'
-# repo = 'tsuyoshicho/asyncomplete-dictionary'
-# rev  = 'develop'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_dictionary
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#dictionary#get_source_options({
-      \     'name': 'dictionary',
-      \     'allowlist': ['*'],
-      \     'completor': function('asyncomplete#sources#dictionary#completor')
-      \   }))
-    augroup END
-  endif
-'''
-
-[[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
 depends = ['vim-lsp', 'asyncomplete.vim']
 hook_post_source = '''
+  " priority : default - highest
   " debug
   if v:false
     autocmd User lsp_setup             echomsg "lsp_setup             execute"
@@ -3270,6 +3256,151 @@ hook_post_source = '''
 '''
 
 [[plugins]]
+repo = 'prabirshrestha/asyncomplete-tags.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if v:false
+    augroup vimrc_init_asyncomplete_tags
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#tags#get_source_options({
+      \     'name': 'tags',
+      \     'allowlist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
+      \     'completor': function('asyncomplete#sources#tags#completor'),
+      \     'config': {
+      \       'max_file_size': 350000000,
+      \     },
+      \     'priority': 10,
+      \   }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-emmet.vim'
+depends = ['asyncomplete.vim', 'emmet-vim']
+hook_source = '''
+  if v:true
+    augroup vimrc_init_asyncomplete_emmet
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#emmet#get_source_options({
+      \     'name': 'emmet',
+      \     'allowlist': ['html', 'css'],
+      \     'completor': function('asyncomplete#sources#emmet#completor'),
+      \     'priority': 10,
+      \ }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-file.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if v:true
+    augroup vimrc_init_asyncomplete_file
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#file#get_source_options({
+      \     'name': 'file',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#file#completor'),
+      \     'priority': 10,
+      \   }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'akaimo/asyncomplete-around.vim'
+depends = ['asyncomplete.vim']
+hook_add = '''
+  let g:asyncomplete_around_range = 100
+'''
+hook_source = '''
+  if v:true
+    augroup vimrc_init_asyncomplete_around
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#around#get_source_options({
+      \     'name': 'around',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#around#completor'),
+      \     'priority': 20,
+      \ }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-buffer.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if v:false
+    augroup vimrc_init_asyncomplete_buffer
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#buffer#get_source_options({
+      \     'name': 'buffer',
+      \     'allowlist': ['*'],
+      \     'blocklist': ['go','python'],
+      \     'completor': function('asyncomplete#sources#buffer#completor'),
+      \     'config': {
+      \        'max_buffer_size': 700000,
+      \      },
+      \     'priority': 20,
+      \ }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-emoji.vim'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if v:true
+    augroup vimrc_init_asyncomplete_emoji
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#emoji#get_source_options({
+      \     'name': 'emoji',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#emoji#completor'),
+      \     'priority': 30,
+      \   }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
+repo = 'yuki-yano/asyncomplete-dictionary'
+# repo = 'tsuyoshicho/asyncomplete-dictionary'
+# rev  = 'develop'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  if v:false
+    augroup vimrc_init_asyncomplete_dictionary
+      autocmd!
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#dictionary#get_source_options({
+      \     'name': 'dictionary',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#dictionary#completor'),
+      \     'priority': 40,
+      \   }))
+    augroup END
+  endif
+'''
+
+[[plugins]]
 repo = 'high-moctane/asyncomplete-nextword.vim'
 if = 'g:user.function.executable("nextword")'
 merged = 0
@@ -3279,43 +3410,17 @@ hook_source = '''
     augroup vimrc_init_asyncomplete_nextword
       autocmd!
       autocmd User asyncomplete_setup call
-        \ asyncomplete#register_source(
-        \   asyncomplete#sources#nextword#get_source_options({
-        \     'name': 'nextword',
-        \     'allowlist': ['*'],
-        \     'args': ['-n', '300', '-g'],
-        \     'completor': function('asyncomplete#sources#nextword#completor')
-        \   }))
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#nextword#get_source_options({
+      \     'name': 'nextword',
+      \     'allowlist': ['*'],
+      \     'args': ['-n', '300', '-g'],
+      \     'completor': function('asyncomplete#sources#nextword#completor'),
+      \     'priority': 40,
+      \   }))
     augroup END
   endif
 '''
-
-# [[plugins]] # comflict; select one
-# repo = 'htlsne/asyncomplete-look'
-# if = 'g:user.function.executable("look") || g:user.function.executable("grep")'
-# merged = 0
-# depends = ['asyncomplete.vim', 'async.vim']
-# hook_post_source = '''
-#   if v:false
-#     if g:user.function.executable('look')
-#       autocmd User asyncomplete_setup call
-#        \  asyncomplete#register_source({
-#        \    'name': 'look',
-#        \    'allowlist': ['*'],
-#        \    'completor': function('asyncomplete#sources#look#completor'),
-#        \  })
-#     endif
-#     if g:user.function.executable('grep') && (len(g:user.file.spell) > 0)
-#       let g:asc_look_good_words_file = g:user.file.spell[0]
-#       autocmd User asyncomplete_setup call
-#        \  asyncomplete#register_source({
-#        \   'name': 'look_good_words',
-#        \   'allowlist': ['*'],
-#        \   'completor': function('asyncomplete#sources#look#good_words'),
-#        \ })
-#     endif
-#   endif
-# '''
 
 [[plugins]]
 repo = 'gonzoooooo/asyncomplete-look.vim'
@@ -3337,107 +3442,10 @@ hook_source = '''
         \     'name': 'look',
         \     'allowlist': ['*'],
         \     'completor': function('asyncomplete#sources#look#completor'),
+        \     'priority': 40,
         \   }))
       augroup END
     endif
-  endif
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-file.vim'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_file
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#file#get_source_options({
-      \     'name': 'file',
-      \     'allowlist': ['*'],
-      \     'priority': 10,
-      \     'completor': function('asyncomplete#sources#file#completor')
-      \   }))
-    augroup END
-  endif
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-buffer.vim'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_buffer
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#buffer#get_source_options({
-      \     'name': 'buffer',
-      \     'allowlist': ['*'],
-      \     'blocklist': ['go','python'],
-      \     'completor': function('asyncomplete#sources#buffer#completor'),
-      \     'config': {
-      \        'max_buffer_size': 700000,
-      \      },
-      \ }))
-    augroup END
-  endif
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-emmet.vim'
-depends = ['asyncomplete.vim', 'emmet-vim']
-hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_emmet
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#emmet#get_source_options({
-      \     'name': 'emmet',
-      \     'allowlist': ['html', 'css'],
-      \     'completor': function('asyncomplete#sources#emmet#completor'),
-      \ }))
-    augroup END
-  endif
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-tags.vim'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_tags
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#tags#get_source_options({
-      \     'name': 'tags',
-      \     'allowlist': ['c','cpp','objc','objcpp','vim','javascript','typescript'],
-      \     'completor': function('asyncomplete#sources#tags#completor'),
-      \     'config': {
-      \       'max_file_size': 350000000,
-      \     },
-      \   }))
-    augroup END
-  endif
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-emoji.vim'
-depends = ['asyncomplete.vim']
-hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_emoji
-      autocmd!
-      autocmd User asyncomplete_setup call
-      \ asyncomplete#register_source(
-      \   asyncomplete#sources#emoji#get_source_options({
-      \     'name': 'emoji',
-      \     'allowlist': ['*'],
-      \     'completor': function('asyncomplete#sources#emoji#completor'),
-      \   }))
-    augroup END
   endif
 '''
 
@@ -4175,6 +4183,11 @@ hook_add = '''
 
   let g:nerdfont#path#basename#customs = get(g:, 'nerdfont#path#basename#customs', {})
   let g:nerdfont#path#basename#customs['pipfile']   = nr2char(0xe73c) " ''
+
+  " ctrlp settings
+  " stop webdevicon setting (when vim-devicons both installed blocker)
+  let g:webdevicons_enable_ctrlp = 0
+  let g:ctrlp_formatline_func = 's:formatline(s:curtype() == "buf" ? v:val : nerdfont#find(v:val) . " " . v:val)'
 '''
 
 [[plugins]]
@@ -4189,12 +4202,16 @@ hook_add = '''
     \ nr2char(0xf48a),
     \ nr2char(0xf0f6),
     \ ]
-
-  augroup vimrc_init_nerdfont
-    autocmd!
-    autocmd FileType fern     call glyph_palette#apply()
-    autocmd FileType startify call glyph_palette#apply()
-  augroup END
+'''
+[plugins.ftplugin]
+fern = '''
+  call glyph_palette#apply()
+'''
+startify = '''
+  call glyph_palette#apply()
+'''
+ctrlp = '''
+  call glyph_palette#apply()
 '''
 
 # currently off
@@ -4244,10 +4261,13 @@ hook_post_source = '''
     autocmd!
     " based on https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
     autocmd QuickFixCmdPost Ggrep nested cwindow
-    " see https://vi.stackexchange.com/questions/11502/how-to-execute-a-command-when-leaving-the-fugitiveblame-window
-    " autocmd FileType fugitiveblame nnoremap <silent><buffer> q :q<CR>wincmd =
-    autocmd FileType fugitiveblame nnoremap <silent><buffer> q :q<CR><C-W>=
   augroup END
+'''
+[plugins.ftplugin]
+fugitiveblame = '''
+  " see https://vi.stackexchange.com/questions/11502/how-to-execute-a-command-when-leaving-the-fugitiveblame-window
+  " nnoremap <silent><buffer> q :q<CR>wincmd =
+  nnoremap <silent><buffer> q :q<CR><C-W>=
 '''
 
 [[plugins]]
@@ -4267,9 +4287,12 @@ hook_add = '''
   " github token
   call pass#get_startup('g:RHUBARB_TOKEN','Develop/Github')
 '''
-hook_post_source = '''
-  autocmd vimrc_init_core FileType gitcommit,gitrebase nested
-    \ setlocal omnifunc=rhubarb#omnifunc
+[plugins.ftplugin]
+gitcommit = '''
+  setlocal omnifunc=rhubarb#omnifunc
+'''
+gitrebase = '''
+  setlocal omnifunc=rhubarb#omnifunc
 '''
 
 [[plugins]] # git log show
@@ -4301,16 +4324,12 @@ repo = 'hotwatermorning/auto-git-diff'
 hook_add = '''
   let g:auto_git_diff_command_options = '--stat -p --submodule -C'
 '''
-hook_post_source = '''
-  function! s:setup_auto_git_diff() abort
-    nmap <buffer><C-l> <Plug>(auto_git_diff_scroll_manual_update)
-    nmap <buffer><C-n> <Plug>(auto_git_diff_scroll_down_half)
-    nmap <buffer><C-p> <Plug>(auto_git_diff_scroll_up_half)
-  endfunction
-  augroup vimrc_init_auto_git_diff
-    autocmd!
-    autocmd FileType gitrebase nested call s:setup_auto_git_diff()
-  augroup END
+[plugins.ftplugin]
+gitrebase = '''
+  " git rebase diff setup
+  nmap <buffer><C-l> <Plug>(auto_git_diff_scroll_manual_update)
+  nmap <buffer><C-n> <Plug>(auto_git_diff_scroll_down_half)
+  nmap <buffer><C-p> <Plug>(auto_git_diff_scroll_up_half)
 '''
 
 [[plugins]]
@@ -4520,17 +4539,17 @@ hook_post_source = '''
   " let g:lightline_delphinus_gitgutter_enable = 1
   let g:lightline_delphinus_signify_enable = 1
 
+  let s:gina_regex_fts = join(copy(g:user.filetype['ignore_git']), "\\|")
   function! Lightline_components_gina() abort
     if &buftype ==# 'terminal' || &filetype =~# 'denite' || winwidth(0) < 100
       return ''
     endif
     try
+      let s:branch_glyph = ''
       if g:lightline_delphinus_use_powerline_glyphs
         let s:branch_glyph = "\ue0a0" " 
-      else
-        let s:branch_glyph = ''
       endif
-      if &filetype !~? 'vimfiler\|gundo\|tagbar'
+      if &filetype !~? s:gina_regex_fts
         let head = gina#component#repo#branch()
         if head !=? ''
           let head = s:branch_glyph . head
@@ -4773,19 +4792,19 @@ hook_post_source = '''
 repo = 'tyru/columnskip.vim'
 hook_post_source = '''
   " like tmhedberg/indent-motion
-  nmap mk <Plug>(columnskip:nonblank:prev)
-  omap mk <Plug>(columnskip:nonblank:prev)
-  xmap mk <Plug>(columnskip:nonblank:prev)
-  nmap mj <Plug>(columnskip:nonblank:next)
-  omap mj <Plug>(columnskip:nonblank:next)
-  xmap mj <Plug>(columnskip:nonblank:next)
+  nmap sk <Plug>(columnskip:nonblank:prev)
+  omap sk <Plug>(columnskip:nonblank:prev)
+  xmap sk <Plug>(columnskip:nonblank:prev)
+  nmap sj <Plug>(columnskip:nonblank:next)
+  omap sj <Plug>(columnskip:nonblank:next)
+  xmap sj <Plug>(columnskip:nonblank:next)
 
-  nmap mK <Plug>(columnskip:first-nonblank:prev)
-  omap mK <Plug>(columnskip:first-nonblank:prev)
-  xmap mK <Plug>(columnskip:first-nonblank:prev)
-  nmap mJ <Plug>(columnskip:first-nonblank:next)
-  omap mJ <Plug>(columnskip:first-nonblank:next)
-  xmap mJ <Plug>(columnskip:first-nonblank:next)
+  nmap sK <Plug>(columnskip:first-nonblank:prev)
+  omap sK <Plug>(columnskip:first-nonblank:prev)
+  xmap sK <Plug>(columnskip:first-nonblank:prev)
+  nmap sJ <Plug>(columnskip:first-nonblank:next)
+  omap sJ <Plug>(columnskip:first-nonblank:next)
+  xmap sJ <Plug>(columnskip:first-nonblank:next)
 '''
 
 # [[plugins]]
@@ -4887,9 +4906,7 @@ hook_add = '''
   let g:indent_guides_guide_size = 1
 
   " 無効にしたいファイルタイプ
-  let g:indent_guides_exclude_filetypes = [
-    \ 'help', 'startify', 'nerdtree', 'tagbar', 'unite', 'vista', 'json'
-    \ ]
+  let g:indent_guides_exclude_filetypes = g:user.filetype.ignore_indent
 
   " マッピングは使わない
    let g:indent_guides_default_mapping = 0
@@ -4942,12 +4959,25 @@ depends = ['vim-operator-user', 'vim-repeat']
 
 [[plugins]]
 repo = 'tweekmonster/braceless.vim'
-hook_post_source = '''
-  augroup vimrc_init_braceless
-    autocmd!
-    autocmd FileType python           nested BracelessEnable +indent
-    autocmd FileType haml,yaml,coffee nested BracelessEnable +indent +fold +highlight
-  augroup END
+hook_add = '''
+  let g:braceless_block_key = 'B'
+  let g:braceless_jump_prev_key = 'B'
+  let g:braceless_jump_next_key = 'B'
+'''
+[plugins.ftplugin]
+python = '''
+  BracelessEnable
+  " indent: vim-python-pep8-indent
+  " fold  : lsp fold
+'''
+haml = '''
+  BracelessEnable +indent +fold +highlight
+'''
+yaml = '''
+  BracelessEnable +indent +fold +highlight
+'''
+coffee = '''
+  BracelessEnable +indent +fold +highlight
 '''
 
 [[plugins]]
@@ -5321,11 +5351,6 @@ hook_post_source = '''
 repo = 'kana/vim-smartword'
 depends =['CamelCaseMotion']
 hook_post_source = '''
-  " support CamelCaseMotion combine
-  map <Plug>(smartword-basic-w)  <Plug>CamelCaseMotion_w
-  map <Plug>(smartword-basic-b)  <Plug>CamelCaseMotion_b
-  map <Plug>(smartword-basic-e)  <Plug>CamelCaseMotion_e
-
   nmap w  <Plug>(smartword-w)
   nmap b  <Plug>(smartword-b)
   nmap e  <Plug>(smartword-e)
@@ -5340,6 +5365,28 @@ hook_post_source = '''
   omap b  <Plug>(smartword-b)
   omap e  <Plug>(smartword-e)
   omap ge <Plug>(smartword-ge)
+
+  " support CamelCaseMotion combine
+  map <Plug>(smartword-basic-w)  <Plug>CamelCaseMotion_w
+  map <Plug>(smartword-basic-b)  <Plug>CamelCaseMotion_b
+  map <Plug>(smartword-basic-e)  <Plug>CamelCaseMotion_e
+  map <Plug>(smartword-basic-ge) <Plug>CamelCaseMotion_ge
+
+  " need smartword-basic map
+  nmap <Leader>w  <Plug>(smartword-basic-w)
+  nmap <Leader>b  <Plug>(smartword-basic-b)
+  nmap <Leader>e  <Plug>(smartword-basic-e)
+  nmap <Leader>ge <Plug>(smartword-basic-ge)
+
+  xmap <Leader>w  <Plug>(smartword-basic-w)
+  xmap <Leader>b  <Plug>(smartword-basic-b)
+  xmap <Leader>e  <Plug>(smartword-basic-e)
+  xmap <Leader>ge <Plug>(smartword-basic-ge)
+
+  omap <Leader>w  <Plug>(smartword-basic-w)
+  omap <Leader>b  <Plug>(smartword-basic-b)
+  omap <Leader>e  <Plug>(smartword-basic-e)
+  omap <Leader>ge <Plug>(smartword-basic-ge)
 '''
 
 [[plugins]]
@@ -5431,10 +5478,10 @@ hook_post_source = '''
   " xmap   <Leader>K <Plug>(easymotion-sol-k)
   " omap   <Leader>K <Plug>(easymotion-sol-k)
 
-  " Move to word
-  nmap   <Leader>w <Plug>(easymotion-overwin-w)
-  xmap   <Leader>w <Plug>(easymotion-bd-w)
-  omap   <Leader>w <Plug>(easymotion-bd-w)
+  " Move to word(comflisct smartword normal w op use W)
+  nmap   <Leader>W <Plug>(easymotion-overwin-w)
+  xmap   <Leader>W <Plug>(easymotion-bd-w)
+  omap   <Leader>W <Plug>(easymotion-bd-w)
 
   " Move to search
   nmap   <Leader>n <Plug>(easymotion-bd-n)
@@ -5615,17 +5662,19 @@ repo = 'jamessan/vim-gnupg'
 
 # [[plugins]] # RFC
 # repo = 'zh4ui/vim-rfc-reader'
-# hook_add = '''
+# [plugins.ftplugin]
+# ref-rfc = '''
 #   " vim-ref rfcと連携
-#   autocmd vimrc_init_core FileType ref-rfc nested setlocal filetype=rfc
+#   setlocal filetype=rfc
 # '''
 
 [[plugins]] # RFC
 repo = 'vim-scripts/rfc-syntax'
 # repo = 'dhulihan/vim-rfc'
-hook_add = '''
+[plugins.ftplugin]
+ref-rfc = '''
   " vim-ref rfcと連携
-  autocmd vimrc_init_core FileType ref-rfc nested setlocal filetype=rfc
+  setlocal filetype=rfc
 '''
 
 [[plugins]] # vimref

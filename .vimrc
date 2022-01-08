@@ -6,6 +6,8 @@
 set encoding=utf-8
 scriptencoding utf-8
 " UTF-8のチェック
+" thanks rbtnn san
+set makeencoding=char
 
 " no effect
 " http://qiita.com/yu_suke1994/items/e0a19574994a57c8fe17
@@ -15,6 +17,9 @@ if &compatible
   " vint: next-line -ProhibitSetNoCompatible
   set nocompatible
 endif
+
+" record startup time : start time
+let s:startuptime = reltime()
 
 " コマンドグループ初期化
 augroup vimrc_init_core
@@ -46,9 +51,10 @@ function! g:user.function.executable(cmd) abort " {{{
 endfunction " }}}
 
 " check and create dir
+" thanks rbtnn san
 function! g:user.function.mkdir(dir) abort " {{{
   if exists("*mkdir")
-    call mkdir(a:dir, 'p')
+    silent! call mkdir(a:dir, 'p')
   endif
 endfunction " }}}
 
@@ -257,6 +263,24 @@ let g:user.filetype.ignore_whitespace = [
   \ 'qf',
   \ 'diff',
   \ 'markdown',
+  \]
+" ignore git branch display filetype
+let g:user.filetype.ignore_git = [
+  \  'vimfiler',
+  \  'gundo',
+  \  'tagbar',
+  \]
+
+" ignore indent filetype
+let g:user.filetype.ignore_indent = [
+  \  'help',
+  \  'startify',
+  \  'nerdtree',
+  \  'tagbar',
+  \  'unite',
+  \  'vista',
+  \  'json',
+  \  'fern',
   \]
 
   " temp enable for help editing
@@ -553,7 +577,8 @@ set tagcase=followscs
 " 0123を10進扱いする、bin/hexは生かす
 set nrformats&
 set nrformats-=octal
-if has('patch-8.2.0860')
+" thanks rbtnn san
+if has('patch-8.2.0860') || g:user.system.nvim
   " 符合なし
   set nrformats+=unsigned
 endif
@@ -673,10 +698,6 @@ set tags+=TAGS
 
 " タグ先複数選択を常に
 nnoremap <C-]> g<C-]>
-" if dein#is_available('ctrlp.vim')
-"   " ctrlp
-"   nnoremap <C-]> :CtrlPTag<CR>
-" endif
 " タグの戻りを[に割り当て / ESC 同等なのでつらい
 " <leader>esc とする
 nnoremap <silent> <Leader><C-[> :pop<CR>
@@ -686,7 +707,13 @@ nnoremap <silent> <Leader><C-[> :pop<CR>
 " undo
 " http://qiita.com/tamanobi/items/8f013cce36881af8cee3
 if has('persistent_undo')
-  let &undodir = g:user.dir.undo
+  " thanks rbtnn san
+  if g:user.system.nvim
+    let &undodir = expand(g:user.dir.undo . '/nvim')
+  else
+    let &undodir = expand(g:user.dir.undo . '/vim')
+  endif
+  call g:user.function.mkdir(&undodir)
   set undofile
   " set undolevels=1000 " default
 endif
@@ -1213,9 +1240,7 @@ augroup END
 if exists('+belloff')
   set belloff=all
 else
-  set noerrorbells
-  set novisualbell
-  set t_vb=
+  set visualbell t_vb=
 endif
 
 " フォーマットを有効にする
@@ -1293,8 +1318,9 @@ let &dictionary = join(g:user.file.look, ',')
 
 " spell check
 set spell
-" add spell completion
+" add spell completion,remove tag completion
 set complete+=kspell
+  \ complete-=t
 set spelllang=en_us,cjk
 if exists('+spelloptions')
   set spelloptions=camel
@@ -1492,10 +1518,11 @@ if !has('gui_running')
     " ConEmu Vim Support color
     set term=xterm
     set t_Co=256
-    " let &t_AB="\e[48;5;%dm"
-    " let &t_AF="\e[38;5;%dm"
     if has('termguicolors')
       set termguicolors
+    else
+      let &t_AB="\e[48;5;%dm"
+      let &t_AF="\e[38;5;%dm"
     endif
 
     " https://conemu.github.io/en/VimXterm.html#Vim-scrolling-using-mouse-Wheel
@@ -1503,6 +1530,12 @@ if !has('gui_running')
     " set mouse=a
     " thanks lambdalisue
     set mouse=nvchr
+    " Use mouse in ConEmu console.
+    " thanks Shougo
+    inoremap <Esc>[62~ <C-X><C-E>
+    inoremap <Esc>[63~ <C-X><C-Y>
+    nnoremap <Esc>[62~ <C-E>
+    nnoremap <Esc>[63~ <C-Y>
   elseif (has('vtp') && has('vcon'))
     " Windows 10 color enable
     " currently off true color
@@ -1617,20 +1650,21 @@ augroup END
 " }}}
 
 " Quickfix/Location. {{{
+" after/ftplugin/qf.vim
 
-augroup vimrc_init_core
-  " 行数は絶対行
-  " signcolumn を非表示
-  " foldcolumn 0
-  " numberwidth 2
-  autocmd FileType
-    \ qf nested setlocal number norelativenumber
-    \ |         setlocal signcolumn=no
-    \ |         setlocal foldcolumn=0
-    \ |         setlocal numberwidth=2
-  " q で終了
-  " in plugin?
-augroup END
+" augroup vimrc_init_core
+"   " 行数は絶対行
+"   " signcolumn を非表示
+"   " foldcolumn 0
+"   " numberwidth 2
+"   autocmd FileType
+"    \ qf nested setlocal number norelativenumber
+"    \ |         setlocal signcolumn=no
+"    \ |         setlocal foldcolumn=0
+"    \ |         setlocal numberwidth=2
+"   " q で終了
+"   " in plugin?
+" augroup END
 
 " }}}
 
@@ -1748,23 +1782,28 @@ augroup END
 
 " }}}
 
+" Startup Time Echo {{{
+" from https://github.com/lighttiger2505/.dotfiles/blob/master/.vimrc
+" and tune-up
+" echo message vim start up time
+let g:user.startuptime = {}
+let g:user.startuptime.start = s:startuptime
+if (0 == v:vim_did_enter) && has('reltime')
+  augroup vimrc_init_core
+    " record startup time : done time and echo messages
+    autocmd VimEnter * let g:user.startuptime.end = reltime()
+    autocmd VimEnter * let g:user.startuptime.diff = reltime(g:user.startuptime.start, g:user.startuptime.end)
+    autocmd VimEnter * let g:user.startuptime.msg = reltimestr(g:user.startuptime.diff)
+    autocmd VimEnter * redraw | echomsg 'startuptime: ' . g:user.startuptime.msg
+  augroup END
+endif
+" }}}
+
 " }}}
 
 " Mappings. {{{
-"-------------------------------------------------------------------------------------------------|
-" Commands \ Modes | Normal | Insert | Command | Visual | Select | Operator | Terminal | Lang-Arg |
-" map  / noremap   |    @   |   -    |    -    |   @    |   @    |    @     |    -     |    -     |
-" nmap / nnoremap  |    @   |   -    |    -    |   -    |   -    |    -     |    -     |    -     |
-" map! / noremap!  |    -   |   @    |    @    |   -    |   -    |    -     |    -     |    -     |
-" imap / inoremap  |    -   |   @    |    -    |   -    |   -    |    -     |    -     |    -     |
-" cmap / cnoremap  |    -   |   -    |    @    |   -    |   -    |    -     |    -     |    -     |
-" vmap / vnoremap  |    -   |   -    |    -    |   @    |   @    |    -     |    -     |    -     |
-" xmap / xnoremap  |    -   |   -    |    -    |   @    |   -    |    -     |    -     |    -     |
-" smap / snoremap  |    -   |   -    |    -    |   -    |   @    |    -     |    -     |    -     |
-" omap / onoremap  |    -   |   -    |    -    |   -    |   -    |    @     |    -     |    -     |
-" tmap / tnoremap  |    -   |   -    |    -    |   -    |   -    |    -     |    @     |    -     |
-" lmap / lnoremap  |    -   |   @    |    @    |   -    |   -    |    -     |    -     |    @     |
-"-------------------------------------------------------------------------------------------------"
+" see :help map-table
+"
 " basic no use map/vmap
 " because, it map select - not need
 "
@@ -1798,7 +1837,7 @@ if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#is_available(
   " overwrite stop : use t
   nmap    t [Tab]
 else
-  " overwrite : use <space>t
+  " overwrite : use <Space>t
   nmap    <Space>t [Tab]
 endif
 " Tab jump
@@ -1822,9 +1861,14 @@ nnoremap <silent> [Tab]x :tabclose<CR>
 nnoremap <silent><expr> [Tab]n "\<Cmd>tabnext " . string((tabpagenr() + v:count1 - 1) % tabpagenr('$') + 1) . "\<CR>"
 " tn 次のタブ
 " nnoremap <silent> [Tab]p :tabprevious<CR>
-nnoremap <silent><expr> [Tab]p "<Cmd>tabprevious " . string(v:count1) . "\<CR>"
+nnoremap <silent><expr> [Tab]p "\<Cmd>tabprevious " . string(v:count1) . "\<CR>"
 " tp 前のタブ
 " new method from obcat san
+
+" with ctrlp-smarttabs
+if dein#is_available('ctrlp.vim') && dein#is_available('ctrlp-smarttabs')
+  nnoremap <silent> [Tab]s :CtrlPSmartTabs<CR>
+endif
 
 "矢印キーでは表示行単位で行移動する
 nnoremap <UP>   gk
@@ -1853,11 +1897,11 @@ nnoremap <silent> <expr> 0 getline('.')[0 : col('.') - 2] =~# '^\s\+$' ? '0' : '
 inoremap <C-v>u <C-r>=nr2char(0x)<Left>
 
 " speed save & exit
-nnoremap <space>W :confirm w<CR>
-nnoremap <space>Q :confirm q<CR>
+nnoremap <Space>W :confirm w<CR>
+nnoremap <Space>Q :confirm q<CR>
 
 " support <C-w>
-nmap <space>w <c-w>
+nmap <Space>w <c-w>
 " keymap info
 let g:user.plugin.info.whichkey.desc.space['w'] = {
   \  'name' : '+c-w',
@@ -1903,9 +1947,9 @@ xnoremap X "_X
 " sは他のプリフィックスにする cl で代用できる(レジスタには残る)
 " nnoremap s "_s
 " xnoremap s "_s
-let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapkey, {
-  \  's'             : { 'rawkey' : "s"              },
-  \})
+" プラグインで使うため、そちらで上書きだが
+" nnoremap s <Nop>
+
 nnoremap S "_S
 xnoremap S "_S
 " setup in cutlass(future)
@@ -1933,7 +1977,11 @@ nnoremap ZQ <Nop>
 " exモード
 " プラグインで使うため、そちらで上書き
 " nnoremap Q <Nop>
-"
+
+" screen center non-blank char jump suppress
+" プラグインで使うため、そちらで上書き(現在は未使用)
+" nnoremap M <Nop>
+
 " based on https://github.com/jspitkin/dot-files/blob/master/.vimrc
 " Redo
 nnoremap U <C-R>
@@ -2040,7 +2088,7 @@ let g:doxygen_enhanced_color = 1
 " syntax/yaml.vim
 let g:yaml_schema = 'json'
 
-" indent/vim.vim
+" indent/vim.vim and rbtnn/vim-vimscript_indentexpr
 " in runtime : default shiftwidth() * 3
 " see:
 " http://rbtnn.hateblo.jp/entry/2014/11/30/174749

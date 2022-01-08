@@ -6,7 +6,7 @@ repo = 'vim-jp/vital.vim'
 # rev  = 'develop'
 hook_post_source = '''
   " vital use
-  let g:V = vital#of('vital')
+  let g:V = vital#vital#new()
 
   " vitalize need vital git repo
   " need merged=0
@@ -19,6 +19,35 @@ depends = ['vital.vim']
 
 [[plugins]]
 repo = 'lambdalisue/vital-ArgumentParser'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-Rx'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-Vim-Prompt'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-Vim-Lua-String'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-Data-Dict-Option'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-Data-String-Formatter'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'lambdalisue/vital-ProgressBar'
+depends = ['vital.vim']
+
+# lambdalisue obsolute lib
+[[plugins]]
+repo = 'lambdalisue/vital-Vim-Buffer-Anchor'
 depends = ['vital.vim']
 
 [[plugins]]
