@@ -4,7 +4,7 @@
 repo = 'vim-jp/vital.vim'
 # repo = 'tsuyoshicho/vital.vim'
 # rev  = 'develop'
-hook_post_source = '''
+hook_add = '''
   " vital use
   let g:V = vital#vital#new()
 
@@ -61,6 +61,10 @@ depends = ['vital.vim']
 [[plugins]]
 repo = 'tsuyoshicho/vital-codec'
 # repo = 'D:\Data\ReposWork\git\vital-codec'
+depends = ['vital.vim']
+
+[[plugins]]
+repo = 'tsuyoshicho/vital-globe'
 depends = ['vital.vim']
 
 # EOF

@@ -12,12 +12,7 @@ hook_post_update = '''
 [[plugins]]
 repo = 'roxma/vim-hug-neovim-rpc'
 hook_post_update = '''
-  " pynvim is lib,do not use pipx
-  if g:user.system.windows && g:user.function.executable('pip')
-    let g:dein#plugin.build = 'pip install --upgrade pynvim'
-  elseif g:user.function.executable('pip3')
-    let g:dein#plugin.build = 'pip3 install --user --upgrade pynvim'
-  endif
+  let g:dein#plugin.build = g:user.function.python_pkg_build_command('pynvim')
 '''
 
 ## checkhealth

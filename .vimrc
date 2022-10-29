@@ -1,5 +1,5 @@
 " vimrc
-" vim:fenc=utf-8 ff=unix ft=vim foldmethod=marker
+" vim:ft=vim foldmethod=marker
 
 " intro
 " vimrc setup {{{
@@ -54,7 +54,9 @@ endfunction " }}}
 " thanks rbtnn san
 function! g:user.function.mkdir(dir) abort " {{{
   if exists("*mkdir")
-    silent! call mkdir(a:dir, 'p')
+    call mkdir(a:dir, 'p')
+  else
+    echomsg 'Not support mkdir:' a:dir
   endif
 endfunction " }}}
 
@@ -76,8 +78,8 @@ endfunction " }}}
 function! g:user.function.load_setting(loc) abort " {{{
   let path = expand(escape(a:loc, ' '), 'p')
   let files = glob(path . '/*.vim', 1, 1)
-  for i in reverse(filter(files, 'filereadable(v:val)'))
-    source `=i`
+  for f in filter(files, 'filereadable(v:val)')
+    source `=f`
   endfor
 endfunction " }}}
 
@@ -91,16 +93,31 @@ function! g:user.function.fileicon(path) abort "{{{
   endif
   return icon
 endfunction " }}}
+
+" setup function: python package
+function! g:user.function.python_pkg_build_command(package) abort "{{{
+  " pipx?
+  " if g:user.function.executable('pipx')
+  "   " install or upgrade?
+  "   return 'pipx upgrade ' .. a:package
+
+  if g:user.system.windows && g:user.function.executable('pip')
+    return 'pip install --upgrade ' .. a:package
+  elseif g:user.function.executable('pip3')
+    return 'pip3 install --user --upgrade ' .. a:package
+  endif
+endfunction " }}}
+
 " }}}
 
 " system information {{{
 " type and platform
 let g:user.system = {
-\  'nvim'    : has('nvim')                  ? v:true : v:false,
-\  'windows' : has('win32') || has('win64') ? v:true : v:false,
-\  'cygwin'  : has('win32unix')             ? v:true : v:false,
-\  'mac'     : has('mac')                   ? v:true : v:false,
-\  'unix'    : has('unix')                  ? v:true : v:false,
+\  'nvim'    : has('nvim')      ? v:true : v:false,
+\  'windows' : has('win32')     ? v:true : v:false,
+\  'cygwin'  : has('win32unix') ? v:true : v:false,
+\  'mac'     : has('mac')       ? v:true : v:false,
+\  'unix'    : has('unix')      ? v:true : v:false,
 \}
 
 " CPU arch
@@ -332,7 +349,7 @@ call map(copy(g:user.dir), { _, v -> g:user.function.mkdir(v) } )
 " file {{{
 let g:user.file = {}
 let g:user.file = extend({
-  \  'viminfo'     : expand(g:user.dir.vim . '/info'  ),
+  \  'viminfo'     : expand(g:user.dir.vim . '/info'),
   \}, g:user.file)
 " pre setup viminfo(workaround)
 let &viminfofile = g:user.file.viminfo
@@ -393,6 +410,15 @@ endif
 
 " plugin manager before setup {{{
 " プラグイン処理前に実施
+
+" option
+
+" pre-off
+" ref https://wiredool.hatenadiary.org/entry/20120618/1340019962
+" syntax & filetype
+filetype off
+filetype plugin indent off
+
 " http://qiita.com/andouf/items/bdec492185e3a4f78ae2
 " if g:user.system.windows
 "   set shellslash
@@ -401,12 +427,17 @@ if g:user.system.windows && exists('+completeslash')
   set completeslash=slash
 endif
 
+" runtime path setup
+" add ~/.vim
+let &runtimepath =  &runtimepath . ',' . g:user.dir.vim
+let &runtimepath =  &runtimepath . ',' . g:user.dir.vim . '/after'
+
 " 初期値削除(プラグインで設定もあるので、ここでやる)
 set tags=
 
 " fzf env clear
-" let $FZF_DEFAULT_COMMAND=''
-let $FZF_DEFAULT_OPTS=''
+" let $FZF_DEFAULT_COMMAND = ''
+let $FZF_DEFAULT_OPTS = ''
 
 " <Leader>はプラグイン内でマッピングする際に展開してしまうので
 " based on https://rcmdnk.com/blog/2014/05/03/computer-vim-octopress/
@@ -498,8 +529,8 @@ call extend(s:tomls, {
   \ })
 
 " non-nvim specific
-let s:tomls = !g:user.system.nvim ? g:dein.file.toml : g:dein.file.toml_nouse
-call extend(g:dein.file.toml, {
+let s:tomls = (!g:user.system.nvim) ? g:dein.file.toml : g:dein.file.toml_nouse
+call extend(s:tomls, {
   \  expand(g:dein.dir.rc . '/vim.toml'     )   : {'lazy': 0},
   \  expand(g:dein.dir.rc . '/vim_lazy.toml')   : {'lazy': 1},
   \ })
@@ -538,17 +569,16 @@ unlet s:removed_plugins
 " call source
 call dein#call_hook('source')
 " set post source at non-lazy plugin
-autocmd vimrc_init_core VimEnter * nested call dein#call_hook('post_source')
+autocmd vimrc_init_core VimEnter * call dein#call_hook('post_source')
 " }}}
 
 " plugin manager after setup {{{
 " runtime path setup
-"  at last
-"   add ~/.vim
-let &runtimepath =  &runtimepath . ',' . g:user.dir.vim
-let &runtimepath =  &runtimepath . ',' . g:user.dir.vim . '/after'
 
 " option
+
+" post-on
+" syntax & filetype
 
 " based on http://wonderwall.hatenablog.com/entry/2016/03/18/235125
 " based on https://qiita.com/sizucca/items/40f291463a40feb4cd02
@@ -613,12 +643,15 @@ set preserveindent
 set breakindent
 set breakindentopt=min:50,shift:4,sbr
 
-set wrap           " the longer line is wrapped
+" the longer line is wrapped
+set wrap
 set wrapmargin=8
-set linebreak      " wrap at 'breakat'
+" wrap at 'breakat'
+set linebreak
 "set breakat=\      " break point for linebreak (default " ^I!@*-+;:,./?")
-" set showbreak=+\
-set showbreak=↪   " set break char
+" set showbreak=+\ _spaceあり
+" set break char
+set showbreak=↪
 
 " Tab文字を半角スペースにする
 set expandtab
@@ -715,7 +748,8 @@ if has('persistent_undo')
   endif
   call g:user.function.mkdir(&undodir)
   set undofile
-  " set undolevels=1000 " default
+  " default
+  " set undolevels=1000
 endif
 " set viewoptions=cursor,folds
 
@@ -809,7 +843,7 @@ augroup vimrc_init_core
 
   " set nopaste をできるだけ維持
   " from https://github.com/cohama/.vim/blob/master/init.vim
-  autocmd InsertLeave * nested set nopaste
+  autocmd InsertLeave * set nopaste
 augroup END
 
 " バッファが編集中でもその他のファイルを開けるように
@@ -824,7 +858,7 @@ set hidden
 augroup vimrc_init_core
   " temp off
   " toml spec. : utf-8 only
-  " autocmd BufRead *.toml nested setlocal fileencoding=utf-8
+  " autocmd BufRead *.toml setlocal fileencoding=utf-8
 augroup END
 
 " }}}
@@ -945,8 +979,8 @@ function! s:relativenumber_toggle(mode) abort " {{{
   endif
 endfunction " }}}
 augroup vimrc_init_core
-  autocmd WinLeave,InsertEnter * nested call s:relativenumber_toggle('off')
-  autocmd WinEnter,InsertLeave * nested call s:relativenumber_toggle('recovery')
+  autocmd WinLeave,InsertEnter * call s:relativenumber_toggle('off')
+  autocmd WinEnter,InsertLeave * call s:relativenumber_toggle('recovery')
 augroup END
 
 " 入力中のコマンドをステータスに表示す
@@ -965,22 +999,22 @@ set showcmd
 " カレントウィンドウにのみ罫線を引く(ここで制御)
 " based on http://vimblog.hatenablog.com/entry/vimrc_autocmd_examples
 augroup vimrc_init_core
-  autocmd VimEnter,BufWinEnter,WinEnter * nested
+  autocmd VimEnter,BufWinEnter,WinEnter *
         \ setlocal cursorline cursorcolumn
-  autocmd WinLeave                      * nested
+  autocmd WinLeave                      *
         \ setlocal nocursorline nocursorcolumn
   " based on https://postd.cc/vim-galore-4/
   " edit off
   " if cursorlineopt support: Enter only show number/Leave show both
   if exists('+cursorlineopt')
-    autocmd InsertEnter * nested setlocal cursorlineopt=number
-    autocmd InsertLeave * nested setlocal cursorlineopt=both
+    autocmd InsertEnter * setlocal cursorlineopt=number
+    autocmd InsertLeave * setlocal cursorlineopt=both
   else
-    autocmd InsertEnter * nested setlocal nocursorline
-    autocmd InsertLeave * nested setlocal cursorline
+    autocmd InsertEnter * setlocal nocursorline
+    autocmd InsertLeave * setlocal cursorline
   endif
-  autocmd InsertEnter * nested setlocal nocursorcolumn
-  autocmd InsertLeave * nested setlocal cursorcolumn
+  autocmd InsertEnter * setlocal nocursorcolumn
+  autocmd InsertLeave * setlocal cursorcolumn
 augroup END
 
 " gitgutter sign support
@@ -998,7 +1032,7 @@ endif
 " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 " リサイズしたらウィンドウの境界整理
 augroup vimrc_init_core
-  autocmd VimResized * nested :wincmd =
+  autocmd VimResized * :wincmd =
 augroup END
 
 " http://qiita.com/jnchito/items/5141b3b01bced9f7f48f
@@ -1021,7 +1055,7 @@ set listchars=tab:»-,eol:\ ,trail:･,nbsp:⍽,extends:»,precedes:«
 " ステータスラインの設定
 " cmdheightは各タブに値が保持されるのでtabdoする必要がある
 " -> autocmdで常にやるようにした
-autocmd vimrc_init_core TabNew * nested set cmdheight=1
+autocmd vimrc_init_core TabNew * set cmdheight=1
 set laststatus=2
 
 " Anywhere SID.
@@ -1072,8 +1106,8 @@ let &viewdir = g:user.dir.view
 " "  autocmd!
 " augroup vimrc_init_core
 "  " 設定の保存と復元
-"  autocmd BufWinLeave * nested silent mkview
-"  autocmd BufWinEnter * nested silent loadview
+"  autocmd BufWinLeave * silent mkview
+"  autocmd BufWinEnter * silent loadview
 " augroup END
 
 " based on http://blog.serverkurabe.com/vim-split-window
@@ -1099,7 +1133,7 @@ set tabpagemax=99
 
 " Cursor Pos. {{{
 " from :help last-position-jump
-autocmd vimrc_init_core BufReadPost * nested
+autocmd vimrc_init_core BufReadPost *
   \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
   \ |   exe "normal! g`\""
   \ | endif
@@ -1111,13 +1145,20 @@ autocmd vimrc_init_core BufReadPost * nested
 " augroup END
 " }}}
 
+" Syntax. {{{
+" from mattn san settings
+" https://vim-jp.slack.com/archives/C03C4RC9F/p1650377549190779
+autocmd vimrc_init_core Syntax * syn sync minlines=500 maxlines=1000
+
+" }}}
+
 " }}}
 
 " ##############################################################移動系############################################################## {{{
 " Command/Find Window. {{{
 
 " half up/down resizeable
-autocmd vimrc_init_core VimEnter,VimResized * nested set scroll=0
+autocmd vimrc_init_core VimEnter,VimResized * set scroll=0
 
 " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 set scrolloff=3
@@ -1135,7 +1176,7 @@ set nostartofline
 " Command/Find Window. {{{
 
 " cmdwinheight default 7
-autocmd vimrc_init_core VimEnter,VimResized * nested let &cmdwinheight = min([(&lines/4), 10])
+autocmd vimrc_init_core VimEnter,VimResized * let &cmdwinheight = min([(&lines/4), 10])
 
 " based on https://qiita.com/monaqa/items/e22e6f72308652fc81e2
 augroup vimrc_init_core
@@ -1143,7 +1184,7 @@ augroup vimrc_init_core
   " signcolumn を非表示
   " foldcolumn 0
 " selective like CmdwinEnter [:\/\?=]
-  autocmd CmdwinEnter * nested
+  autocmd CmdwinEnter *
     \   setlocal nonumber norelativenumber
     \ | setlocal signcolumn=no
     \ | setlocal foldcolumn=0
@@ -1168,11 +1209,11 @@ set foldlevelstart=99
 " augroup foldmethod-expr
 "   autocmd!
 augroup vimrc_init_core
-  autocmd InsertEnter * nested if &l:foldmethod ==# 'expr'
+  autocmd InsertEnter * if &l:foldmethod ==# 'expr'
   \                   |   let b:foldinfo = [&l:foldmethod, &l:foldexpr]
   \                   |   setlocal foldmethod=manual foldexpr=0
   \                   | endif
-  autocmd InsertLeave * nested if exists('b:foldinfo')
+  autocmd InsertLeave * if exists('b:foldinfo')
   \                   |   let [&l:foldmethod, &l:foldexpr] = b:foldinfo
   \                   | endif
 augroup END
@@ -1212,9 +1253,9 @@ set ttimeoutlen=100
 " WinEnter with job mode
 " from https://github.com/peacock0803sz/dotfiles/blob/80eb4c06beb4c5bcd64befbb64c2d8531e608183/.config/nvim/init.vim
 augroup vimrc_init_core
-  autocmd WinEnter * nested if &buftype ==# 'terminal'
-    \                     |   silent! exec "normal! A"
-    \                     | endif
+  autocmd WinEnter * if &buftype ==# 'terminal'
+    \ |                silent! exec "normal! A"
+    \ |              endif
 augroup END
 
 " }}}
@@ -1236,7 +1277,7 @@ augroup END
 " ベル
 " thanks lambdalisue
 " vim  always off
-" gvim overwrite visual on(in .gvimrc)
+" gvim overwrite (in .gvimrc)
 if exists('+belloff')
   set belloff=all
 else
@@ -1269,7 +1310,7 @@ set matchpairs&
 " オムニ補完の設定(insertモードでCtrl+oで候補を出す、Ctrl+n Ctrl+pで選択、Ctrl+yで確定)
 " based on https://vim-jp.org/vim-users-jp/2009/11/01/Hack-96.html
 " 注意: この内容は:filetype onよりも後に記述すること。
-autocmd vimrc_init_core FileType * nested if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
+autocmd vimrc_init_core FileType * if &l:omnifunc == '' | setlocal omnifunc=syntaxcomplete#Complete | endif
 
 " 補完設定
 " based on https://postd.cc/vim-galore-4/
@@ -1308,6 +1349,9 @@ set wildcharm=<Tab>
 " add wildchar/wildcharm need wilder.nvim
 if !dein#is_available('wilder.nvim')
   set wildmenu
+  set wildoptions&
+    \ wildoptions+=pum
+    \ wildoptions+=fuzzy
   set wildmode=longest:full,full
 endif
 
@@ -1326,7 +1370,7 @@ if exists('+spelloptions')
   set spelloptions=camel
 endif
 let &spellfile = join(g:user.file.spell, ',')
-autocmd vimrc_init_core VimEnter,VimResized * nested let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
+autocmd vimrc_init_core VimEnter,VimResized * let &spellsuggest = 'best,' . string(min([(&lines/4), 10]))
 let g:spell_clean_limit = 120 * 60 " unit sec
 
 " see reedes/vim-lexical: Build on Vim’s spell/thes/dict completion https://github.com/reedes/vim-lexical
@@ -1384,9 +1428,21 @@ endfunction " }}}
 
 inoremap <expr> <C-x>  <SID>hint_i_ctrl_x()
 
+function! s:pum_visible() abort " {{{
+  let result = v:false
+  if g:user.plugin.exists['pum.vim']
+    let result = pum#visible()
+  else
+    let result = pumvisible()
+  endif
+  return result
+endfunction " }}}
+
 function! s:popup_select(rawchar, ...) abort " {{{
   let result = ''
-  if g:user.plugin.exists['asyncomplete.vim']
+  if g:user.plugin.exists['pum.vim']
+    let result = result . "\<Cmd>call pum#map#confirm()\<CR>"
+  elseif g:user.plugin.exists['asyncomplete.vim']
     let result = result . asyncomplete#close_popup()
     if a:0
       let result = result . a:1
@@ -1399,7 +1455,9 @@ endfunction " }}}
 
 function! s:popup_cancel(rawchar, ...) abort " {{{
   let result = ''
-  if g:user.plugin.exists['asyncomplete.vim']
+  if g:user.plugin.exists['pum.vim']
+    let result = result .  "\<Cmd>call pum#map#cancel()\<CR>"
+  elseif g:user.plugin.exists['asyncomplete.vim']
     let result = result . asyncomplete#cancel_popup()
     if a:0
       let result = result . a:1
@@ -1421,32 +1479,32 @@ function! s:insert_char(rawchar, charname) abort " {{{
 endfunction " }}}
 
 function! s:imap_setup() abort " {{{
-  inoremap <expr><silent><buffer> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr><silent><buffer> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-  inoremap <expr><silent><buffer> <CR>    pumvisible()
-    \ ? <SID>popup_select("\<C-y>"            )
+  inoremap <expr><silent><buffer> <Tab>   <SID>pum_visible() ? "\<C-n>" : "\<Tab>"
+  inoremap <expr><silent><buffer> <S-Tab> <SID>pum_visible() ? "\<C-p>" : "\<S-Tab>"
+  inoremap <expr><silent><buffer> <CR>    <SID>pum_visible()
+    \ ? <SID>popup_select("\<C-y>"          )
     \ : <SID>insert_char("\<CR>",    '<' . 'CR'    . '>')
-  inoremap <expr><silent><buffer> <Space> pumvisible()
+  inoremap <expr><silent><buffer> <Space> <SID>pum_visible()
     \ ? <SID>popup_cancel("\<C-e>", "\<Space>")
     \ : <SID>insert_char("\<Space>", '<' . 'Space' . '>')
-  inoremap <expr><silent><buffer> <C-y>   pumvisible()
+  inoremap <expr><silent><buffer> <C-y>   <SID>pum_visible()
     \ ? <SID>popup_select("\<C-y>"            ) : "\<C-y>"
-  inoremap <expr><silent><buffer> <C-e>   pumvisible()
+  inoremap <expr><silent><buffer> <C-e>   <SID>pum_visible()
     \ ? <SID>popup_cancel("\<C-e>"            ) : "\<C-e>"
   " popup cancel need before <Esc>, but lexima esc mapped sepcial work...
   " build special method with `g:lexima_map_escape` (lexima escape process mapping)
   if g:user.plugin.exists['lexima.vim']
     if exists('g:lexima_map_escape')
-       inoremap <expr><silent><buffer> <Plug>(lexima-pre-esc)   pumvisible()
+       inoremap <expr><silent><buffer> <Plug>(lexima-pre-esc)   <SID>pum_visible()
         \ ? <SID>popup_cancel("\<C-e>") : ''
        execute 'imap <silent><buffer> <Esc> <Plug>(lexima-pre-esc)' . g:lexima_map_escape
     endif
   else
-    inoremap <expr><silent><buffer> <Esc> pumvisible()
+    inoremap <expr><silent><buffer> <Esc> <SID>pum_visible()
       \ ? <SID>popup_cancel("\<C-e>", "\<Esc>") : "\<Esc>"
   endif
 endfunction " }}}
-autocmd vimrc_init_core InsertEnter * nested call s:imap_setup()
+autocmd vimrc_init_core InsertEnter * call s:imap_setup()
 
 " }}}
 
@@ -1487,7 +1545,6 @@ function! s:clip_text(data) abort " {{{
     let @*=a:data
   endif
 endfunction " }}}
-nnoremap <C-g> :call <SID>clip_text(fnamemodify(expand('%'), ':p'))<CR><C-g>
 
 " }}}
 
@@ -1506,10 +1563,10 @@ if !has('gui_running')
   set t_Co=16
   if stridx($TERM, 'xterm-256color') >= 0
     " xterm 256が定義ずみの場合
-    set t_Co=256
     if has('termguicolors')
       set termguicolors
     endif
+    set t_Co=256
   elseif (g:user.system.windows && ($ConEmuANSI ==? 'ON'))
     " xterm 256が定義されてないがWindowsでConEmuで256有効の場合
     " http://e8l.hatenablog.com/entry/2016/03/16/230018
@@ -1517,10 +1574,11 @@ if !has('gui_running')
     " https://conemu.github.io/en/VimXterm.html
     " ConEmu Vim Support color
     set term=xterm
-    set t_Co=256
     if has('termguicolors')
       set termguicolors
+      set t_Co=256
     else
+      set t_Co=256
       let &t_AB="\e[48;5;%dm"
       let &t_AF="\e[38;5;%dm"
     endif
@@ -1539,10 +1597,10 @@ if !has('gui_running')
   elseif (has('vtp') && has('vcon'))
     " Windows 10 color enable
     " currently off true color
-    set t_Co=256
     if has('termguicolors')
       set termguicolors
     endif
+    set t_Co=256
   endif
 endif
 
@@ -1564,6 +1622,7 @@ endif
 " }}}
 
 " Restore t_Co for less command after vim quit
+" t_Co reset, redraw
 augroup vimrc_init_core
   if s:saved_t_Co == 8
     autocmd VimLeave * nested let &t_Co = 256
@@ -1578,29 +1637,29 @@ augroup vimrc_init_core
   " vimdiff config
   " http://qiita.com/takaakikasai/items/b46a0b8c94e476e57e31
   " vimdiffの色設定
-  " autocmd ColorScheme,VimEnter * nested highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
-  " autocmd ColorScheme,VimEnter * nested highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
-  " autocmd ColorScheme,VimEnter * nested highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
-  " autocmd ColorScheme,VimEnter * nested highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
+  " autocmd ColorScheme,VimEnter * highlight DiffAdd    cterm=bold ctermfg=10 ctermbg=22
+  " autocmd ColorScheme,VimEnter * highlight DiffDelete cterm=bold ctermfg=10 ctermbg=52
+  " autocmd ColorScheme,VimEnter * highlight DiffChange cterm=bold ctermfg=10 ctermbg=17
+  " autocmd ColorScheme,VimEnter * highlight DiffText   cterm=bold ctermfg=10 ctermbg=21
 
   " based on https://thinca.hatenablog.com/entry/20160214/1455415240
-  " autocmd ColorScheme,VimEnter * nested highlight ZenSpace ctermbg=Red guibg=Red
+  " autocmd ColorScheme,VimEnter * highlight ZenSpace ctermbg=Red guibg=Red
 
   " based on http://secret-garden.hatenablog.com/entry/2016/08/16/000149
-  autocmd ColorScheme,VimEnter * nested highlight link EndOfBuffer Ignore
+  autocmd ColorScheme,VimEnter * highlight link EndOfBuffer Ignore
 
   " based on http://qiita.com/svjunic/items/f987d51ed3fc078fa27e
   " based on http://d.hatena.ne.jp/ryochack/20111029/1319913548
   " based on https://qiita.com/KeitaNakamura/items/a289822827c8655b2dcd
 
-  " autocmd ColorScheme,VimEnter * nested highlight Comment ctermfg=103
-  " autocmd ColorScheme,VimEnter * nested highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
+  " autocmd ColorScheme,VimEnter * highlight Comment ctermfg=103
+  " autocmd ColorScheme,VimEnter * highlight CursorLine term=none cterm=none ctermbg=17 guibg=236
 
   " based on https://github.com/martin-svk/dot-files/blob/master/neovim/init.vim
 
   " Highlight VCS conflict markers
   " match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
-  " autocmd BufRead,BufNewFile * nested syntax match MyConflictMarker #^\(<\|=\|>\)\{7\}\([^=].\+\)\?$# |
+  " autocmd BufRead,BufNewFile * syntax match MyConflictMarker #^\(<\|=\|>\)\{7\}\([^=].\+\)\?$# |
   "\                                   highlight link MyConflictMarker Todo
   " experimental
 augroup END
@@ -1620,7 +1679,7 @@ augroup END
 set keywordprg=:help
 augroup vimrc_init_core
   " FileType vim force overwrite
-  autocmd FileType vim nested setlocal keywordprg=:help
+  autocmd FileType vim setlocal keywordprg=:help
 augroup END
 
 augroup vimrc_init_core
@@ -1628,11 +1687,11 @@ augroup vimrc_init_core
   " signcolumn を非表示
   " foldcolumn 2
   autocmd FileType
-    \ help nested if &l:buftype ==# 'help'
-    \ |             setlocal nonumber norelativenumber
-    \ |             setlocal signcolumn=no
-    \ |             setlocal foldcolumn=2
-    \ |           endif
+    \ help if &l:buftype ==# 'help'
+    \ |      setlocal nonumber norelativenumber
+    \ |      setlocal signcolumn=no
+    \ |      setlocal foldcolumn=2
+    \ |    endif
   " q で終了
   " in mapping
 augroup END
@@ -1641,10 +1700,10 @@ augroup END
 " helpのタグ移動を楽にするやつ
 augroup vimrc_init_core
   autocmd FileType
-    \ help nested if &l:buftype ==# 'help'
-    \ |             nnoremap <buffer> <CR> <C-]>
-    \ |             nnoremap <buffer> <BS> <C-T>
-    \ |           endif
+    \ help if &l:buftype ==# 'help'
+    \ |      nnoremap <buffer> <CR> <C-]>
+    \ |      nnoremap <buffer> <BS> <C-T>
+    \ |    endif
 augroup END
 
 " }}}
@@ -1658,10 +1717,10 @@ augroup END
 "   " foldcolumn 0
 "   " numberwidth 2
 "   autocmd FileType
-"    \ qf nested setlocal number norelativenumber
-"    \ |         setlocal signcolumn=no
-"    \ |         setlocal foldcolumn=0
-"    \ |         setlocal numberwidth=2
+"    \ qf setlocal number norelativenumber
+"    \ |  setlocal signcolumn=no
+"    \ |  setlocal foldcolumn=0
+"    \ |  setlocal numberwidth=2
 "   " q で終了
 "   " in plugin?
 " augroup END
@@ -1688,9 +1747,9 @@ augroup vimrc_init_core
   " based on
   " https://qiita.com/yuku_t/items/0c1aff03949cb1b8fe6b
   " https://kaworu.jpn.org/kaworu/2008-06-07-1.php
-   " autocmd QuickFixCmdPost make,grep,grepadd,vimgrep,helpgrep nested cwindow
-   autocmd QuickFixCmdPost [^l]* nested cwindow
-   autocmd QuickFixCmdPost l*    nested lwindow
+   " autocmd QuickFixCmdPost make,grep,grepadd,vimgrep,helpgrep cwindow
+   autocmd QuickFixCmdPost [^l]* cwindow
+   autocmd QuickFixCmdPost l*    lwindow
 augroup END
 
 " }}}
@@ -1767,8 +1826,11 @@ endif
 " set ambiwidth=double
 " 有用だがlightlineのpowerlineフォント設定とぶつかるので、外す(singleとする)
 " thanks lambdalisue
-set emoji               " use double in unicode emoji characters
-set ambiwidth=single    " use single in ambiguous characters
+" use double in unicode emoji characters
+set emoji
+" use single in ambiguous characters
+" set ambiwidth=single
+" comment out, because plugin 'vim-ambiwidth' are adjusted characters.
 " GUIは平気なので、gvimrcでdoubleに上書きしている
 " }}}
 
@@ -1789,12 +1851,14 @@ augroup END
 let g:user.startuptime = {}
 let g:user.startuptime.start = s:startuptime
 if (0 == v:vim_did_enter) && has('reltime')
-  augroup vimrc_init_core
+  augroup vimrc_init_core_startup
+    autocmd!
     " record startup time : done time and echo messages
     autocmd VimEnter * let g:user.startuptime.end = reltime()
     autocmd VimEnter * let g:user.startuptime.diff = reltime(g:user.startuptime.start, g:user.startuptime.end)
     autocmd VimEnter * let g:user.startuptime.msg = reltimestr(g:user.startuptime.diff)
     autocmd VimEnter * redraw | echomsg 'startuptime: ' . g:user.startuptime.msg
+    autocmd VimEnter * autocmd! vimrc_init_core_startup
   augroup END
 endif
 " }}}
@@ -1812,6 +1876,14 @@ endif
 "   <C-m> == <Enter>
 "   <C-[> == <ESC>
 " see http://rbtnn.hateblo.jp/entry/2014/11/30/174749
+
+
+" フルパス取得
+nnoremap <C-g> :call <SID>clip_text(expand('%:p'))<CR><C-g>
+
+" insert current file fullpath
+" from https://github.com/4513ECHO/dotfiles/blob/main/config/vim/rc/200_keymap.rc.vim
+cnoremap <C-x> <C-r>=expand('%:p')<CR>
 
 " special mapping
 "  ctrl + space input <NUL> in terminal, remap them.
@@ -1913,6 +1985,7 @@ nmap <c-tab> <c-w>w
 xnoremap <silent> . :normal .<CR>
 
 " o/O use Add last return
+" o replace A and <CR> : autoindent work fine
 nmap o A<CR>
 
 " thanks ycino
@@ -2010,6 +2083,11 @@ cnoremap <c-f> <S-Right>
 cnoremap <c-a> <Home>
 " cnoremap <c-e> <End> is default mapping
 
+" ins/cmdでレジスタ貼り付け
+" from https://github.com/4513ECHO/dotfiles/blob/main/config/vim/rc/200_keymap.rc.vim
+" inoremap <C-y> <C-r>*
+cnoremap <C-y> <C-r>*
+
 " based on https://postd.cc/vim-galore-4/
 " nを前方へ、Nを後方へと固定
 " nnoremap <expr> n  'Nn'[v:searchforward]
@@ -2043,17 +2121,17 @@ cnoremap <Down> <C-n>
 
 " q readonly is close(small setting)
 " help and other readonly popup window : q is close
-autocmd vimrc_init_core FileType help nested if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
-autocmd vimrc_init_core FileType git-status,git-log nested nnoremap <buffer> q <C-w>c
+autocmd vimrc_init_core FileType help if &l:buftype ==# 'help' | nnoremap <buffer> q <C-w>c | endif
+autocmd vimrc_init_core FileType git-status,git-log nnoremap <buffer> q <C-w>c
 " command window
 " selective like CmdwinEnter [:\/\?=]
-autocmd vimrc_init_core CmdwinEnter * nested nnoremap <buffer> q <C-w>c
+autocmd vimrc_init_core CmdwinEnter * nnoremap <buffer> q <C-w>c
 
-" autocmd vimrc_init_core FileType qf nested nnoremap <buffer> q <C-w>c
+" autocmd vimrc_init_core FileType qf nnoremap <buffer> q <C-w>c
 
 " cmdwin other setting
 " remap cr (plugin cr mapping clear)
-autocmd vimrc_init_core CmdwinEnter * nested nnoremap <buffer> <CR> <CR>
+autocmd vimrc_init_core CmdwinEnter * nnoremap <buffer> <CR> <CR>
 
 " tc/tn/tb/tx/t1-9 TAB setting
 " }}}
@@ -2183,12 +2261,14 @@ function! s:plugin_status_update() abort " {{{
   \  'lexima.vim',
   \  'nerdfont.vim',
   \  'vim-devicons',
+  \  'pum.vim',
+  \  'vim-pass',
   \]
   for plugin_name in plugins
     let g:user.plugin.exists[plugin_name] = dein#is_sourced(plugin_name)
   endfor
 endfunction " }}}
-autocmd vimrc_init_core VimEnter * nested call s:plugin_status_update()
+" call at VimEnterPre like phase
 
 function! s:echo_syntax(status) abort " {{{
   if a:status
@@ -2227,26 +2307,28 @@ function! s:expand_all_buffer_to_tab() abort " {{{
 endfunction " }}}
 
 " see http://koturn.hatenablog.com/entry/2018/02/13/000000
-" Window IDからバッファ番号を引く逆引き辞書を作成
-function! s:create_winid2bufnr_dict() abort " {{{
-  let winid2bufnr_dict = {}
-  for bnr in filter(range(1, bufnr('$')), 'v:val')
-    for wid in win_findbuf(bnr)
-      let winid2bufnr_dict[wid] = bnr
-    endfor
-  endfor
-  return winid2bufnr_dict
-endfunction " }}}
+" " Window IDからバッファ番号を引く逆引き辞書を作成
+" function! s:create_winid2bufnr_dict() abort " {{{
+"   let winid2bufnr_dict = {}
+"   for bnr in filter(range(1, bufnr('$')), 'v:val')
+"     for wid in win_findbuf(bnr)
+"       let winid2bufnr_dict[wid] = bnr
+"     endfor
+"   endfor
+"   return winid2bufnr_dict
+" endfunction " }}}
+" 今は winbufnr() で良い
 
 function! s:show_tab_info() abort " {{{
   echo '====== Tab Page Info ======'
   let current_tnr = tabpagenr()
-  let winid2bufnr_dict = s:create_winid2bufnr_dict()
+  " old let winid2bufnr_dict = s:create_winid2bufnr_dict()
   for tnr in range(1, tabpagenr('$'))
     let current_winnr = tabpagewinnr(tnr)
     echo (tnr == current_tnr ? '>' : ' ') 'Tab:' tnr
     echo '    Buffer number | Window Number | Window ID | Buffer Name'
-    for wininfo in map(map(range(1, tabpagewinnr(tnr, '$')), '{"wnr": v:val, "wid": win_getid(v:val, tnr)}'), 'extend(v:val, {"bnr": winid2bufnr_dict[v:val.wid]})')
+    for wininfo in map(map(range(1, tabpagewinnr(tnr, '$')), '{"wnr": v:val, "wid": win_getid(v:val, tnr)}'), 'extend(v:val, {"bnr": winbufnr(v:val.wid)})')
+      " old {"bnr": winid2bufnr_dict[v:val.wid]}
       echo '   ' (wininfo.wnr == current_winnr ? '*' : ' ') printf('%11d | %13d | %9d | %s', wininfo.bnr, wininfo.wnr, wininfo.wid, bufname(wininfo.bnr))
     endfor
   endfor
@@ -2285,10 +2367,10 @@ command! Cp932 edit ++enc=cp932 %
 command! Unix  edit ++ff=unix   %
 command! Dos   edit ++ff=dos    %
 
-command! AsUtf8 set fenc=utf-8 | w
+command! AsUtf8 setlocal fenc=utf-8 | w
 " 追加
-command! AsDos  set ff=dos     | w
-command! AsUnix set ff=unix    | w
+command! AsDos  setlocal ff=dos     | w
+command! AsUnix setlocal ff=unix    | w
 " }}}
 
 " from https://github.com/cohama/.vim/blob/master/init.vim
@@ -2315,7 +2397,7 @@ command! -nargs=1 -complete=option ToggleOption call <SID>toggle_option(<q-args>
 
 " autocmd {{{
 " augroup vimrc_init_core
-"   autocmd CursorMoved * nested call <SID>echo_syntax(get(b:, 'SyntaxEchoStatus', 0))
+"   autocmd CursorMoved * call <SID>echo_syntax(get(b:, 'SyntaxEchoStatus', 0))
 " augroup END
 " }}}
 
@@ -2344,13 +2426,21 @@ call g:user.function.load_setting(g:dein.dir.rc)
 
 " term black
 if has('gui_running')
-  autocmd vimrc_init_core VimEnter,ColorScheme * nested highlight Terminal ctermbg=NONE ctermfg=NONE guibg=Black guifg=LightGrey
+  autocmd vimrc_init_core VimEnter,ColorScheme * highlight Terminal ctermbg=NONE ctermfg=NONE guibg=Black guifg=LightGrey
 else
   " not work yet
   " " background inherit console color style
-  " autocmd vimrc_init_core VimEnter,ColorScheme * nested if &background == 'dark'  | highlight Terminal ctermbg=NONE ctermfg=White | endif
-  " autocmd vimrc_init_core VimEnter,ColorScheme * nested if &background == 'light' | highlight Terminal ctermbg=NONE ctermfg=Black | endif
+  " autocmd vimrc_init_core VimEnter,ColorScheme * if &background == 'dark'  | highlight Terminal ctermbg=NONE ctermfg=White | endif
+  " autocmd vimrc_init_core VimEnter,ColorScheme * if &background == 'light' | highlight Terminal ctermbg=NONE ctermfg=Black | endif
 endif
 
 " }}}
+
+" outro
+" VimEnterPre like process {{{
+" dein plugin status update
+call s:plugin_status_update()
+
+" }}}
+
 " EOF

@@ -1,10 +1,10 @@
 " gvimrc
-" vim:fenc=utf-8 ff=unix ft=vim
+" vim:ft=vim foldmethod=marker
 
 scriptencoding utf-8
 
 " Windows check
-let s:is_windows = has('win32') || has('win64')
+let s:is_windows = has('win32')
 " Mac check
 let s:is_mac     = has('mac')
 " Unix check
@@ -12,8 +12,10 @@ let s:is_unix    = has('unix')
 
 " see http://qiita.com/janus_wel/items/86082f69190f40df09e8
 " display & information
-set lines=25        " typical
-set columns=90      " margin for 'number' and 'foldcolumn'
+" typical
+" margin for 'number' and 'foldcolumn'
+set lines=25
+set columns=90
 set linespace=0
 
 if s:is_mac
@@ -22,13 +24,22 @@ if s:is_mac
   set cmdheight=2
 endif
 
-" set guioptions-=c    " Do not show GUI components
-"                      " (GUI dialog change to console dialog)
-set guioptions-=T    " show no GUI Toolbar(disable)
-set guioptions+=k    " keep GUI Window size at scrollbar adding/removing
+" " Do not show GUI components
+" " (GUI dialog change to console dialog)
+" set guioptions-=c
+
+" show no GUI Toolbar(disable)
+set guioptions-=T
+" keep GUI Window size at scrollbar adding/removing
+set guioptions+=k
+
+" other GUI component settings
+set scrollfocus
 
 " based on http://blog.remora.cx/2010/03/vim-proggy-and-osaka-fonts.html
-set ambiwidth=double " override ambiwidth
+" override ambiwidth
+" set ambiwidth=double
+" comment out, because plugin 'vim-ambiwidth' are adjusted characters.
 
 if s:is_windows && has('directx')
   " Windows DirectX
@@ -72,10 +83,12 @@ endif
 " printer option
 " set printheader="%<%f%h%m%=Page %N"
 
+" default: syntax:a, duplex:long, wrap:y
 set printoptions&
-" syntax:a, duplex:long, wrap:y
-set printoptions+=number:y   " line number:yes
-set printoptions+=formfeed:y " linefeed:next page
+" line number:yes
+set printoptions+=number:y
+" linefeed:next page
+set printoptions+=formfeed:y
 
 " turn off disabling IM at entering input mode
 if exists('&imdisableactivate')
@@ -88,13 +101,10 @@ endif
 " set iminsert=0
 " set imsearch=-1
 
-" Visual bell status update. (bell and visual bell need not opt exists
-" belloff)
+" error status overwrite.
 if exists('+belloff')
   set belloff&
 endif
-set noerrorbells
 set visualbell
-set t_vb=
 
 " EOF

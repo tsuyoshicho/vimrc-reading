@@ -1,24 +1,49 @@
 # denops need deno
 
+# shared server install/uninstaller
+[[plugins]]
+repo = 'vim-denops/denops-shared-server.vim'
+
+# core
 [[plugins]]
 repo = 'vim-denops/denops.vim'
+hook_add = '''
+  " " when do not use shared server, disable it
+  " let g:denops_server_addr = '127.0.0.1:32123'
+  " let s:denops_path = g:dein#plugin.path
+  " if has('nvim')
+  "     call jobstart(
+  "     \    'deno run -A --no-check ' . s:denops_path . '/denops/@denops-private/cli.ts',
+  "     \    {'detach': v:true}
+  "     \)
+  " else
+  "     call job_start(
+  "     \   'deno run -A --no-check ' . s:denops_path . '/denops/@denops-private/cli.ts',
+  "     \   {'stoponexit': ''}
+  "     \)
+  " endif
 
-[[plugins]]
-repo = 'vim-denops/denops-helloworld.vim'
-depends = ['denops.vim']
+  augroup vimrc_init_denops
+    autocmd!
+    " workaround vim-pass token set are done and apply
+    autocmd User VimPassStartUpResolve echomsg '[denops] vim-pas complete, restart server.'
+    autocmd User VimPassStartUpResolve call denops#server#restart()
+  augroup END
+'''
 
 # this plugin need lazy and before set env
+# do not work this settings
 # [[plugins]] # github status
 # repo = 'yutkat/dps-coding-now.nvim'
-# depends = ['denops.vim','vim-pass']
+# depends = ['denops.vim', 'vim-pass']
 # hook_source = '''
 #   " need token into CODING_NOW_GITHUB_TOKEN
-#   call pass#get_startup('$XDG_CACHE_HOME','Develop/Github')
+#   call pass#get_startup('$XDG_CACHE_HOME', 'Develop/Github')
 # '''
 
-#  When deno is nothing, do not load this toml.
-#  load below that is fallback.
-#  ref lambdalisue/edita.vim without denops,deprecated
+# When deno is nothing, do not load this toml.
+# load below that is fallback.
+# ref lambdalisue/edita.vim without denops,deprecated
 [[plugins]]
 repo = 'lambdalisue/guise.vim'
 depends = ['denops.vim']
@@ -26,5 +51,48 @@ depends = ['denops.vim']
 [[plugins]]
 repo = 'kat0h/dps-bufpreview.vim'
 depends = ['denops.vim']
+
+# # gitgutter/signify like
+# # now, do not enable(signify is need for lightline)
+# [[plugins]]
+# repo = 'tennashi/gitsign.vim'
+# hook_add = '''
+#   let g:gitsign#auto_enable = 1
+#
+#   let g:gitsign#sign#add_mark               = nr2char(0x271a) " '✚'
+#   let g:gitsign#sign#change_mark            = nr2char(0x279c) " '➜'
+#   let g:gitsign#sign#delete_mark            = nr2char(0x2718) " '✘'
+#   let g:gitsign#sign#delete_first_line_mark = nr2char(0x2717) " '✗'
+#
+#   " highlight line
+#   let g:gitsign#highlight#enable_lines = 1
+#   " highlight mark
+#   let g:gitsign#highlight#enable_marks = 1
+# '''
+
+[[plugins]]
+repo = 'uki00a/denops-pomodoro.vim'
+lazy = 1
+depends = ['denops.vim']
+on_cmd = ['PomodoroStart', 'PomodoroPause', 'PomodoroResume', 'PomodoroReset', 'PomodoroEcho']
+
+[[plugins]]
+repo = '4513ECHO/denops-gitter.vim'
+depends = ['denops.vim', 'vim-pass']
+hook_add = '''
+  " let g:gitter#token = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  call pass#get_startup('g:gitter#token', 'Message/Gitter')
+
+  augroup vimrc_init_gitter
+    autocmd!
+    " 行数を非表示
+    " signcolumn を非表示
+    " foldcolumn 0
+    autocmd FileType gitter
+      \   setlocal nonumber norelativenumber
+      \ | setlocal signcolumn=no
+      \ | setlocal foldcolumn=0
+  augroup END
+'''
 
 # EOF

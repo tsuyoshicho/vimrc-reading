@@ -28,7 +28,7 @@ hook_source = '''
 
 [[plugins]]
 repo = 'thinca/vim-scouter'
-on_cmd = ['Scouter', 'ScouterVerbose']
+on_cmd = ['Scouter']
 
 # colorscheme
 [[plugins]]
@@ -37,7 +37,7 @@ on_cmd = ['SCROLLCOLOR']
 
 [[plugins]]
 repo = 'kato-k/vim-colorscheme-settings'
-on_if = 'exists("*popup_create")'
+if = 'exists("*popup_create")'
 on_cmd = ['SwitchColorscheme', 'SwitchBackGround']
 hook_source = '''
   " " off default
@@ -47,113 +47,11 @@ hook_source = '''
   " let g:colorschemes_settings#rc_file_path = g:user.file.colorrc " noting yet
 '''
 
-[[plugins]] # cmigemoが必要
-repo = 'haya14busa/vim-migemo'
-on_if = 'g:user.function.executable("cmigemo")'
-depends = ['vital.vim']
-hook_post_source = '''
-  let s:Filepath = g:V.import('System.Filepath')
-
-  " s:dict
-  let g:migemodict = ''
-
-  if g:user.system.windows
-    let s:dict = fnamemodify(
-          \ s:Filepath.realpath(
-          \   g:user.dir.dictionary . '/Migemo/' . &encoding . '/migemo-s:dict'
-          \ ),
-          \ ':p')
-    if filereadable(s:dict)
-      let g:migemodict = s:dict
-    endif
-  endif
-
-  if empty(g:migemodict)
-    let s:dict = fnamemodify(
-          \ s:Filepath.realpath(
-          \   g:user.dir.vim . '/s:dict/' . &encoding . '/migemo-s:dict'
-          \ ),
-          \ ':p')
-    if filereadable(s:dict)
-      let g:migemodict = s:dict
-    endif
-  endif
-'''
-
-[[plugins]] # fzf
-repo = 'yuki-yano/fzf-preview.vim'
-# rev  = 'release/rpc'
-rev  = 'feature/windows_compatibility'
-on_if = 'g:user.function.executable("fzf") && g:user.function.executable("node")'
-depends = ['fzf', 'fzf.vim', 'vim-devicons']
-hook_add = '''
-  " filelist preview
-  if g:user.system.windows
-    let g:fzf_preview_default_fzf_options = {
-      \  '--reverse'        : v:true,
-      \  '--preview-window' : 'right:50%:noborder',
-      \}
-
-    let g:fzf_binary_preview_command = 'echo binary'
-    let g:fzf_preview_if_binary_command = '( ver > nul )'
-    if g:user.function.executable('file')
-      let g:fzf_preview_if_binary_command = '( file --mime {} | findstr binary > nul )'
-    endif
-
-    " currently fallback safe pattern
-    if g:user.function.executable('false')
-      let g:fzf_preview_if_binary_command = 'false'
-    endif
-  endif
-
-  if g:user.function.executable('bat')
-    let g:fzf_preview_command = 'bat --color always --style grid {-1}'
-  elseif g:user.function.executable('head')
-    let g:fzf_preview_command = 'head -100 {-1}'
-  elseif g:user.function.executable('cat')
-    let g:fzf_preview_command = 'cat {-1}'
-  else
-    if g:user.system.windows
-      let g:fzf_preview_command = 'echo command nothing'
-    else
-      let g:fzf_preview_command = 'echo "command nothing"'
-    endif
-  endif
-
-  " " filelist command
-  " " let g:fzf_preview_filelist_command
-  " " grep command
-  " " let g:fzf_preview_grep_cmd
-
-  " ! should not be escaped
-  if g:user.function.executable('rg')
-    let g:fzf_preview_filelist_command = 'rg --files --hidden --follow --no-messages --glob "!.git/*" --glob !"* *"'
-    let g:fzf_preview_directory_files_command = 'rg --files --hidden --follow --no-messages -g !"* *"'
-  endif
-
-  " " filelist post process
-  " if g:user.function.executable('exa')
-  "   let g:fzf_preview_filelist_postprocess_command = 'xargs -d "\n" exa --color=always'
-  " else
-  "   let g:fzf_preview_filelist_postprocess_command = ''
-  " endif
-
-  " Use vim-devicons
-  if dein#tap('vim-devicons')
-    let g:fzf_preview_use_dev_icons = 1
-  endif
-'''
-
-[[plugins]] # WebAPIのライブラリ curlが必要
-repo = 'mattn/webapi-vim'
-on_if = 'g:user.function.executable("curl")'
-
 [[plugins]]
-repo = 'mbbill/undotree'
-on_if = 'has("persistent_undo")'
-hook_post_source = '''
-  nnoremap <silent> <F6> :UndotreeToggle<CR>
-'''
+repo = 'y0za/vim-reading-vimrc'
+on_cmd = ['ReadingVimrcLoad', 'ReadingVimrcList', 'ReadingVimrcNext']
+# repo = 'tsuyoshicho/vim-reading-vimrc'
+# rev  = 'develop'
 
 # dirvish
 # [[plugins]]
@@ -170,8 +68,30 @@ hook_post_source = '''
 # '''
 
 [[plugins]]
+repo = 'uga-rosa/linkformat.vim'
+on_cmd = ['LinkFormatPaste']
+on_func = ['linkformat#paste', 'linkformat#format']
+hook_add = '''
+  " default
+  " let g:linkformat_template = '<>'
+  " dein/toml
+  let g:linkformat_template = "repo = '<>'"
+'''
+
+# Doc & File & Web
+[[plugins]]
 repo = 'deton/eblook.vim'
-on_if = 'g:user.function.executable("eblook")'
+if = 'g:user.function.executable("eblook")'
+on_cmd = ['EblookSearch', 'EblookListGroup', 'EblookGroup', 'EblookListDict', 'EblookSkipDict', 'EblookNotSkipDict', 'EblookPasteDictList']
+on_map = ['<Plug>EblookInput', '<Plug>EblookSearch']
+hook_add = '''
+  let g:eblook_no_default_key_mappings = 1
+
+  " mapping with on_cmd
+  nmap <unique> <silent> <Leader><C-Y> <Plug>EblookInput
+  nmap <unique> <silent> <Leader>y     <Plug>EblookSearch
+  vmap <unique> <silent> <Leader>y     <Plug>EblookSearch
+'''
 hook_source = '''
   " 'book'    辞書ディレクトリ。(eblookのbookコマンドの引数)
   " 'name'    辞書名。(eblookのselectコマンドの引数)
@@ -194,10 +114,10 @@ hook_source = '''
   augroup vimrc_init_eblook
     autocmd!
     autocmd FileType
-      \ eblook nested setlocal nonumber
-      \                        norelativenumber
-      \                        signcolumn=no
-      \                        foldcolumn=0
+      \ eblook setlocal nonumber
+      \                 norelativenumber
+      \                 signcolumn=no
+      \                 foldcolumn=0
     " autocmd VimEnter,VimResized *
     "   \ let g:eblook_entrywin_height   = min([max([(&lines/6),  4]),  8]) - 1
     " autocmd VimEnter,VimResized *
@@ -330,7 +250,7 @@ hook_source = '''
     \    {
     \       'book'       : s:dictdir . '/FreePWING/WORDNET',
     \       'name'       : 'wordnet',
-    \       'title'      : 'WordNet(r) 1.6',
+    \       'title'      : 'Princeton WordNet 3.0 と日本語WordNet 1.1の統合版',
     \       'skip'       : 0,
     \    },
     \    {
@@ -348,33 +268,119 @@ hook_source = '''
     \ ]
   unlet s:dictdir
 '''
-hook_post_source = '''
-  " map key : map  <unique> <silent> <Leader><C-Y> <Plug>EblookInput
-  " map key : vmap <unique> <silent> <Leader>y     <Plug>EblookSearch
-  " unmap select-mode
-  silent! sunmap <Leader><C-Y>
-  silent! sunmap <Leader>y
-'''
-
-[[plugins]]
-repo = 'tyru/open-browser-github.vim'
-depends = ['open-browser.vim']
-on_if = 'g:user.function.executable("hub")'
-
-[[plugins]]
-repo = 'iberianpig/tig-explorer.vim'
-on_if = 'g:user.function.executable("tig")'
-
-[[plugins]]
-repo = 'ConradIrwin/vim-bracketed-paste'
-on_if = '!has("patch-8.0.0210")'
-
-# Doc & File & Web
 
 # UI
 # [[plugins]]
 # repo = 'mattn/vim-nyancat'
 # on_if= '!(has("win32") || has("win64") || has("win32unix")) && !has("gui_running")'
+
+[[plugins]] # neovim or vim with yarp/rpc
+repo = 'gelguy/wilder.nvim'
+on_event = ['CmdlineEnter']
+hook_post_source = '''
+  " from Shougo's config https://github.com/Shougo/shougo-s-github/blob/3e4dea0e5c933a0b3d4f2f625d3f4aead727efbc/vim/rc/deinlazy.toml#L555-L585
+  " thanks Shougo & suggest ycino
+
+  " mode enable :, /, ?
+  " map next,prev: Tab,S-Tab
+  call wilder#setup({
+        \ 'modes': [':', '/', '?'],
+        \ 'next_key': '<Tab>',
+        \ 'previous_key': '<S-Tab>',
+        \ })
+
+  " == old settings
+  " " enable
+  " silent! call wilder#enable_cmdline_enter()
+
+  " cnoremap <expr> <Tab>   wilder#in_context() ? wilder#next()     : "\<Tab>"
+  " cnoremap <expr> <S-Tab> wilder#in_context() ? wilder#previous() : "\<S-Tab>"
+
+  " " only / and ? are enabled by default
+  " call wilder#set_option('modes', ['/', '?', ':'])
+  " " : is conflicted to wildmenu option longest:full,full
+  " == old settings
+
+  let s:enable_python = g:user.system.nvim
+    \ || (dein#is_sourced('vim-hug-neovim-rpc') && dein#is_sourced('nvim-yarp'))
+
+  " When the cmdline is empty, provide suggestions based on the cmdline history
+  call wilder#set_option('pipeline', [
+        \  wilder#branch(
+        \     [
+        \       wilder#check({_, x -> empty(x)}),
+        \       wilder#history(),
+        \     ],
+        \     wilder#cmdline_pipeline({
+        \       'fuzzy': 0,
+        \       'language': s:enable_python ? 'python' : 'vim',
+        \       'debounce': 10,
+        \     }),
+        \     wilder#search_pipeline({
+        \       'pattern': wilder#python_fuzzy_pattern({'start_at_boundary': 0}),
+        \       'skip_cmdtype_check': 1,
+        \       'debounce': 10,
+        \     }),
+        \  ),
+        \])
+  " wilder#search_pipeline() pass to python/vim_search_pipeline() and pattern has only python
+
+  " popupmenu completion & custom
+  let s:border = 'single'
+  if &ambiwidth ==? 'single'
+    let s:border = ['+', '-', '+',
+                  \ '|',      '|',
+                  \ '',  '',  '']
+  else
+    let s:border = ['┌', '─', '┐',
+                  \ '│',       '│',
+                  \ '',   '',   '']
+  endif
+
+  " Set use of specific plugins
+  let s:devicon = {}
+  if dein#is_sourced('nerdfont.vim')
+    let s:devicon['get_icon'] = wilder#devicons_get_icon_from_nerdfont_vim()
+  endif
+  if dein#is_sourced('glyph-palette.vim')
+    let s:devicon['get_hl'] = wilder#devicons_get_hl_from_glyph_palette_vim()
+  endif
+
+  let s:popupmenu_renderer_cmd = wilder#popupmenu_renderer(wilder#popupmenu_border_theme({
+      \  'highlighter': wilder#basic_highlighter(),
+      \ 'empty_message': wilder#popupmenu_empty_message_with_spinner({'done': ' '}),
+      \ 'border': s:border,
+      \  'left': [
+      \    ' ', wilder#popupmenu_devicons(s:devicon),
+      \         wilder#popupmenu_buffer_flags({'flags': 'A+'}),
+      \  ],
+      \  'right': [
+      \    ' ', wilder#popupmenu_scrollbar(),
+      \  ],
+      \}))
+
+  let s:popupmenu_renderer_find = wilder#popupmenu_renderer(wilder#popupmenu_border_theme({
+      \  'highlighter': wilder#basic_highlighter(),
+      \ 'empty_message': wilder#popupmenu_empty_message_with_spinner({'done': ' '}),
+      \ 'border': s:border,
+      \  'left': [
+      \    ' ', wilder#popupmenu_spinner({'done': ' '}), ' ',
+      \  ],
+      \  'right': [
+      \    ' ', wilder#popupmenu_scrollbar(),
+      \  ],
+      \}))
+
+  call wilder#set_option('renderer', wilder#renderer_mux({
+      \  ':': s:popupmenu_renderer_cmd,
+      \  '/': s:popupmenu_renderer_find,
+      \  'substitute': s:popupmenu_renderer_find,
+      \}))
+
+
+  unlet! s:enable_python s:popupmenu_renderer_cmd s:popupmenu_renderer_find
+  unlet! s:border s:devicon
+'''
 
 [[plugins]]
 repo = 'edkolev/tmuxline.vim'
@@ -498,6 +504,11 @@ hook_source = '''
 
   let g:Lf_ShortcutF = '<Leader>Lf'
   let g:Lf_ShortcutB = '<Leader>Lb'
+
+  " keymap info
+  let g:user.plugin.info.whichkey.desc.leader['L'] = {
+    \  'name' : '+LeaderF',
+    \ }
 '''
 hook_post_source = '''
   let s:List     = g:V.import('Data.List')
@@ -599,6 +610,9 @@ on_ft = ['qf']
 qf = '''
   nnoremap <buffer> r <Cmd>Qfreplace<CR>
 '''
+qfreplace = '''
+  nnoremap <buffer> q <C-w>q
+'''
 
 ## preview
 [[plugins]]
@@ -613,75 +627,59 @@ qf = '''
 '''
 
 ## highlight
-# use vim-qfhl
-# [[plugins]]
-# repo = 'jceb/vim-hier'
-# on_ft = ['qf']
-
+# use vim-qfhl with patch-8.2.3019 & textprop
 [[plugins]]
 repo = 'thinca/vim-qfhl'
+if = 'has("patch-8.2.3019") && has("textprop")'
 on_ft = ['qf']
 hook_source = '''
   let g:qfhl_startup = 'enable'
 '''
 
+# enable when vim-qfhl is not work
+[[plugins]]
+repo = 'jceb/vim-hier'
+if = '!(has("patch-8.2.3019") && has("textprop"))'
+on_ft = ['qf']
+
 [[plugins]]
 repo = 'thinca/vim-partedit'
 on_cmd = ['Partedit', 'ParteditEnd']
 
-[[plugins]]
-# repo = 'soramugi/auto-ctags.vim'
-repo = 'tsuyoshicho/auto-ctags.vim'
-rev  = 'feature/asyncprocess'
-on_if = 'g:user.function.executable("ctags")'
-hook_source = '''
-  " in .ctags
-  let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes', '--extra=+f']
-  " universal ctags need
-  let g:auto_ctags_tags_args = get(g:,'auto_ctags_tags_args',[]) + ['--output-format=e-ctags']
+[[plugins]] # man
+repo = 'lambdalisue/vim-manpager'
+on_cmd = ['ASMANPAGER', 'Man']
 
-  let g:auto_ctags = 1
-  " let g:auto_ctags_filetype_mode = 1
-  let g:auto_ctags_directory_list = ['.git', '.svn', '.hg', '.bzr', 'CVS', '.']
-  let g:auto_ctags_search_recursively = 1
-  let g:auto_ctags_absolute_path = 1
-  let s:home = ''
-  if has('path_extra')
-    let s:home = ';$HOME'
+[[plugins]] # tldr
+repo = 'wlemuel/vim-tldr'
+on_cmd = ['Tldr', 'TldrUpdateDocs']
+hook_post_update = '''
+  let g:dein#plugin.build = g:user.function.python_pkg_build_command('tldr')
+'''
+hook_add = '''
+  " language, fallback to english
+  let g:tldr_language = 'ja'
+
+  " view style
+  " select 'horizontal', 'vertical', 'tab': Default 'vertical'
+  let g:tldr_split_type = 'horizontal'
+
+  " category
+  let g:tldr_enabled_categories = ['common']
+  if g:user.system.windows
+    let g:tldr_enabled_categories += ['windows']
+  elseif g:user.system.mac
+    let g:tldr_enabled_categories += ['mac']
+  else
+    let g:tldr_enabled_categories += ['linux']
   endif
-  for s:dir in g:auto_ctags_directory_list
-    if s:dir !=? '.'
-      execute 'set tags+=./' . s:dir . '/tags' . s:home
-    endif
-  endfor
-
-  " git リポジトリ内などでも直にtagsを生成する関数
-  function! s:direct_auto_ctags()
-    let s:ctags_list_backup = copy(g:auto_ctags_directory_list)
-    let s:ctags_search_backup = g:auto_ctags_search_recursively
-
-    " set current only
-    let g:auto_ctags_directory_list = ['.']
-    let g:auto_ctags_search_recursively = 1
-
-    " call ctags create process
-    call auto_ctags#ctags(1)
-
-    " recover backups
-    let g:auto_ctags_directory_list = copy(s:ctags_list_backup)
-    let g:auto_ctags_search_recursively = s:ctags_search_backup
-
-    unlet s:ctags_list_backup
-    unlet s:ctags_search_backup
-  endfunction
-
-  " コマンド定義
-  command! CtagsDirect call <SID>direct_auto_ctags()
 '''
 
 [[plugins]] # Twitter
 repo = 'twitvim/twitvim'
-on_if = 'g:user.function.executable("curl") && g:user.function.executable("openssl")'
+if = 'g:user.function.executable("curl") && g:user.function.executable("openssl")'
+# set command from ctrlp launcher
+on_cmd = ['FriendsTwitter', 'MentionsTwitter', 'OwnedListsTwitter', 'PosttoTwitter']
 hook_source = '''
   let g:twitvim_force_ssl = 1
   let g:twitvim_count = 40
@@ -700,6 +698,87 @@ hook_source = '''
     let g:twitvim_proxy_login = substitute(s:proxy_login . s:proxy_pass,
                 \ '%40', '@', 'g')
   endif
+
+  " " command list
+  " ABitLy
+  " AGoogl
+  " AIsGd
+  "
+  " BitLy
+  " Googl
+  " IsGd
+  "
+  " PBitLy
+  " PGoogl
+  " PIsGd
+  "
+  " BPosttoTwitter
+  " CPosttoTwitter
+  "
+  " AddToListTwitter
+  " BackInfoTwitter
+  " BackTwitter
+  " BlockTwitter
+  " DMSentTwitter
+  " DMTwitter
+  " DeleteLoginTwitter
+  " DisableRetweetsTwitter
+  " EnableRetweetsTwitter
+  " FavTwitter
+  " FollowListTwitter
+  " FollowTwitter
+  " FollowersTwitter
+  " FollowingTwitter
+  " ForwardInfoTwitter
+  " ForwardTwitter
+  " FriendsTwitter
+  " ListInfoTwitter
+  " ListTwitter
+  " LocationTwitter
+  " MemberListsTwitter
+  " MembersOfListTwitter
+  " MentionsTwitter
+  " MuteTwitter
+  " NextInfoTwitter
+  " NextTwitter
+  " OwnedListsTwitter
+  " PosttoTwitter
+  " PreviousInfoTwitter
+  " PreviousTwitter
+  " ProfileTwitter
+  " RateLimitTwitter
+  " RefreshInfoTwitter
+  " RefreshTwitter
+  " RemoveFromListTwitter
+  " RepliesTwitter
+  " ReportSpamTwitter
+  " ResetLoginTwitter
+  " RetweetedByMeTwitter
+  " RetweetedToMeTwitter
+  " SearchTwitter
+  " SendDMTwitter
+  " SetLoginTwitter
+  " SetTrendLocationTwitter
+  " SubsListsTwitter
+  " SubsOfListTwitter
+  " Summize
+  " SwitchLoginTwitter
+  " TrendTwitter
+  " UnblockTwitter
+  " UnfollowListTwitter
+  " UnfollowTwitter
+  " UnmuteTwitter
+  " UserTwitter
+  "
+  " TwitVimResetHmacMethod
+  " TwitVimResetMethod
+  " TwitVimShowBufstack
+  " TwitVimShowCurbuffer
+  " TwitVimShowHmacMethod
+  " TwitVimShowInfoBufstack
+  " TwitVimShowInfobuffer
+  " TwitVimShowMethod
+  " TwitVimVersion
 '''
 
 [[plugins]]
@@ -718,8 +797,10 @@ hook_source = '''
   command! MessagesQF call g:messages_qf#messages() | copen
 '''
 
+# ref uki00a/denops-pomodoro.vim with denops
 [[plugins]]
 repo = '0Delta/vimodoro'
+if = '!g:user.function.executable("deno")'
 on_cmd = ['Pomodoro', 'PomodoroStop']
 
 [[plugins]]
@@ -848,7 +929,7 @@ repo = 'tsuyoshicho/vim-markdown-toc'
 rev  = 'develop'
 # rev  = 'pr-merged'
 # TODO : I send Fix PR. When merged it then to restore original
-on_ft = ['markdown','mdx']
+on_ft = ['markdown', 'mdx']
 hook_source = '''
   let g:vmt_auto_update_on_save = 1
   " let g:vmt_dont_insert_fence = 0
@@ -871,42 +952,44 @@ hook_source = '''
   let g:markdown_fold_override_foldtext = 0
 '''
 
-# deno's plugin 'kat0h/dps-bufpreview.vim' conflict command
-# When deno exists, disable it
+# # deno's plugin 'kat0h/dps-bufpreview.vim' conflict command
+# # When deno exists, disable it
+# [[plugins]]
+# repo = 'skanehira/preview-markdown.vim'
+# if = '!g:user.function.executable("deno")'
+# on_ft = ['markdown']
+# hook_source = '''
+#   " open window vartical when value is 1
+#   let g:preview_markdown_vertical = 1
+#   " use specified command to parse markdown, default is mdr
+#   if g:user.function.executable('mdcat')
+#     let g:preview_markdown_parser = 'mdcat'
+#   endif
+# '''
+
+# [[plugins]] # need pandoc,asciidoctor,java,xdg-open
+# repo = 'iwataka/minidown.vim'
+# if = 'g:user.function.executable("pandoc")'
+# on_ft = ['markdown', 'asciidoc', 'rst', 'textile']
+# hook_post_source = '''
+#   let g:minidown_pandoc_from = get(g:,'minidown_pandoc_from',{})
+#   let g:minidown_pandoc_from['markdown'] = 'markdown+pipe_tables+raw_html+fenced_code_blocks+gfm_auto_identifiers+ascii_identifiers+backtick_code_blocks+autolink_bare_uris+intraword_underscores+strikeout+hard_line_breaks+emoji+shortcut_reference_links+angle_brackets_escapable+smart+yaml_metadata_block'
+#   let g:minidown_pandoc_from['rst']      = 'rst'
+#   let g:minidown_pandoc_from['textile']  = 'textile'
+# '''
+
+# [[plugins]] # need docutils's rst2html.py
+# repo = 'previm/previm'
+# # shoud depends
+# depends = ['open-browser.vim']
+# on_ft = ['markdown', 'asciidoc', 'rst', 'textile']
+
 [[plugins]]
-repo = 'skanehira/preview-markdown.vim'
-if = '!g:user.function.executable("deno")'
-on_ft = ['markdown']
-hook_source = '''
-  " open window vartical when value is 1
-  let g:preview_markdown_vertical = 1
-  " use specified command to parse markdown, default is mdr
-  if g:user.function.executable('mdcat')
-    let g:preview_markdown_parser = 'mdcat'
-  endif
-'''
-
-[[plugins]] # need pdftotext
-repo = 'makerj/vim-pdf'
-on_if = 'g:user.function.executable("pdftotext")'
-
-[[plugins]] # need pandoc,asciidoctor,java,xdg-open
-repo = 'iwataka/minidown.vim'
-on_ft = ['markdown','asciidoc','rst','textile']
-on_if = 'g:user.function.executable("pandoc")'
-hook_post_source = '''
-  let g:minidown_pandoc_from = extend({
-      \ 'markdown': 'markdown+pipe_tables+raw_html+fenced_code_blocks+gfm_auto_identifiers+ascii_identifiers+backtick_code_blocks+autolink_bare_uris+intraword_underscores+strikeout+hard_line_breaks+emoji+shortcut_reference_links+angle_brackets_escapable+smart+yaml_metadata_block',
-      \ 'rst'     : 'rst',
-      \ 'textile' : 'textile',
-      \}, get(g:,'minidown_pandoc_from',{}), "keep")
-'''
-
-[[plugins]] # need docutils's rst2html.py
-repo = 'previm/previm'
-# shoud depends
-depends = ['open-browser.vim']
-on_ft = ['markdown','asciidoc','rst','textile']
+repo = 'iamcco/markdown-preview.nvim'
+if = 'g:user.function.executable("yarn")'
+build = 'cd app && yarn install'
+on_cmd = ['MarkdownPreview', 'MarkdownPreviewStop']
+# on_ft = ['markdown']
 
 [[plugins]]
 repo = 'tokorom/vim-review'
@@ -954,8 +1037,8 @@ repo = 'tsuyoshicho/plantuml-previewer.vim'
 rev  = 'develop'
 # TODO : I send Fix PR. When merged it then to restore original
 depends = ['open-browser.vim']
+if = 'g:user.function.executable("dot") && g:user.function.executable("java")'
 on_ft = ['plantuml']
-on_if = 'g:user.function.executable("dot") && g:user.function.executable("java")'
 hook_source = '''
   if g:user.system.windows && g:user.function.executable('plantumlc')
     let s:bin_path = exepath('plantumlc')
@@ -965,11 +1048,6 @@ hook_source = '''
     let g:plantuml_previewer#save_format = 'svg'
   endif
 '''
-
-# include stable
-[[plugins]] # asciidoc syntax
-repo = 'habamax/vim-asciidoctor'
-on_ft = ['asciidoc']
 
 [[plugins]]
 repo = 'matcatc/vim-asciidoc-folding'
@@ -985,7 +1063,7 @@ on_ft = ['textile']
 
 [[plugins]]
 repo = 'neoclide/vim-jsx-improve'
-on_ft = ['javascript','jsx','typescript']
+on_ft = ['javascript', 'jsx', 'typescript']
 hook_source = '''
   " configurable if need
 
@@ -1040,7 +1118,7 @@ hook_source = '''
 
 [[plugins]]
 repo = 'styled-components/vim-styled-components'
-on_ft = ['javascript','jsx','typescript']
+on_ft = ['javascript', 'jsx', 'typescript']
 
 [[plugins]]
 repo = 'jason0x43/vim-js-indent'
@@ -1070,13 +1148,14 @@ on_ft = ['tsv']
 repo = 'mechatroner/rainbow_csv'
 on_ft = ['csv', 'tsv']
 
-[[plugins]] # Colorize
-# repo = 'ap/vim-css-color'
-repo = 'chrisbra/Colorizer'
-on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'sh', 'vim', 'xdefaults', 'xml', 'yaml']
-hook_source = '''
-  let g:colorizer_auto_filetype = join(g:dein#plugin.on_ft, ',')
-'''
+# use BourgeoisBear/clrzr in dein.toml
+# [[plugins]] # Colorize
+# # repo = 'ap/vim-css-color'
+# repo = 'chrisbra/Colorizer'
+# on_ft = ['clojure', 'css', 'dosini', 'elm', 'go', 'html', 'i3', 'i3config', 'javascript', 'json', 'jsx', 'less', 'moon', 'perl', 'php', 'python', 'r', 'ruby', 'sass', 'scss', 'stylus', 'typescript', 'sh', 'vim', 'xdefaults', 'xml', 'yaml']
+# hook_source = '''
+#   let g:colorizer_auto_filetype = join(g:dein#plugin.on_ft, ',')
+# '''
 
 # or
 # [[plugins]] # Currently not work in windows
@@ -1146,6 +1225,11 @@ on_ft = ['html']
 repo = 'hynek/vim-python-pep8-indent'
 on_ft = ['python']
 
+[[plugins]]
+# repo = 'jmcantrell/vim-virtualenv'
+repo = 'miyakogi/vim-virtualenv'
+on_ft = ['python']
+
 [[plugins]] # need merged = 0/lazy
 repo = 'aliev/vim-compiler-python'
 on_ft = ['python']
@@ -1156,14 +1240,7 @@ repo = 'heavenshell/vim-pydocstring'
 # rev  = 'develop'
 on_ft = ['python']
 hook_post_update = '''
-  " command use pipx(if exists), path setup and pipx command install manually.
-  if g:user.function.executable('pipx')
-    let g:dein#plugin.build = 'pipx upgrade doq'
-  elseif g:user.system.windows && g:user.function.executable('pip')
-    let g:dein#plugin.build = 'pip install --upgrade doq'
-  elseif g:user.function.executable('pip3')
-    let g:dein#plugin.build = 'pip3 install --user --upgrade doq'
-  endif
+  let g:dein#plugin.build = g:user.function.python_pkg_build_command('doq')
 '''
 hook_source = '''
   if g:user.function.executable('doq')
@@ -1216,10 +1293,6 @@ on_ft = ['xxd']
 
 [[plugins]]
 repo = 'vim-jp/syntax-vim-ex'
-on_ft = ['vim']
-
-[[plugins]]
-repo = 'rbtnn/vim-vimscript_formatter'
 on_ft = ['vim']
 
 [[plugins]]
@@ -1300,5 +1373,12 @@ on_ft = ['terraform']
 [[plugins]]
 repo = 'itchyny/vim-haskell-indent'
 on_ft = ['haskell']
+
+[[plugins]]
+repo = 'tpope/vim-git'
+on_ft = ['gitcommit', 'gitconfig', 'gitrebase', 'gitsendmail']
+hook_source = '''
+  let g:gitcommit_cleanup = 'scissors'
+'''
 
 # EOF

@@ -1,9 +1,4 @@
 # Neovim compatibility
-## Remote Plugin support
-# roxma/nvim-yarp (and roxma/vim-hug-neovim-rpc) need pynvim
-# > pip install --upgrade pynvim
-[[plugins]]
-repo = 'roxma/nvim-yarp'
 
 # Neovim specific function treat
 [[plugins]]

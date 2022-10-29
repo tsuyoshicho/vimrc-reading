@@ -17,6 +17,10 @@ twitter Mention Timeline	MentionsTwitter
 twitter Owned List			OwnedListsTwitter
 twitter Post				PosttoTwitter
 
+# Gitter
+gitter 4513ECHO/community	new gitter://room/4513ECHO/community
+gitter vim-jp/reading-vimrc	new gitter://room/vim-jp/reading-vimrc
+
 # capture
 abbreviate					Capture abbreviate
 augroup						Capture augroup
