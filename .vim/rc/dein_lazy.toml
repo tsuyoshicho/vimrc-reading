@@ -18,13 +18,44 @@ on_cmd = ['NotifyChanged']
 repo = 'powerman/vim-plugin-AnsiEsc'
 on_cmd = ['AnsiEsc']
 depends = ['vital.vim']
-hook_source = '''
+hook_add = '''
   let g:no_ansiesc_menu = 1
   let g:no_cecutil_maps = 1
   " based on https://qiita.com/1000k/items/6d4953d2dd52fdd86556
   command! AnsiEscStripCode %s/\e\[[0-9;]*m//g
   " command! AnsiEscStripCode %s/^.*$/\=g:V.import('Data.String').remove_ansi_sequences(\0)/g
 '''
+
+[[plugins]] # thanks 4513ECHO
+repo = 'thinca/vim-partedit'
+depends = ['context_filetype.vim']
+on_cmd = ['Partedit']
+on_func = ['partedit#start']
+hook_add = '''
+  let g:partedit#opener = 'split'
+  function! s:operator_partedit() abort
+    let context = context_filetype#get()
+    if context.range == [[0, 0], [0, 0]]
+      echohl WarningMsg
+      echomsg '[partedit] Context is not found'
+      echohl NONE
+      return
+    endif
+    call partedit#start(context.range[0][0], context.range[1][0],
+          \ {'filetype': context.filetype})
+    nnoremap <buffer> q <Cmd>ParteditEnd<Bar>close<CR>
+  endfunction
+  nnoremap <C-g><C-e> <Cmd>call <SID>operator_partedit()<CR>
+'''
+[plugins.ftplugin]
+help = '''
+  let b:partedit_filetype = 'vim'
+  let b:partedit_prefix = "\<Tab>"
+'''
+# toml = '''
+#   let b:partedit_filetype = 'vim'
+#   let b:partedit_auto_prefix = v:false
+# '''
 
 [[plugins]]
 repo = 'thinca/vim-scouter'
@@ -273,6 +304,12 @@ hook_source = '''
 # [[plugins]]
 # repo = 'mattn/vim-nyancat'
 # on_if= '!(has("win32") || has("win64") || has("win32unix")) && !has("gui_running")'
+
+# forked from Colorize
+[[plugins]]
+repo = 'BourgeoisBear/clrzr'
+# on_if check in VimEnter
+on_if = 'has("gui_running") || (has("termguicolors") && &termguicolors)'
 
 [[plugins]] # neovim or vim with yarp/rpc
 repo = 'gelguy/wilder.nvim'
@@ -654,7 +691,11 @@ on_cmd = ['ASMANPAGER', 'Man']
 repo = 'wlemuel/vim-tldr'
 on_cmd = ['Tldr', 'TldrUpdateDocs']
 hook_post_update = '''
-  let g:dein#plugin.build = g:user.function.python_pkg_build_command('tldr')
+  " This plugin does not require the Python "tldr" package.
+  " But for convenience, install "tldr" if you have python.
+  if has("python3")
+    let g:dein#plugin.build = g:user.function.deno_build_python_package('tldr')
+  endif
 '''
 hook_add = '''
   " language, fallback to english
@@ -1238,9 +1279,10 @@ on_ft = ['python']
 repo = 'heavenshell/vim-pydocstring'
 # repo = 'tsuyoshicho/vim-pydocstring'
 # rev  = 'develop'
+if = 'has("python3")'
 on_ft = ['python']
 hook_post_update = '''
-  let g:dein#plugin.build = g:user.function.python_pkg_build_command('doq')
+  let g:dein#plugin.build = g:user.function.deno_build_python_package('doq')
 '''
 hook_source = '''
   if g:user.function.executable('doq')

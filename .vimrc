@@ -94,8 +94,8 @@ function! g:user.function.fileicon(path) abort "{{{
   return icon
 endfunction " }}}
 
-" setup function: python package
-function! g:user.function.python_pkg_build_command(package) abort "{{{
+" setup function: deno python package install at build
+function! g:user.function.deno_build_python_package(package) abort "{{{
   " pipx?
   " if g:user.function.executable('pipx')
   "   " install or upgrade?
@@ -463,6 +463,10 @@ let g:user.plugin.info.whichkey.mapkey = extend(g:user.plugin.info.whichkey.mapk
 " plugin
 " dein 設定前の設定
 let g:dein#default_options = { 'merged': v:true }
+
+" plugin need settings
+" vimproc
+let g:vimproc#download_windows_dll = 1
 
 " }}}
 
@@ -1563,10 +1567,10 @@ if !has('gui_running')
   set t_Co=16
   if stridx($TERM, 'xterm-256color') >= 0
     " xterm 256が定義ずみの場合
+    set t_Co=256
     if has('termguicolors')
       set termguicolors
     endif
-    set t_Co=256
   elseif (g:user.system.windows && ($ConEmuANSI ==? 'ON'))
     " xterm 256が定義されてないがWindowsでConEmuで256有効の場合
     " http://e8l.hatenablog.com/entry/2016/03/16/230018
@@ -1575,8 +1579,8 @@ if !has('gui_running')
     " ConEmu Vim Support color
     set term=xterm
     if has('termguicolors')
-      set termguicolors
       set t_Co=256
+      set termguicolors
     else
       set t_Co=256
       let &t_AB="\e[48;5;%dm"
@@ -1597,10 +1601,10 @@ if !has('gui_running')
   elseif (has('vtp') && has('vcon'))
     " Windows 10 color enable
     " currently off true color
+    set t_Co=256
     if has('termguicolors')
       set termguicolors
     endif
-    set t_Co=256
   endif
 endif
 
@@ -1883,7 +1887,8 @@ nnoremap <C-g> :call <SID>clip_text(expand('%:p'))<CR><C-g>
 
 " insert current file fullpath
 " from https://github.com/4513ECHO/dotfiles/blob/main/config/vim/rc/200_keymap.rc.vim
-cnoremap <C-x> <C-r>=expand('%:p')<CR>
+" cnoremap <C-x> <C-r>=expand('%:p')<CR>
+" use magic toggle(magic.vim)
 
 " special mapping
 "  ctrl + space input <NUL> in terminal, remap them.
@@ -1904,42 +1909,47 @@ cmap <C-h> <BS>
 " ################# キーマップ #######################
 " based on https://qiita.com/subebe/items/5de3fa64be91b7d4e0f2
 " Tab op key.
-nnoremap    [Tab] <Nop>
+nnoremap    <Plug>[Tab] <Nop>
 if get(g:, 'clever_f_not_overwrites_standard_mappings', 0) || dein#is_available('vim-eft')
   " overwrite stop : use t
-  nmap    t [Tab]
+  nmap    t <Plug>[Tab]
 else
   " overwrite : use <Space>t
-  nmap    <Space>t [Tab]
+  nmap    <Space>t <Plug>[Tab]
 endif
 " Tab jump
 for s:n in range(1, 9)
-  execute 'nnoremap <silent> [Tab]' . s:n  ':<C-u>tabnext'. s:n .'<CR>'
+  execute 'nnoremap <silent> <Plug>[Tab]' . s:n  ':<C-u>tabnext'. s:n .'<CR>'
 endfor
 unlet s:n
 " t1 で1番左のタブ、t2 で1番左から2番目のタブにジャンプ
 
-nnoremap <silent> [Tab]c :tablast \| tabnew<CR>
+nnoremap <silent> <Plug>[Tab]c :tablast \| tabnew<CR>
 " tc 新しいタブを一番右に作る
 
 if dein#is_available('vim-startify')
-  nnoremap <silent> [Tab]h :tablast \| tabnew \| Startify<CR>
+  nnoremap <silent> <Plug>[Tab]h :tablast \| tabnew \| Startify<CR>
   " th 新しいタブを一番右に作る startifyを実行
 endif
 
-nnoremap <silent> [Tab]x :tabclose<CR>
+nnoremap <silent> <Plug>[Tab]x :tabclose<CR>
 " tx タブを閉じる
-" nnoremap <silent> [Tab]n :tabnext<CR>
-nnoremap <silent><expr> [Tab]n "\<Cmd>tabnext " . string((tabpagenr() + v:count1 - 1) % tabpagenr('$') + 1) . "\<CR>"
+" nnoremap <silent> <Plug>[Tab]n :tabnext<CR>
+nnoremap <silent><expr> <Plug>[Tab]n "\<Cmd>tabnext " . string((tabpagenr() + v:count1 - 1) % tabpagenr('$') + 1) . "\<CR>"
 " tn 次のタブ
-" nnoremap <silent> [Tab]p :tabprevious<CR>
-nnoremap <silent><expr> [Tab]p "\<Cmd>tabprevious " . string(v:count1) . "\<CR>"
+" nnoremap <silent> <Plug>[Tab]p :tabprevious<CR>
+nnoremap <silent><expr> <Plug>[Tab]p "\<Cmd>tabprevious " . string(v:count1) . "\<CR>"
 " tp 前のタブ
 " new method from obcat san
 
+" thanks thinca
+" insert start before last ';'
+" nnoremap gA A<C-g>U<Left>
+" gA use EasyAligh
+
 " with ctrlp-smarttabs
 if dein#is_available('ctrlp.vim') && dein#is_available('ctrlp-smarttabs')
-  nnoremap <silent> [Tab]s :CtrlPSmartTabs<CR>
+  nnoremap <silent> <Plug>[Tab]s :CtrlPSmartTabs<CR>
 endif
 
 "矢印キーでは表示行単位で行移動する
@@ -1959,6 +1969,17 @@ nnoremap <Space>H 0
 nnoremap <Space>h ^
 nnoremap <Space>l g_
 nnoremap <Space>L $
+
+" thanks Masaaki Nakamura
+" ref https://vim-jp.slack.com/archives/C01JSLDQZH6/p1667463950299299
+" a" like (:h v_aquote) op/textobj replace to smart select
+" onoremap a' 2i'
+" xnoremap a' 2i'
+" onoremap a" 2i"
+" xnoremap a" 2i"
+" onoremap a` 2i`
+" xnoremap a` 2i`
+" alternate use textobj-string aX/iX
 
 " thanks ycino
 "" Move beginning toggle

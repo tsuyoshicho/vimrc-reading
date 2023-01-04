@@ -111,6 +111,19 @@ hook_add = '''
 '''
 
 [[plugins]] # カラースキーム
+repo = 'Badacadabra/vim-archery'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'archery'
+  let s:scheme['lightline']  = 'archery'
+  let s:scheme['airline']    = 'archery'
+  let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
 repo = 'ELouisYoung/vim-better-molokai'
 hook_add = '''
   let s:scheme = deepcopy(g:user.template.colorscheme)
@@ -275,6 +288,17 @@ hook_add = '''
 
   let s:scheme['name']       = 'synthwave'
   let s:scheme['background'] = 'dark'
+  let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+'''
+
+[[plugins]] # カラースキーム
+repo = 'aonemd/quietlight.vim'
+hook_add = '''
+  let s:scheme = deepcopy(g:user.template.colorscheme)
+  call add(g:user.colorscheme, s:scheme)
+
+  let s:scheme['name']       = 'quietlight'
+  let s:scheme['background'] = 'light'
   let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
 '''
 
@@ -559,6 +583,48 @@ hook_add = '''
   let s:scheme['name']       = 'mysticaltutor'
   let s:scheme['background'] = 'dark'
   let s:scheme['mode']       = ['16', '256', 'termguicolors', 'gui']
+'''
+
+
+[[plugins]] # カラースキーム
+repo = 'catppuccin/vim'
+name = 'catppuccin-vim'
+if = '!g:user.system.nvim'
+hook_add = '''
+  let s:names = ['catppuccin_frappe', 'catppuccin_latte', 'catppuccin_macchiato', 'catppuccin_mocha']
+  for s:name in s:names
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = s:name
+    let s:scheme['background'] = 'dark'
+    let s:scheme['lightline']  = s:name
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+  unlet s:names s:name
+'''
+
+[[plugins]] # カラースキーム
+repo = 'catppuccin/nvim'
+name = 'catppuccin-nvim'
+if = 'g:user.system.nvim'
+hook_add = '''
+  let s:names = ['catppuccin', 'catppuccin_frappe', 'catppuccin_latte', 'catppuccin_macchiato', 'catppuccin_mocha']
+  for s:name in s:names
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = s:name
+    let s:scheme['background'] = 'dark'
+    if s:name ==? 'catppuccin_latte'
+      let s:scheme['background'] = 'light'
+    endif
+    let s:scheme['lightline']  = 'catppuccin'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
+  unlet s:names s:name
+  " It is need configulation with lua.
+  " And more configurable with lua.
 '''
 
 [[plugins]] # カラースキーム
@@ -1197,6 +1263,19 @@ hook_add = '''
   "   endif
   " endif
   "
+'''
+
+[[plugins]] # カラースキーム
+repo = 'liuchengxu/space-vim-dark'
+hook_add = '''
+  for s:bg in ['light', 'dark']
+    let s:scheme = deepcopy(g:user.template.colorscheme)
+    call add(g:user.colorscheme, s:scheme)
+
+    let s:scheme['name']       = 'space-vim-dark'
+    let s:scheme['background'] = 'light'
+    let s:scheme['mode']       = ['256', 'termguicolors', 'gui']
+  endfor
 '''
 
 [[plugins]] # カラースキーム

@@ -22,24 +22,15 @@ hook_add = '''
   "     \   {'stoponexit': ''}
   "     \)
   " endif
-
-  augroup vimrc_init_denops
-    autocmd!
-    " workaround vim-pass token set are done and apply
-    autocmd User VimPassStartUpResolve echomsg '[denops] vim-pas complete, restart server.'
-    autocmd User VimPassStartUpResolve call denops#server#restart()
-  augroup END
 '''
 
-# this plugin need lazy and before set env
-# do not work this settings
-# [[plugins]] # github status
-# repo = 'yutkat/dps-coding-now.nvim'
-# depends = ['denops.vim', 'vim-pass']
-# hook_source = '''
-#   " need token into CODING_NOW_GITHUB_TOKEN
-#   call pass#get_startup('$XDG_CACHE_HOME', 'Develop/Github')
-# '''
+[[plugins]] # github status
+repo = 'yutkat/dps-coding-now.nvim'
+depends = ['denops.vim', 'vim-pass']
+hook_add = '''
+  " need token into CODING_NOW_GITHUB_TOKEN
+  call pass#get_startup('$CODING_NOW_GITHUB_TOKEN', 'Develop/Github')
+'''
 
 # When deno is nothing, do not load this toml.
 # load below that is fallback.
@@ -49,7 +40,7 @@ repo = 'lambdalisue/guise.vim'
 depends = ['denops.vim']
 
 [[plugins]]
-repo = 'kat0h/dps-bufpreview.vim'
+repo = 'kat0h/bufpreview.vim'
 depends = ['denops.vim']
 
 # # gitgutter/signify like
@@ -92,7 +83,49 @@ hook_add = '''
       \   setlocal nonumber norelativenumber
       \ | setlocal signcolumn=no
       \ | setlocal foldcolumn=0
+
+    autocmd User VimPassStartUpResolve echomsg '[gitter] vim-pass complete, reload plugin.'
+    autocmd User VimPassStartUpResolve call denops#plugin#reload('gitter')
   augroup END
+'''
+
+# need for scorpeon.vim
+[[plugins]]
+repo = 'microsoft/vscode'
+type__depth = 1
+if = 0
+merged = 0
+path = '$XDG_CACHE_HOME/vscode'
+
+[[plugins]]
+repo = 'oovm/vscode-toml'
+type__depth = 1
+if = 0
+merged = 0
+path = '$XDG_CACHE_HOME/scorpeon/toml'
+
+[[plugins]]
+repo = 'emilast/vscode-logfile-highlighter'
+type__depth = 1
+if = 0
+merged = 0
+path = '$XDG_CACHE_HOME/scorpeon/log'
+
+[[plugins]]
+repo = 'uga-rosa/scorpeon.vim'
+depends = ['denops.vim', 'vscode', 'vscode-toml', 'vscode-logfile-highlighter']
+hook_add = '''
+  " set extensions path
+  let g:scorpeon_extensions_path = [
+    \ expand('$XDG_CACHE_HOME/vscode/extensions'),
+    \ expand('$XDG_CACHE_HOME/scorpeon/'),
+    \ ]
+
+  " Currently toml off
+  let g:scorpeon_highlight = {
+    \ 'enable': ['typescript', 'log'],
+    \ 'disable': { -> getfsize(expand('%')) > 2 * 1024 * 1024 }
+    \ }
 '''
 
 # EOF

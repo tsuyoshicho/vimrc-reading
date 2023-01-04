@@ -11,7 +11,7 @@ hook_add = '''
   " process
   let g:dein#install_max_processes = g:user.system.cpunum
 
-  " coefficient
+  " coefficientear
   if g:user.system.windows
     " windows x4
     " io heavy & process heavy -> stay wait queue
@@ -109,8 +109,12 @@ merged = 0
 hook_post_update = '''
   if g:user.system.windows
     if !g:user.system.cygwin
-      " let s:cmd = 'tools\\update-dll-mingw'
-      let s:cmd = 'tools\\update-dll-msvc'
+      if get(g:, 'vimproc#download_windows_dll', 0)
+        " automatic download
+      else
+        " let s:cmd = 'tools\\update-dll-mingw'
+        let s:cmd = 'tools\\update-dll-msvc'
+      endif
     else
       let s:cmd = 'make -f make_cygwin.mak'
     endif
@@ -352,10 +356,6 @@ repo = 'KosukeMizuno/vim-cursorholdmark'
 [[plugins]]
 repo = 'istepura/vim-toolbar-icons-silk'
 # GUI toolbar icon for silk theme
-
-# forked from Colorize
-[[plugins]]
-repo = 'BourgeoisBear/clrzr'
 
 # Motion
 ##############
@@ -676,9 +676,17 @@ repo = 'tsuyoshicho/vim-pass'
 # ctrlp registration are safety, that was do not need depends rule.
 # depends = ['ctrlp.vim']
 hook_add = '''
+  " ctrlp integration
   let g:ctrlp_extensions = get(g:, 'ctrlp_extensions', [])
         \ + ['pass']
 
+  " Check remote system(ex. linux) gpg-agent support
+  if exists('$VIM_PASS_AGENT')
+    " When '1', using agent enabled
+    let g:pass_use_agent = ($VIM_PASS_AGENT ==? '1') ? 1 : 0
+  endif
+
+  " If Windows, use native gpg
   if g:user.system.windows
     if !g:user.system.cygwin
       " Windows native not MSYS(cygwin) work
@@ -775,7 +783,7 @@ hook_source = '''
     " hub PRed
     let g:singleton#entrust_pattern['git'] =
       \ add(g:singleton#entrust_pattern['git'],
-      \     '/\.git/EDIT_DESCRIPTION$')
+      \     '/\.git/.*$')
     " singleton除外リスト
     " let g:singleton#ignore_pattern
 
@@ -1393,7 +1401,6 @@ hook_add = '''
         \  'delimiter_format' : '%d ',
         \ },
         \ '__EMPTY__'   : {
-        \  'delimiter'        : ' ',
         \  'delimiter_format' : '%d',
         \ },
         \ '+' : {
@@ -1852,11 +1859,14 @@ repo = 'kana/vim-textobj-user'
 # special
 
 # jasentense
-# as/is 拡張(既存を置き換え)
-# and/or as/is replace textobj
-# [[plugins]]
-# repo = 'rbtnn/vim-textobj-string'
-# depends = ['vim-textobj-user']
+# as/is 拡張
+# aX/iX に割り当てる
+[[plugins]]
+repo = 'rbtnn/vim-textobj-string'
+depends = ['vim-textobj-user']
+hook_add = '''
+  let g:vim_textobj_string_mapping = 'X'
+'''
 
 # jasegment
 # aW/iW 拡張
@@ -2210,8 +2220,8 @@ hook_post_source = '''
 #     \ }
 # '''
 
-# x() 系
-# av, iv で x() 系に対応、他にもある
+# func() 系
+# ax(, ix() などで func() 系に対応、他にもある
 [[plugins]]
 repo = 'anyakichi/vim-textobj-xbrackets'
 depends = ['vim-textobj-user']
@@ -2788,6 +2798,8 @@ if = 'g:user.function.executable("hub")'
 
 [[plugins]]
 repo = 'itchyny/calendar.vim'
+name = 'itchyny-calendar'
+merged = 0
 hook_add = '''
   " let g:calendar_frame = 'default'
 
@@ -2993,52 +3005,53 @@ hook_post_source = '''
   nnoremap <silent> <Leader>ma :<C-u>FgAg<CR>
 '''
 
-[[plugins]]
+# [[plugins]]
 # repo = 'soramugi/auto-ctags.vim'
-repo = 'tsuyoshicho/auto-ctags.vim'
-rev  = 'feature/asyncprocess'
-if = 'g:user.function.executable("ctags")'
-hook_source = '''
-  " in .ctags
-  let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes', '--extra=+f']
-  " universal ctags need
-  let g:auto_ctags_tags_args = get(g:,'auto_ctags_tags_args',[]) + ['--output-format=e-ctags']
-
-  let g:auto_ctags = 1
-  " let g:auto_ctags_filetype_mode = 1
-  let g:auto_ctags_directory_list = ['.git', '.svn', '.hg', '.bzr', 'CVS', '.']
-  let g:auto_ctags_search_recursively = 1
-  let g:auto_ctags_absolute_path = 1
-  let s:home = ''
-  if has('path_extra')
-    let s:home = ';$HOME'
-  endif
-  for s:dir in g:auto_ctags_directory_list
-    if s:dir !=? '.'
-      execute 'set tags+=./' . s:dir . '/tags' . s:home
-    endif
-  endfor
-
-  " git リポジトリ内などでも直にtagsを生成する関数
-  function! s:direct_auto_ctags()
-    let l:ctags_list_backup = copy(g:auto_ctags_directory_list)
-    let l:ctags_search_backup = g:auto_ctags_search_recursively
-
-    " set current only
-    let g:auto_ctags_directory_list = ['.']
-    let g:auto_ctags_search_recursively = 1
-
-    " call ctags create process
-    call auto_ctags#ctags(1)
-
-    " recover backups
-    let g:auto_ctags_directory_list = l:ctags_list_backup
-    let g:auto_ctags_search_recursively = l:ctags_search_backup
-  endfunction
-
-  " コマンド定義
-  command! CtagsDirect call <SID>direct_auto_ctags()
-'''
+# or
+# repo = 'tsuyoshicho/auto-ctags.vim'
+# rev  = 'feature/asyncprocess'
+# if = 'g:user.function.executable("ctags")'
+# hook_source = '''
+#   " in .ctags
+#   let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes', '--extra=+f']
+#   " universal ctags need
+#   let g:auto_ctags_tags_args = get(g:,'auto_ctags_tags_args',[]) + ['--output-format=e-ctags']
+#
+#   let g:auto_ctags = 1
+#   " let g:auto_ctags_filetype_mode = 1
+#   let g:auto_ctags_directory_list = ['.git', '.svn', '.hg', '.bzr', 'CVS', '.']
+#   let g:auto_ctags_search_recursively = 1
+#   let g:auto_ctags_absolute_path = 1
+#   let s:home = ''
+#   if has('path_extra')
+#     let s:home = ';$HOME'
+#   endif
+#   for s:dir in g:auto_ctags_directory_list
+#     if s:dir !=? '.'
+#       execute 'set tags+=./' . s:dir . '/tags' . s:home
+#     endif
+#   endfor
+#
+#   " git リポジトリ内などでも直にtagsを生成する関数
+#   function! s:direct_auto_ctags()
+#     let l:ctags_list_backup = copy(g:auto_ctags_directory_list)
+#     let l:ctags_search_backup = g:auto_ctags_search_recursively
+#
+#     " set current only
+#     let g:auto_ctags_directory_list = ['.']
+#     let g:auto_ctags_search_recursively = 1
+#
+#     " call ctags create process
+#     call auto_ctags#ctags(1)
+#
+#     " recover backups
+#     let g:auto_ctags_directory_list = l:ctags_list_backup
+#     let g:auto_ctags_search_recursively = l:ctags_search_backup
+#   endfunction
+#
+#   " コマンド定義
+#   command! CtagsDirect call <SID>direct_auto_ctags()
+# '''
 
 # autocomplete
 [[plugins]]
@@ -3052,16 +3065,18 @@ hook_add = '''
   let g:lsp_semantic_enabled = 1           " default 0
   let g:lsp_work_done_progress_enabled = 1 " default 0
 
-
-  if g:user.system.nvim || exists('*popup_create')
+  " popup preview
+  if v:true && (g:user.system.nvim || exists('*popup_create'))
     let g:lsp_preview_float = 1
     let g:lsp_diagnostics_float_cursor = 1
-    let g:lsp_diagnostics_echo_cursor = 0 " default 0 enable echo under cursor when in normal mode
+    let g:lsp_diagnostics_echo_cursor = 0
   else
     let g:lsp_preview_float = 0
     let g:lsp_diagnostics_float_cursor = 0
-    let g:lsp_diagnostics_echo_cursor = 1 " default 0 enable echo under cursor when in normal mode
+    let g:lsp_diagnostics_echo_cursor = 1
   endif
+  " preview conceal
+  let g:lsp_preview_fixup_conceal = 1
 
   " folding
   " let g:lsp_fold_enabled = 0 " default 1 enable
@@ -3094,6 +3109,14 @@ hook_add = '''
     " let g:lsp_diagnostics_virtual_text_enabled = 1
     let g:lsp_diagnostics_virtual_text_delay = 50
     let g:lsp_diagnostics_virtual_text_prefix = "🍔 "
+  endif
+
+  " code action
+  let g:lsp_document_code_action_signs_enabled = 0 " default 1
+
+  " inlay hints
+  if has('patch-9.0.0167')
+    let g:lsp_inlay_hints_enabled = 1
   endif
 
   " let g:lsp_completion_documentation_enabled = 1
@@ -3175,6 +3198,7 @@ hook_add = '''
     nmap <silent><buffer> gd         <plug>(lsp-definition)
     nmap <silent><buffer> <Leader>K  <plug>(lsp-hover)
     nmap <silent><buffer> <Leader>A  <plug>(lsp-code-action)
+    nmap <silent><buffer> <Leader>R  <plug>(lsp-rename)
     nmap <silent><buffer> <Leader>md <plug>(lsp-document-diagnostics)
     nmap <silent><buffer> <Leader>mr <plug>(lsp-references)
 
@@ -3241,6 +3265,13 @@ hook_post_source = '''
   smap <expr> <C-n>  vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-n>'
   imap <expr> <C-p>  vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
   smap <expr> <C-p>  vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)'      : '<C-p>'
+
+  " select text re-snipping
+  nmap sS <Plug>(vsnip-select-text)
+  xmap sS <Plug>(vsnip-select-text)
+  nmap sc <Plug>(vsnip-cut-text)
+  xmap sc <Plug>(vsnip-cut-text)
+
 '''
 
 # snippets data
@@ -3250,6 +3281,10 @@ merged = 0
 
 [[plugins]]
 repo = 'rafamadriz/friendly-snippets'
+merged = 0
+
+[[plugins]]
+repo = 'hrsh7th/completion-snippet'
 merged = 0
 
 [[plugins]]
@@ -3522,9 +3557,9 @@ hook_post_source = '''
 repo = 'prabirshrestha/asyncomplete-tags.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_tags
-      autocmd!
+  augroup vimrc_init_asyncomplete_tags
+    autocmd!
+    if v:false
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#tags#get_source_options({
@@ -3536,17 +3571,17 @@ hook_source = '''
       \     },
       \     'priority': 10,
       \   }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-emmet.vim'
 depends = ['asyncomplete.vim', 'emmet-vim']
 hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_emmet
-      autocmd!
+  augroup vimrc_init_asyncomplete_emmet
+    autocmd!
+    if v:true
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emmet#get_source_options({
@@ -3555,17 +3590,17 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#emmet#completor'),
       \     'priority': 10,
       \ }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-file.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_file
-      autocmd!
+  augroup vimrc_init_asyncomplete_file
+    autocmd!
+    if v:true
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#file#get_source_options({
@@ -3574,8 +3609,8 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#file#completor'),
       \     'priority': 10,
       \   }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
@@ -3585,9 +3620,9 @@ hook_add = '''
   let g:asyncomplete_around_range = 100
 '''
 hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_around
-      autocmd!
+  augroup vimrc_init_asyncomplete_around
+    autocmd!
+    if v:true
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#around#get_source_options({
@@ -3596,17 +3631,17 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#around#completor'),
       \     'priority': 20,
       \ }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-buffer.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_buffer
-      autocmd!
+  augroup vimrc_init_asyncomplete_buffer
+    autocmd!
+    if v:false
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#buffer#get_source_options({
@@ -3619,17 +3654,95 @@ hook_source = '''
       \      },
       \     'priority': 20,
       \ }))
-    augroup END
-  endif
+    endif
+  augroup END
+'''
+
+[[plugins]]
+repo = 'tsuyoshicho/asyncomplete-mr.vim'
+# rev  = 'develop'
+depends = ['asyncomplete.vim', 'mr.vim']
+hook_source = '''
+  augroup vimrc_init_asyncomplete_mrvim
+    autocmd!
+    if v:false
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#mrr#get_source_options({
+      \     'name': 'mrr',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#mrr#completor'),
+      \     'priority': 20,
+      \   }))
+    endif
+    if v:false
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#mru#get_source_options({
+      \     'name': 'mru',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#mru#completor'),
+      \     'priority': 20,
+      \   }))
+    endif
+    if v:false
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#mrw#get_source_options({
+      \     'name': 'mrw',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#mrw#completor'),
+      \     'priority': 20,
+      \   }))
+    endif
+  augroup END
+'''
+
+[[plugins]]
+repo = 'tsuyoshicho/asyncomplete-anylist'
+depends = ['asyncomplete.vim']
+hook_source = '''
+  " https://www.conventionalcommits.org/en/v1.0.0/
+  " https://gist.github.com/minop1205/5fc4f6ef0ec89fb1738833ba25ae00a0
+  function! s:git_conventional_commit() abort
+    if &filetype =~? 'git'
+      return [
+      \  'build', 'ci', 'chore', 'docs', 'feat', 'fix',
+      \  'perf', 'refactor', 'revert', 'style', 'test'
+      \]
+    endif
+    return []
+  endfunction
+
+  augroup vimrc_init_asyncomplete_anylist
+    autocmd!
+    if v:true
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#anylist#get_source_options({
+      \     'name': 'anylist',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#anylist#completor'),
+      \     'config': {
+      \       'matcher': '\(\w\|\f\)+$',
+      \       'items': [
+      \         {'name': 'sign', 'list': ['tsuyoshicho', 'tsuyoshi.cho', 'tsuyoshi_cho']},
+      \         {'name': 'git', 'function': function('s:git_conventional_commit'), 'args': []},
+      \       ],
+      \     },
+      \     'priority': 20,
+      \   }))
+    endif
+  augroup END
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-emoji.vim'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if v:true
-    augroup vimrc_init_asyncomplete_emoji
-      autocmd!
+  augroup vimrc_init_asyncomplete_emoji
+    autocmd!
+    if v:true
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#emoji#get_source_options({
@@ -3638,8 +3751,8 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#emoji#completor'),
       \     'priority': 30,
       \   }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
@@ -3648,9 +3761,9 @@ repo = 'yuki-yano/asyncomplete-dictionary'
 # rev  = 'develop'
 depends = ['asyncomplete.vim']
 hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_dictionary
-      autocmd!
+  augroup vimrc_init_asyncomplete_dictionary
+    autocmd!
+    if v:false
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#dictionary#get_source_options({
@@ -3659,8 +3772,8 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#dictionary#completor'),
       \     'priority': 40,
       \   }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
@@ -3669,9 +3782,9 @@ if = 'g:user.function.executable("nextword")'
 merged = 0
 depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
-  if v:false
-    augroup vimrc_init_asyncomplete_nextword
-      autocmd!
+  augroup vimrc_init_asyncomplete_nextword
+    autocmd!
+    if v:false
       autocmd User asyncomplete_setup call
       \ asyncomplete#register_source(
       \   asyncomplete#sources#nextword#get_source_options({
@@ -3681,8 +3794,8 @@ hook_source = '''
       \     'completor': function('asyncomplete#sources#nextword#completor'),
       \     'priority': 40,
       \   }))
-    augroup END
-  endif
+    endif
+  augroup END
 '''
 
 [[plugins]]
@@ -3694,22 +3807,20 @@ merged = 0
 depends = ['asyncomplete.vim', 'async.vim']
 hook_source = '''
   " 'if' do not stop hook_add, skip hook_source
-  if v:true
-    if len(g:user.file.look) > 0
+  augroup vimrc_init_asyncomplete_look
+    autocmd!
+    if v:true && (len(g:user.file.look) > 0)
       let g:asyncomplete#sources#look#dict = g:user.file.look[0]
-      augroup vimrc_init_asyncomplete_look
-        autocmd!
-        autocmd User asyncomplete_setup call
-        \ asyncomplete#register_source(
-        \   asyncomplete#sources#look#get_source_options({
-        \     'name': 'look',
-        \     'allowlist': ['*'],
-        \     'completor': function('asyncomplete#sources#look#completor'),
-        \     'priority': 40,
-        \   }))
-      augroup END
+      autocmd User asyncomplete_setup call
+      \ asyncomplete#register_source(
+      \   asyncomplete#sources#look#get_source_options({
+      \     'name': 'look',
+      \     'allowlist': ['*'],
+      \     'completor': function('asyncomplete#sources#look#completor'),
+      \     'priority': 40,
+      \   }))
     endif
-  endif
+  augroup END
 '''
 
 # [[plugins]] # completion <C-X><C-U> (user completion)
@@ -4773,7 +4884,7 @@ depends = ['lightline.vim']
 hook_add = '''
   let g:lightline#lsp#server_interval = 60
 
-  if has('gui_running')
+  if has('gui_running') && v:true
     let g:lightline#lsp#indicator_checking = "\uf110"
     let g:lightline#lsp#indicator_warning = "\uf071"
     let g:lightline#lsp#indicator_error = "\uf05e"
@@ -4796,7 +4907,7 @@ hook_add = '''
 repo = 'delphinus/lightline-delphinus'
 # repo = 'tsuyoshicho/lightline-delphinus'
 # rev  = 'develop'
-depends = ['lightline.vim', 'lightline-buffer', 'vim-lightline_tabpagecount', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'lightline-lsp-progress', 'vista.vim', 'vim-signify', 'StatuslineUpateTimer.vim', 'vim-gitbranch']
+depends = ['lightline.vim', 'lightline-buffer', 'vim-lightline_tabpagecount', 'vim-devicons', 'vim-anzu', 'vim-submode', 'lightline-lsp', 'lightline-lsp-progress', 'vim-signify', 'StatuslineUpateTimer.vim', 'vim-gitbranch']
 # 設定するフォントは powerline patched
 hook_add = '''
   let g:lightline_delphinus_use_powerline_glyphs = 1
@@ -4831,15 +4942,38 @@ hook_post_source = '''
     return ''
   endfunction
 
+  " function name wrapper
+  function! Lightline_components_nearest_method_or_function() abort
+    " vista.vim available
+    if exists('b:vista_nearest_method_or_function')
+      return get(b:, 'vista_nearest_method_or_function', '<no function>')
+    endif
+    " current-func-info.vim available
+    if exists('*cfi#format')
+      return cfi#format("%s", '<no function>')
+    endif
+    " all methods does not exist
+    return '<noting methods>'
+  endfunction
+
   "  charcode use LightlineCharcode instead of lightline#delphinus#components#charcode
 
+  " lightline-lsp split count [  'lsp_diag_error', 'lsp_diag_warning', 'lsp_diag_info', 'lsp_diag_hint' ],
+  " function
+  " \   'lsp_diag_error'    : 'lightline#lsp#error',
+  " \   'lsp_diag_warning'  : 'lightline#lsp#warning',
+  " \   'lsp_diag_info'     : 'lightline#lsp#information',
+  " \   'lsp_diag_hint'     : 'lightline#lsp#hint',
+  "
   let g:lightline = {
     \ 'colorscheme': g:lightline_delphinus_colorscheme,
     \ 'active': {
     \   'left' : [
     \     [ 'mode', 'paste' ],
     \     [ 'gitbranch', 'filepath', 'filename', 'method' ],
-    \     [ 'signify', 'lsp_count', 'lsp_ok', 'lsp_status_ok', 'lsp_status_error', 'lsp_status_warning',  'lsp_status' ]
+    \     [ 'signify', 'lsp_diag_count', 'lsp_status' ],
+    \     [ 'lsp_diag_checking', 'lsp_diag_ok' ],
+    \     [ 'lsp_status_error', 'lsp_status_warning', 'lsp_status_ok' ],
     \   ],
     \   'right': [
     \     [ 'lineinfo', 'percent',  'sky_color_clock' ],
@@ -4869,10 +5003,9 @@ hook_post_source = '''
     \   'percent':      'lightline#delphinus#components#percent',
     \   'currenttag':   'lightline#delphinus#components#currenttag',
     \   'signify':      'lightline#delphinus#components#signify',
-    \   'lsp_count':    'lightline#lsp#count',
-    \   'lsp_ok':       'lightline#lsp#ok',
+    \   'lsp_diag_count': 'lightline#lsp#count',
     \   'lsp_status':   'lightline_lsp_progress#progress',
-    \   'method':       'NearestMethodOrFunction',
+    \   'method':       'Lightline_components_nearest_method_or_function',
     \   'anzu':         'anzu#search_status',
     \   'gitbranch':    'Lightline_components_gitbranch',
     \   'submode':      'submode#current',
@@ -4887,17 +5020,21 @@ hook_post_source = '''
     \   'fileencoding': 0,
     \ },
     \ 'component_expand': {
-    \   'lsp_status_error':   'lightline#lsp#status_error',
+    \   'lsp_diag_checking' : 'lightline#lsp#checking',
+    \   'lsp_diag_ok'       : 'lightline#lsp#ok',
+    \   'lsp_status_error'  : 'lightline#lsp#status_error',
     \   'lsp_status_warning': 'lightline#lsp#status_warning',
-    \   'lsp_status_ok':      'lightline#lsp#status_ok',
+    \   'lsp_status_ok'     : 'lightline#lsp#status_ok',
     \   'buffercurrent':      'lightline#buffer#buffercurrent',
     \   'bufferbefore':       'lightline#buffer#bufferbefore',
     \   'bufferafter':        'lightline#buffer#bufferafter',
     \ },
     \ 'component_type': {
-    \   'lsp_status_error':     'error',
-    \   'lsp_status_warning':   'warning',
-    \   'lsp_status_ok':        'ok',
+    \   'lsp_diag_checking' : 'ok',
+    \   'lsp_diag_ok'       : 'ok',
+    \   'lsp_status_error'  : 'error',
+    \   'lsp_status_warning': 'warning',
+    \   'lsp_status_ok'     : 'ok',
     \   'buffercurrent': 'tabsel',
     \   'bufferbefore':  'raw',
     \   'bufferafter':   'raw',
@@ -4973,26 +5110,22 @@ hook_add = '''
 
   " g:nd_themes setting template
   if has('gui_running')
+    " if g:user.system.nvim
     let g:nd_themes = [
-      \ ['sunrise+0',   'iceberg',    'light', 'iceberg'   ],
-      \ ['sunset+0',    'gruvbox',    'dark',  'gruvbox'   ],
-      \ ['sunset+1/4',  'gotham',     'dark',  'gotham'    ],
+      \ ['sunrise+0',  'iceberg',          'light', 'iceberg'           ],
+      \ ['sunset+0',   'iceberg',          'dark',  'icebergDark'       ],
+      \ ['sunset+1/4', 'solarized8',       'dark',  'solarized_improved'],
+      \ ['sunset+1/2', 'quantum',          'dark',  'quantum'           ],
       \]
   else
     let g:nd_themes = [
-      \ ['sunrise+0',   'iceberg',    'light', 'iceberg'   ],
-      \ ['sunset+0',    'gruvbox',    'dark',  'gruvbox'   ],
+      \ ['sunrise+0',  'iceberg',          'light', 'iceberg'           ],
+      \ ['sunset+0',   'iceberg',          'dark',  'icebergDark'       ],
       \]
   endif
 
   let g:nd_latitude  = '30' " Asia/Tokyo 35
   let g:nd_timeshift =  '0' " shift minutes
-
-  " " debug
-  " let g:nd_themes = [
-  "     \ ['09:00', 'gruvbox', 'dark', 'gruvbox'],
-  "     \ ['18:12', 'iceberg', 'dark', 'iceberg'],
-  "     \]
 
   let g:nd_lightline = 1
 '''
@@ -5846,6 +5979,9 @@ hook_post_source = '''
   " let g:DoxygenToolkit_python_autoFunctionReturn = 'yes'
 '''
 
+[[plugins]] # function name
+repo = 'tyru/current-func-info.vim'
+
 [[plugins]] # Doxygen and other
 repo = 'kkoomen/vim-doge'
 
@@ -5853,69 +5989,63 @@ repo = 'kkoomen/vim-doge'
 # repo = 'PProvost/vim-ps1'
 # imported to vim official
 
-[[plugins]]
-repo = 'liuchengxu/vista.vim'
-# repo = 'tsuyoshicho/vista.vim'
-# rev  = 'develop'
-depends = ['vim-lsp', 'lightline.vim', 'fzf', 'fzf.vim']
-hook_add = '''
-  " indent
-  let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
-
-  " default ctags
-  let g:vista_default_executive = 'ctags'
-
-  " lsp enable
-  let g:vista_executive_for = {
-  \ 'cpp'      : 'vim_lsp',
-  \ 'sh'       : 'vim_lsp',
-  \ 'vim'      : 'vim_lsp',
-  \ 'python'   : 'vim_lsp',
-  \ 'markdown' : 'toc',
-  \ }
-
-  let g:vista_update_on_text_changed = 1
-
-  " Ensure you have installed some decent font to show these pretty symbols, then you can enable icon for the kind.
-  let g:vista#renderer#enable_icon = 1
-
-  " The default icons can't be suitable for all the filetypes, you can extend it as you wish.
-  let g:vista#renderer#icons = {
-  \   "function": nr2char(0xf0ad),
-  \   "variable": nr2char(0xf0ae),
-  \  }
-  "\   "function": nr2char(0xf0ad),  " 0xf0ad 
-  "\   "variable": nr2char(0xf0ae),  " 0xf0ae 
-  "\   "function": nr2char(0xf794),  " 0xf794 󿞔
-  "\   "variable": nr2char(0xf71b),  " 0xf71b 󿜛
-
-  function! NearestMethodOrFunction() abort
-    return get(b:, 'vista_nearest_method_or_function', '')
-  endfunction
-
-  augroup vimrc_init_vista
-    autocmd!
-    autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter *
-      \  call vista#RunForNearestMethodOrFunction()
-    autocmd User lsp_server_init
-      \  call vista#RunForNearestMethodOrFunction()
-  augroup END
-
-  " keymap info
-  let g:user.plugin.info.whichkey.desc.leader['v'] = {
-    \  'name' : '+Vista',
-    \ }
-
-  nnoremap <silent> <F8> :Vista!!<CR>
-
-  nnoremap <silent> <leader>vv :Vista!!<CR>
-  nnoremap <silent> <leader>vf :Vista finder<CR>
-
-  " keymap info
-  let g:user.plugin.info.whichkey.desc.leader['v'] = {
-    \  'name' : '+Vista',
-    \ }
-'''
+# [[plugins]]
+# repo = 'liuchengxu/vista.vim'
+# # repo = 'tsuyoshicho/vista.vim'
+# # rev  = 'develop'
+# depends = ['vim-lsp', 'lightline.vim', 'fzf', 'fzf.vim']
+# hook_add = '''
+#   " indent
+#   let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
+#
+#   " default ctags
+#   " let g:vista_default_executive = 'ctags'
+#   " default vim_lsp
+#   let g:vista_default_executive = 'vim_lsp'
+#
+#   " lsp enable
+#   let g:vista_executive_for = {
+#   \ 'markdown' : 'toc',
+#   \ }
+#
+#   let g:vista_update_on_text_changed = 1
+#
+#   " Ensure you have installed some decent font to show these pretty symbols, then you can enable icon for the kind.
+#   let g:vista#renderer#enable_icon = 1
+#
+#   " The default icons can't be suitable for all the filetypes, you can extend it as you wish.
+#   let g:vista#renderer#icons = {
+#   \   "function": nr2char(0xf0ad),
+#   \   "variable": nr2char(0xf0ae),
+#   \  }
+#   "\   "function": nr2char(0xf0ad),  " 0xf0ad 
+#   "\   "variable": nr2char(0xf0ae),  " 0xf0ae 
+#   "\   "function": nr2char(0xf794),  " 0xf794 󿞔
+#   "\   "variable": nr2char(0xf71b),  " 0xf71b 󿜛
+#
+#   augroup vimrc_init_vista
+#     autocmd!
+#     autocmd VimEnter,BufEnter,BufWinEnter,InsertEnter *
+#       \  call vista#RunForNearestMethodOrFunction()
+#     autocmd User lsp_server_init
+#       \  call vista#RunForNearestMethodOrFunction()
+#   augroup END
+#
+#   " keymap info
+#   let g:user.plugin.info.whichkey.desc.leader['v'] = {
+#     \  'name' : '+Vista',
+#     \ }
+#
+#   nnoremap <silent> <F8> :Vista!!<CR>
+#
+#   nnoremap <silent> <leader>vv :Vista!!<CR>
+#   nnoremap <silent> <leader>vf :Vista finder<CR>
+#
+#   " keymap info
+#   let g:user.plugin.info.whichkey.desc.leader['v'] = {
+#     \  'name' : '+Vista',
+#     \ }
+# '''
 
 # [[plugins]] # Chrome/Firefox GhostText Extention
 # repo = 'pandysong/ghost-text.vim'
@@ -5994,14 +6124,18 @@ hook_add = '''
 
 [[plugins]] # Mastodon
 repo = 'mattn/vim-mastodon'
+# repo = 'tsuyoshicho/vim-mastodon'
+# rev  = 'develop'
 depends = ['webapi-vim', 'vim-pass']
 hook_add = '''
   " mstdn.jp
-  let g:mastodon_host = 'mstdn.jp'
-  call pass#get_startup('g:mastodon_access_token', 'Message/Mastodon/mstdn.jp')
+  " let g:mastodon_host = 'mstdn.jp'
+  " fedibird.com
+  let g:mastodon_host = 'fedibird.com'
+  call pass#get_startup('g:mastodon_access_token', 'Message/Mastodon/' . g:mastodon_host)
 
   function! s:mastodon_completion(A,L,P) abort
-    let host_list = ['mstdn.jp']
+    let host_list = ['mstdn.jp', 'fedibird.com']
     return join(host_list,"\n")
   endfunction
 
@@ -6309,6 +6443,12 @@ hook_post_source = '''
   call submode#map('tablemove', 'n', 'r', 'j', '<Plug>(table-mode-motion-down)' )
   call submode#map('tablemove', 'n', 'r', 'h', '<Plug>(table-mode-motion-left)' )
   call submode#map('tablemove', 'n', 'r', 'l', '<Plug>(table-mode-motion-right)')
+'''
+
+[[plugins]]
+repo = 'kawarimidoll/magic.vim'
+hook_add = '''
+  cnoremap <expr> <C-x> magic#expr()
 '''
 
 # EOF

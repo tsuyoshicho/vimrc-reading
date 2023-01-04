@@ -12,7 +12,7 @@ hook_post_update = '''
 [[plugins]]
 repo = 'roxma/vim-hug-neovim-rpc'
 hook_post_update = '''
-  let g:dein#plugin.build = g:user.function.python_pkg_build_command('pynvim')
+  let g:dein#plugin.build = g:user.function.deno_build_python_package('pynvim')
 '''
 
 ## checkhealth
